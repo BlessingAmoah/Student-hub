@@ -1,33 +1,56 @@
 
 Meta University Eng Project Plan Template     
 Fill in blanks (enclosed by brackets []) and remove red text as you work through writing your project plan. Your project plan should be a living document and can be changed as you progress through the internship. Make sure to work on this document together with your manager to get feedback, as well as ensuring your project meets the requirements and expectations in the Project Guide.
+
+
 [Student Hub]
+
+
 Intern: [Blessing Amoah]
+
 Intern Manager: [Mustafa Sadriwala]
+
 Intern Director: [Name]
+
 Peer(s): [Brittany, Thanh]
-GitHub Repository Link: [https://github.com/Meta-U-2024]
+
+GitHub Repository Link: [link](https://github.com/Meta-U-2024)
+
 Overview
 [Provide a brief description of what your project is about and what problems it aims to solve.]
+
 Category: [Student Hub]
+
 Story: [Student hub serves as a tool for collaborative learning and project work, as well as a platform for sharing experiences related to internships, summer plans and student organizations. The user will be able to post information about their classes, projects that they are interested in or working on and other users  with the same interests can comment on such posts to collaborate or give feedback. The user would be able to create an account using their .edu emails only.]
+
 Market: [The target audience are students.]
+
 Habit: [This app will be used daily by students as a way to connect with other students in different schools.]
+
 Scope: [The initial scope of this app will focus on collaborating with others by sharing information, making a post and mentorship program. In the future it will be expanded to include additional features but will not add functionality like event planning.]
 
 Product Spec
+
 Based on the app description, this section goes into more detail about what the app should do, and what functionalities it must provide to the users.
 
 As the Educational system differs from one school to another, students enrolled in the same curriculum most of the time, experience variation in how the courses are taught. This inconsistency limits opportunities for students to connect, discuss their learning experiences, prepare for internships, and plan for graduate school. The student hub web app is designed to bridge the gap by helping students connect, share ideas, and learn together. There will be a restriction to students without an educational email address, ensuring a focused and secure community. The goal is to connect students with the opportunity with their peers in the same academic path or those interested in transferring schools. 
+
+
 User Stories
 User stories are actions that the user should be able to perform in your app.
 
 User Role: A student who is seeking for opportunities and connecting with peers with the same interests: 
+
 The user  can create an account and log in with their .edu account only
+
 The user can also edit his or her profile
+
 The user can sort between the course that is relevant to his or her interest.
+
 The user will be able to see mentors available and sort them out according to their career goals.
+
 The user can make a  post and also comment on a post of others. 
+
 The user can like a post. 
 
 
