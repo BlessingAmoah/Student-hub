@@ -1,0 +1,8 @@
+.env
+
+#development
+/config
+
+
+# dependencies
+/node_modules
