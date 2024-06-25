@@ -238,19 +238,21 @@ function CoursePage() {
                 {filteredData.map(post => (
                     <Grid item xs={12} key={post.id}>
                         <Card>
-                            <CardContent>
-                                <Typography variant="h5">{post.title}</Typography>
-                                <Typography>{post.content}</Typography>
+                        <CardContent>
+                            <Typography variant="h5">{post.title}</Typography>
+                            <Typography>{post.content}</Typography>
+                            {post.User && (
                                 <Typography>By: {post.User.name}</Typography>
-                                <Typography>{post.Comments.length} Comments</Typography>
-                                <Typography>{post.Likes.length} Likes</Typography>
+                            )}
+                            <Typography>{post.Comments.length} Comments</Typography>
+                            <Typography>{post.Likes.length} Likes</Typography>
                             </CardContent>
                             <CardActions>
                                 <IconButton onClick={() => handleLike(post.id)}>
                                     <ThumbUpIcon />
                                 </IconButton>
                                 <Button onClick={() => handleOpenCommentsModal(post.id, post.Comments)}>
-                                    View/Add Comments
+                                    View Comments
                                 </Button>
                             </CardActions>
                         </Card>
