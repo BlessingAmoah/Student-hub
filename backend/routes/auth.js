@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const verifyToken = require('../middleware/auth');
+const { Op } = require("sequelize")
+const schedule = require('node-schedule');
 require('dotenv').config();
 
 // validate email domain
@@ -158,6 +160,15 @@ router.post('/resendverification', async (req, res) => {
   }
 });
 
+// Delete unverified users every minute
+schedule.scheduleJob('*/1 * * * *', async () => {
+  await User.destroy({
+    where: {
+      emailVerified: false,
+      createdAt: { [Op.lt]: new Date(Date.now() - 60000) }
+    }
+  });
+});
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
