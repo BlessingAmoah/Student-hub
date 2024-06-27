@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Footer from './components/Footer';
 import { Grid, Button, Container } from '@mui/material'
 import { BrowserRouter as Router, Route, Routes} from 'react-router-dom'
-import { ThemeProvider } from './components/ThemeContext'
+
 import Navbar from './components/Navbar'
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -11,7 +11,7 @@ import Contact from './components/Contact';
 import About from './components/About';
 import Dashboard from './pages/Dashboard';
 import CoursePage from './pages/CoursePage';
-import Profile from './pages/ProfileDisplay';
+import Profile from './pages/Profile';
 import MentorshipPage from './pages/MentorshipPage';
 
 function App() {
@@ -25,7 +25,7 @@ function App() {
   }, []);
 
   return (
-    <ThemeProvider>
+
     <Router>
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <Container maxWidth="sm">
@@ -36,7 +36,7 @@ function App() {
       <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
       <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/profiledisplay" element={<Profile />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="/courses" element={<CoursePage />} />
       <Route path="/mentorship" element={<MentorshipPage />} />
       <Route path="/feedback" element={<Feedback />} />
@@ -48,7 +48,7 @@ function App() {
       </Container>
       <Footer />
     </Router>
-    </ThemeProvider>
+
   );
 }
 

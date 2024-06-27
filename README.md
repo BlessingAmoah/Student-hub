@@ -7,7 +7,7 @@ Intern: [Blessing Amoah]
 
 Intern Manager: [Mustafa Sadriwala]
 
-Intern Director: [Name]
+Intern Director: [Cesar Barraza]
 
 Peer(s): [Brittany, Thanh]
 

@@ -33,6 +33,11 @@ function Dashboard() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredData, setFilteredData] = useState(null);
     const [openCreateModal, setOpenCreateModal] = useState(false);
+    const [openCommentsModal, setOpenCommentsModal] = useState(false);
+    const [currentComments, setCurrentComments] = useState([]);
+    const [currentPostId, setCurrentPostId] = useState(null);
+    const [newComment, setNewComment] = useState('');
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -65,7 +70,7 @@ function Dashboard() {
         };
         fetchData();
     }, [navigate]);
-//handles the post submission which connects with the server
+
     const handlePostSubmit = async () => {
         try {
             const token = sessionStorage.getItem('token');
@@ -94,33 +99,40 @@ function Dashboard() {
             setError(error.message);
         }
     };
-// comment submit
-    const handleCommentSubmit = async (postId, commentContent) => {
-        try {
-            const token = sessionStorage.getItem('token');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
-            const response = await fetch(`http://localhost:8080/post/${postId}/comment`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({ content: commentContent }),
-            });
-            if (!response.ok) {
-                throw new Error('Failed to add comment');
-            }
-            const newComment = await response.json();
-            setData(data.map(post => post.id === postId ? { ...post, Comments: [...post.Comments, newComment] } : post));
-            setFilteredData(filteredData.map(post => post.id === postId ? { ...post, Comments: [...post.Comments, newComment] } : post));
-        } catch (error) {
-            setError(error.message);
+
+   //comment fetching
+   const handleCommentSubmit = async (event) => {
+    event.preventDefault();
+    try {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
         }
-    };
-//like button
+        const response = await fetch(`http://localhost:8080/post/${currentPostId}/comment`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ content: newComment }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to add comment');
+        }
+        const newCommentResponse = await response.json();
+        // Update currentComments state
+        setCurrentComments(prevComments => [...prevComments, newCommentResponse]);
+        setCurrentComments(currentComments)
+        setData(data.map(post => post.id === currentPostId ? { ...post, Comments: [...post.Comments, newCommentResponse] } : post));
+        setFilteredData(filteredData.map(post => post.id === currentPostId ? { ...post, Comments: [...post.Comments, newCommentResponse] } : post));
+
+        setNewComment('');
+    } catch (error) {
+        setError(error.message);
+    }
+};
+// Like button function
     const handleLike = async (postId, e) => {
 
         try {
@@ -147,7 +159,7 @@ function Dashboard() {
         }
     };
 
-//handle search
+
 
     const handleSearch = (event) => {
         const searchTerm = event.target.value;
@@ -168,6 +180,15 @@ function Dashboard() {
         setOpenCreateModal(false);
     };
 
+    const handleOpenCommentsModal = (postId, comments) => {
+        setCurrentPostId(postId);
+        setCurrentComments(comments);
+        setOpenCommentsModal(true);
+    };
+
+    const handleCloseCommentsModal = () => {
+        setOpenCommentsModal(false);
+    };
     if (loading) {
         return (
             <Container maxWidth="sm">
@@ -215,17 +236,46 @@ function Dashboard() {
             Create Post
         </Button>
         <Grid container spacing={3}>
+                {filteredData.map(post => (
+                    <Grid item xs={12} key={post.id}>
+                        <Card>
+                        <CardContent>
+                            <Typography variant="h5">{post.title}</Typography>
+                            <Typography>{post.content}</Typography>
+                            {post.User && (
+                                <Typography>By: {post.User.name}</Typography>
+                            )}
+                            <Typography>{post.Comments.length} Comments</Typography>
+                            <Typography>{post.Likes.length} Likes</Typography>
+                            </CardContent>
+                            <CardActions>
+                                <IconButton onClick={() => handleLike(post.id)}>
+                                    <ThumbUpIcon />
+                                </IconButton>
+                                <Button onClick={() => handleOpenCommentsModal(post.id, post.Comments)}>
+                                    View Comments
+                                </Button>
+                            </CardActions>
+                        </Card>
+                    </Grid>
+                ))}
+            </Grid>
+        <Grid container spacing={3}>
 
             {filteredData.map(post => (
                 <Grid item xs={12} key={post.id}>
                     <Card>
-                        <CardContent>
+
+                            <CardContent>
                             <Typography variant="h5">{post.title}</Typography>
                             <Typography>{post.content}</Typography>
-                            <Typography>By: {post.User.name}</Typography>
+                            {post.User && (
+                                <Typography>By: {post.User.name}</Typography>
+                            )}
                             <Typography>{post.Comments.length} Comments</Typography>
                             <Typography>{post.Likes.length} Likes</Typography>
-                        </CardContent>
+                            </CardContent>
+
                         <CardActions>
                             <IconButton onClick={() => handleLike(post.id)}>
                                 <ThumbUpIcon />
@@ -279,6 +329,39 @@ function Dashboard() {
                 </Button>
             </DialogActions>
         </Dialog>
+        <Dialog open={openCommentsModal} onClose={handleCloseCommentsModal}>
+    <DialogTitle>Comments</DialogTitle>
+    <DialogContent>
+        {currentComments.map(comment => (
+            <Typography key={comment.id} variant="body2" gutterBottom>
+                {comment.content} - {comment.User.name}
+            </Typography>
+        ))}
+        <TextField
+            margin="dense"
+            id="newComment"
+            label="Add a comment"
+            type="text"
+            fullWidth
+            value={newComment}
+            onChange={e => setNewComment(e.target.value)}
+            onKeyDown={e => {
+                if (e.key === 'Enter') {
+                    handleCommentSubmit();
+                }
+            }}
+        />
+    </DialogContent>
+    <DialogActions>
+        <Button onClick={handleCommentSubmit} color="primary">
+            Add
+        </Button>
+        <Button onClick={handleCloseCommentsModal} color="primary">
+            Close
+        </Button>
+    </DialogActions>
+
+</Dialog>
     </Container>
 );
 }

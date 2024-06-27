@@ -7,19 +7,20 @@ const nodemailer = require('nodemailer');
 const verifyToken = require('../middleware/auth');
 require('dotenv').config();
 
-// Function to validate email domain
+// validate email domain
 const validateEmail = (email) => {
   const domain = email.split('@')[1];
   return domain && domain.endsWith('.edu');
 };
 
-// Function to generate a random verification code
+// generate a random verification code
 const generateVerificationCode = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Function to send verification email
+// send verification email
 const sendVerificationEmail = async (email, verificationCode) => {
+
   const transporter = nodemailer.createTransport({
     service: 'Gmail',
     auth: {
@@ -56,8 +57,13 @@ router.post('/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationCode = generateVerificationCode();
 
+//verification code expiration time
+const expirationTimestamp = new Date(Date.now() + 60000)
+
     // Save user with verificationCode
-    await User.create({ email, password: hashedPassword, name, verificationCode });
+    await User.create({ email, password: hashedPassword, name, verificationCode, expirationTimestamp, });
+
+    User.emailVerified = false
 
     // Send verification email
     await sendVerificationEmail(email, verificationCode);
@@ -72,11 +78,13 @@ router.post('/signup', async (req, res) => {
 
 // Check verification code storage in database
 router.get('/checkVerificationCode', async (req, res) => {
+
   try {
     const user = await User.findOne({ where: { email: 'bsa5@calvin.edu' } });
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
+
     console.log('Verification code in database:', user.verificationCode);
     res.status(200).json({ verificationCode: user.verificationCode });
   } catch (error) {
@@ -97,11 +105,20 @@ router.post('/verify', async (req, res) => {
       return res.status(404).json({ error: 'Invalid verification code.' });
     }
 
+  // verification code expiration check.
+  const currentTime = new Date();
+  console.log('Current time:',currentTime);
+  console.log('Expiration time:', user.expirationTimestamp)
+  if (user.expirationTimestamp < currentTime) {
+    return res.status(400).json({ error: 'Verification code has expired.' });
+  }
+
+
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     user.verificationCode = null;
     user.emailVerified = true;
     await user.save();
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     res.status(200).json({ token, message: 'Email verified successfully.' });
   } catch (error) {
@@ -109,6 +126,38 @@ router.post('/verify', async (req, res) => {
     res.status(500).json({ error: 'Failed to verify email.' });
   }
 });
+
+// resend verification code
+router.post('/resendverification', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { email} });
+    if (!user || user.emailVerified) {
+      return res.status(400).json({ error: 'Invalid request or email already verified.' });
+    }
+
+    const verificationCode = generateVerificationCode();
+    const expirationTimestamp = new Date(Date.now() + 60000);
+
+    // Update user with new verification code and expiration time
+    user.verificationCode = verificationCode;
+    user.expirationTimestamp = expirationTimestamp;
+    await user.save();
+
+    // Send verification email
+    await sendVerificationEmail(email, verificationCode);
+
+    // Generate JWT token
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.status(200).json({ message: 'Verification code resent successfully.' });
+  } catch (error) {
+    console.error('Error resending verification code:', error);
+    res.status(500).json({ error: 'Failed to resend verification code.' });
+  }
+});
+
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -118,6 +167,12 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+
+ // Check if the email is verified
+ if (!user.emailVerified) {
+  return res.status(401).json({ error: 'Email not verified' });
+}
 
     // Verify the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -145,10 +200,10 @@ router.get('/dashboard', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Assuming you want to return some specific data for the dashboard
+
     const dashboardData = {
       message: `Welcome to your dashboard, ${user.name}!`
-      // Add more data as needed
+
     };
 
     res.status(200).json(dashboardData);
@@ -158,6 +213,7 @@ router.get('/dashboard', verifyToken, async (req, res) => {
   }
 });
 
+//GET route for course data
 router.get('/courses', verifyToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
@@ -166,10 +222,9 @@ router.get('/courses', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Assuming you want to return some specific data for the dashboard
     const coursesData = {
       message: `Welcome to your dashboard, ${user.name}!`
-      
+
     };
 
     res.status(200).json(coursesData);
@@ -179,6 +234,7 @@ router.get('/courses', verifyToken, async (req, res) => {
   }
 });
 
+//get route for mentorship
 router.get('/mentorship', verifyToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
@@ -187,10 +243,10 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Assuming you want to return some specific data for the dashboard
+
     const mentorsData = {
       message: `Welcome to the mentorship page, ${user.name}!`
-      
+
     };
 
     res.status(200).json(mentorsData);

@@ -40,7 +40,7 @@ sequelize.authenticate()
   })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
-  });   
+  });
 
 // Sync models with database and start server
 sequelize.sync()
