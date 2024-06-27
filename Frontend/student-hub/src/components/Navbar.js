@@ -91,9 +91,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
                             </Menu>
                     </>
                 ) : (
-                    <>
-
-                    </>
+                    undefined
                 )}
             </Toolbar>
         </AppBar>
