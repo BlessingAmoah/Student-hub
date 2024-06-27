@@ -132,7 +132,7 @@ function Dashboard() {
         setError(error.message);
     }
 };
-
+// Like button function
     const handleLike = async (postId, e) => {
 
         try {

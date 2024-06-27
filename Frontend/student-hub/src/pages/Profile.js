@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, Button, Modal, Backdrop, TextField } from '@mui/material';
+import { Container, Grid, Typography, Button, Modal, Backdrop, TextField, Input } from '@mui/material';
 
 function Profile() {
   const [profile, setProfile] = useState({
@@ -19,6 +19,8 @@ function Profile() {
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
 
+
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -26,7 +28,7 @@ function Profile() {
         if (!token) {
           throw new Error('Token not found in sessionStorage');
         }
-
+// profile page fetch from the server
         const response = await fetch('http://localhost:8080/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -48,14 +50,14 @@ function Profile() {
 
     fetchProfile();
   }, []);
-
+//request to submit profile page update
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
       const response = await fetch('http://localhost:8080/profile', {
-        method: 'PUT', // Change this to 'PUT'
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${sessionStorage.getItem('token')}`,
@@ -75,7 +77,7 @@ function Profile() {
       setError('Failed to update profile.');
     }
   };
-
+//profile change
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (value !== undefined) {
@@ -85,7 +87,8 @@ function Profile() {
       }));
     }
   };
-
+// upload a profile picture
+// connects with the server using multer to upload and save in uploads file which is in the backend
   const handlePictureUpload = async (e) => {
     const file = e.target.files[0];
     const formData = new FormData();
@@ -226,6 +229,7 @@ function Profile() {
             Edit
           </Button>
         </Grid>
+
         {profile && (
       <Modal
           open={open}
@@ -241,14 +245,15 @@ function Profile() {
       <h2>Edit Profile</h2>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2} columns={2}>
-        <Grid item xs={12}>
-                      <input type="file" onChange={handlePictureUpload} />
-                    </Grid>
-                    <Grid item xs={12}>
+                <Grid item xs={12}>
                       {profile.profilePicture && (
                         <img src={profile.profilePicture} alt="Profile" style={{ maxWidth: '20%', marginTop: 20 }} />
                       )}
                     </Grid>
+
+                    <Grid item xs={12}>
+          <Input type="file" onChange={handlePictureUpload} />
+          </Grid>
           <Grid item xs={1}>
           <TextField
               fullWidth
@@ -261,6 +266,7 @@ function Profile() {
               required
             />
           </Grid>
+
           <Grid item xs={1}>
             <TextField
               fullWidth
@@ -272,17 +278,7 @@ function Profile() {
               onChange={handleChange}
             />
           </Grid>
-          <Grid item xs={1}>
-            <TextField
-              fullWidth
-              type="text"
-              label="Email"
-              variant="outlined"
-              name="email"
-              value={profile.email || ''}
-              onChange={handleChange}
-            />
-          </Grid>
+
           <Grid item xs={1}>
             <TextField
               fullWidth

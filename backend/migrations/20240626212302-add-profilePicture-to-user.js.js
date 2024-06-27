@@ -2,9 +2,9 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up (queryInterface, Sequelize) {
     await queryInterface.addColumn('Users', 'profilePicture', {
-      type: Sequelize.STRING,
+      type: Sequelize.INTEGER,
       allowNull: true,
     });
   },

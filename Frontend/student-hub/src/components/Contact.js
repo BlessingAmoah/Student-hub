@@ -8,10 +8,10 @@ function Contact() {
     <Container>
       <Typography variant="h4" gutterBottom>Contact Me</Typography>
       <Typography variant="p">
-        Name: Blessing Amoah
-        Email: bsa5@calvin.edu
-        School: Calvin University
-        Major: Computer Science
+       <p>Name: Blessing Amoah</p>
+        <p>Email: bsa5@calvin.edu</p>
+        <p>School: Calvin University</p>
+        <p>Major: Computer Science</p>
         <a href='https://www.linkedin.com/in/blessingamoah/'>LinkedIn</a>
       </Typography>
     </Container>

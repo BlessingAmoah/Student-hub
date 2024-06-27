@@ -31,6 +31,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      emailVerified: {
+        type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      },
       phone: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -67,6 +72,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      expirationTimestamp: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -77,7 +86,9 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: DataTypes.NOW,
       },
-    });
+    },
+    {timestamps: true},
+    );
 
 
     User.associate = (models) => {

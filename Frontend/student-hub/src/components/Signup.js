@@ -61,6 +61,29 @@ function Signup() {
     }
   };
 
+ // handle verification code resend
+ const handleVerificationCodeResend = async () => {
+  try {
+    const response = await fetch('http://localhost:8080/auth/resendverification', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (response.ok) {
+      setVerificationCode('Verification code has been resent successfully');
+    } else {
+      const errorData = await response.json();
+      setError(errorData.error || 'Failed to resend the verification code. Check your email or network');
+    }
+  } catch (error) {
+    console.error('Resend verification code error:', error);
+    setError('Failed to resend verification code');
+  }
+};
+
 
 
 
@@ -138,7 +161,7 @@ function Signup() {
         >
           <Fade in={open}>
             <div style={{ backgroundColor: '#fff', padding: 20, borderRadius: 10, maxWidth: 400, margin: 'auto', marginTop: '20vh' }}>
-              <h2>Email Verification</h2>
+              <h2>Email Verification Code Has Been Sent To Your Email</h2>
               <form onSubmit={handleVerificationSubmit}>
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
@@ -153,10 +176,16 @@ function Signup() {
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <Button type="submit" variant="contained" color="primary">Verify Email</Button>
+                    <Button type="submit" variant="contained" color="primary">Verify</Button>
                   </Grid>
                 </Grid>
               </form>
+              <p>
+                Didn't receive a code?{' '}
+                <Button component="a" href="#" onClick={handleVerificationCodeResend}>
+                Resend Verification Code
+              </Button>
+              </p>
             </div>
           </Fade>
         </Modal>

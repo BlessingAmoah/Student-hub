@@ -17,7 +17,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
     const handleLogout = () => {
         sessionStorage.removeItem('token');
         setIsLoggedIn(false);
-        navigate('/Home');
+        navigate('/login');
     };
 
     //handles profile click

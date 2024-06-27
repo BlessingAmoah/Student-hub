@@ -21,7 +21,7 @@ app.use(cors());
 app.use(bodyParser.json({ limit: '2000mb' }));
 app.use(bodyParser.urlencoded({ limit: '2000mb', extended: true }));
 // Serve static files from the "uploads" directory
-//app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 
