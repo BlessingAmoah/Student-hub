@@ -3,6 +3,7 @@
 #development
 /config
 
+uploads
 
 # dependencies
 /node_modules

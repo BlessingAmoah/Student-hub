@@ -161,11 +161,11 @@ router.post('/resendverification', async (req, res) => {
 });
 
 // Delete unverified users every minute
-schedule.scheduleJob('*/1 * * * *', async () => {
+schedule.scheduleJob('*/10 * * * *', async () => {
   await User.destroy({
     where: {
       emailVerified: false,
-      createdAt: { [Op.lt]: new Date(Date.now() - 60000) }
+      createdAt: { [Op.lt]: new Date(Date.now() - 600000) }
     }
   });
 });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Grid, TextField, Button, Modal, Backdrop, Fade } from '@mui/material';
+import { Container, Grid, TextField, Button, Modal } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function Signup() {
   const [email, setEmail] = useState('');
@@ -9,12 +10,15 @@ function Signup() {
   const [error, setError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [verificationLoading, setVerificationLoading] = useState(false);
   const navigate = useNavigate();
 
   //handles the submit button when signing up.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     try {
       const response = await fetch(`http://localhost:8080/auth/signup`, {
@@ -25,20 +29,23 @@ function Signup() {
 
       if (response.ok) {
         setOpen(true);
+        setLoading(false);
       } else {
         const { error } = await response.json();
         setError(error);
+        setLoading(false);
       }
     } catch (error) {
       console.error('Signup failed:', error);
       setError('Signup failed. Please try again.');
+      setLoading(false);
     }
   };
 // handles the verification of the email to make sure the user is not a robot
   const handleVerificationSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+    setVerificationLoading(true);
     try {
       const response = await fetch(`http://localhost:8080/auth/verify`, {
         method: 'POST',
@@ -58,6 +65,8 @@ function Signup() {
     } catch (error) {
       console.error('Email verification error:', error);
       setError('Failed to verify email.');
+    }finally {
+      setVerificationLoading(false);
     }
   };
 
@@ -153,14 +162,10 @@ function Signup() {
         <Modal
           open={open}
           onClose={handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-          }}
+          style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
         >
-          <Fade in={open}>
-            <div style={{ backgroundColor: '#fff', padding: 20, borderRadius: 10, maxWidth: 400, margin: 'auto', marginTop: '20vh' }}>
+
+            <div style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, maxWidth: 400, margin: 'auto', marginTop: '20vh' }}>
               <h2>Email Verification Code Has Been Sent To Your Email</h2>
               <form onSubmit={handleVerificationSubmit}>
                 <Grid container spacing={2}>
@@ -186,9 +191,10 @@ function Signup() {
                 Resend Verification Code
               </Button>
               </p>
+              {verificationLoading && <CircularProgress color="inherit" />}
             </div>
-          </Fade>
         </Modal>
+        {loading && <CircularProgress color="inherit" />}
       </Grid>
     </Container>
   );
