@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, Button, Modal, Backdrop, TextField, Input } from '@mui/material';
+import { Container, Grid, Typography, Button, Modal, TextField, Input } from '@mui/material';
+
 
 function Profile() {
   const [profile, setProfile] = useState({
@@ -232,16 +233,12 @@ function Profile() {
 
         {profile && (
       <Modal
-          open={open}
-          onClose={handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-          }}
-        >
+      open={open}
+      onClose={handleClose}
+      style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
+    >
 
-    <div style={{ backgroundColor: '#fff', padding: 5, borderRadius: 10 }}>
+    <div style={{  padding: 5, borderRadius: 10, backgroundColor: 'white' }}>
       <h2>Edit Profile</h2>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2} columns={2}>
@@ -382,7 +379,6 @@ function Profile() {
         </Grid>
       </form>
     </div>
-
 </Modal>
 )}
       </Grid>
