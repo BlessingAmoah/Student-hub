@@ -5,6 +5,7 @@ const { User, Friend } = require('../models');
 const verifyToken = require('../middleware/auth');
 const { Post, Like, Comment} = require('../models');
 const { Op } = require('sequelize');
+const stringSimilarity = require('string-similarity')
 
 
 // Add a friend
@@ -96,6 +97,8 @@ router.get('/:userId', verifyToken, async (req, res) => {
     }
 });
 
+
+
 // friend recommendation
 router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
     try{
@@ -141,14 +144,65 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
             attributes: ['id', 'name', 'interest', 'school', 'major']
         });
 
+        // calculate similarity score for potential friend
+        const similarityScore = (user) => {
+
+            // likes similarity
+            const userLikes = posts.flatMap(post => post.Likes.filter(like => like.userId === user.id).map(like => post.id));
+            const commonLikes = currentUserLikes.filter(like => userLikes.includes(like));
+            const likeScore = commonLikes.length / (currentUserLikes.length + userLikes.length - commonLikes.length) || 0;
+
+            //comment similarity
+            const userComment = posts.flatMap(post => post.Comments.filter(comment => comment.userId === user.id).map(comment => post.id));
+            const commonComments = currentUserComments.filter(comment => userComment.icludes(comment));
+            const commentScore = commonComments.length / (currentUserComments.length + userComment.length - commonComments.length) || 0;
+
+            // Post similarity
+            const currentUserPosts = posts.filter(post => post.userId === userId).map(post => post.content);
+            const userPost = posts.filter(post => post.userId === user.id).map(post => post.content);
+            const postScore = userPost.reduce((acc, post) => {
+                const bestMatch = stringSimilarity.findBestMatch(post, currentUserPosts).bestMatch.rating;
+                return acc + bestMatch;
+            }, 0) / (userPost.length || 1);
+
+            // interest similarity
+            const interestScore = stringSimilarity.compareTwoStrings(currentUser.interest, user.interest);
+
+            // major similarity
+            const majorScore = stringSimilarity.compareTwoStrings(currentUser.major, user.major);
+
+            // school similarity
+            const schoolScore = stringSimilarity.compareTwoStrings(currentUser.school, user.school);
+
+            // total scores
+            return(
+                0.1 * likeScore +
+                0.1 * commentScore +
+                0.2 * postScore +
+                0.2 * interestScore +
+                0.2 * schoolScore +
+                0.2 * majorScore
+            );
+        };
+
+        // sort potential friends based on the similarity scores
+        const sortPotentialFriend = potentialFriends.map(user => ({
+            ...user.toJSON(),
+            similarity_Score: similarityScore(user)
+        })).sort((a, b) => b.similarity_Score - a.similarity_Score);
+        console.log(sortPotentialFriend)
+
         //format the recommended friends data
-        const formatRecommendation = potentialFriends.map(user => ({
+        const formatRecommendation = sortPotentialFriend.map(user => ({
             id: user.id,
             name: user.name,
             interest: user.interest,
             school: user.school,
-            major: user.major
+            major: user.major,
+            similarity_Score: user.similarity_Score
         }));
+        console.log(formatRecommendation)
+
         res.status(200).json(formatRecommendation);
     } catch(error) {
         console.error('Error fetching recommended friends:', error);

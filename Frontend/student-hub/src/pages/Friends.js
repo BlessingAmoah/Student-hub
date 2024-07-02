@@ -10,7 +10,8 @@ const SearchContainer = styled(Paper)({
     display: 'flex',
     alignItems: 'center',
     padding: '2px 4px',
-    marginBottom: '20px'
+    marginBottom: '20px',
+    marginTop: '20px'
 });
 
 const SearchInput = styled(InputBase)({
