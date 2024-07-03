@@ -32,6 +32,12 @@ const upload = multer({
 
 
 
+// Create a new post
+router.post('/', verifyToken, async (req, res) => {
+  const { title, content } = req.body;
+  try {
+    const post = await Post.create({ title, content, userId: req.userId });
+
 
 
 // Create a new post
@@ -41,6 +47,7 @@ router.post('/', verifyToken, upload.single('media'), async (req, res) => {
 
   try {
     const post = await Post.create({ title, content, userId: req.userId, emojiId, mediaPath });
+
     res.status(201).json(post);
   } catch (error) {
     console.error('Error creating a post:', error)
@@ -52,7 +59,6 @@ router.post('/', verifyToken, upload.single('media'), async (req, res) => {
 router.post('/:postId/comment', verifyToken, async (req, res) => {
   const { postId } = req.params;
   const { content } = req.body;
-
   try {
     const comment = await Comment.create({ content, userId: req.userId, postId });
     res.status(201).json(comment);
@@ -65,12 +71,13 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
 // Like a post
 router.post('/:postId/like', verifyToken, async (req, res) => {
   const { postId } = req.params;
+
+  try {
   const {emojiId } = req.body;
 
   try {
 
     const existingLike = await Like.findOne({ where: { userId: req.userId, postId } });
-
     if (existingLike) {
       await existingLike.destroy();
       res.status(200).json({ message: 'Post unliked' });

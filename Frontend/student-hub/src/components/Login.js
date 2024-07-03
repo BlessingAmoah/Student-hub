@@ -9,17 +9,15 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     //handles the submit when logged in.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
+
         try{
-          console.log('Attempting login')
-            const response = await fetch('http://localhost:8080/auth/login',{
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/login`,{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -28,30 +26,33 @@ function Login() {
             // checks if the log-in details are correct
             // if correct navigate to the dashboard
             if (response.ok) {
-              console.log('Login successful')
                 const data = await response.json();
-
                 // check for userId in the data and not undefined
                 if (data.userId !== undefined){
                   //store token and userId in sessionstorgae
                 sessionStorage.setItem('token', data.token);
+
                 sessionStorage.setItem('userId', data.userId)
-                console.log('Stored token userId in sessionStorage', data.userId)
 
                 // Check if the userId exist in the database
                 const isValidUser = await checkUserId(data.userId);
                 if (isValidUser) {
-                  console.log('User is valid. Navigating to /dashboard...');
                   navigate('/dashboard');
                 } else {
-                  console.log('User is invalid.');
                   setError('Invalid user credentials.');
                 }
               } else {
                 console.error('userId is undefined in data:', data);
                 setError('Invalid server response. Please try again.');
+                navigate('/dashboard');
+              } else {
+                const { error } = await response.json();
+                setError(error);
               }
-
+            } catch (error) {
+                console.error('Login failed:', error);
+                setError('Login failed. Please try again.');
+              }
             } else {
               const { error } = await response.json();
               console.error('Login failed:', error);
@@ -65,10 +66,9 @@ function Login() {
         // check database for userId
         const checkUserId = async (userId) => {
           try {
-            console.log('checking userId in database')
-            console.log('Checking userId in database...');
 
-            const response = await fetch(`http://localhost:8080/auth/user/${userId}`, {
+
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/user/${userId}`, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
@@ -77,8 +77,8 @@ function Login() {
             });
 
             if (response.ok) {
-              const userData = await response.json();
-              console.log('User data retrieved:', userData);
+              await response.json();
+
               return true;
             } else {
               console.error(`Error fetching user ${userId}:`, response.status);
@@ -135,7 +135,6 @@ function Login() {
                       </Grid>
                     )}
                   </Grid>
-                  {loading && <CircularProgress color="inherit" />}
                 </Container>
               );
             }

@@ -44,6 +44,9 @@ function CoursePage() {
     useEffect(() => {
         const fetchEmojis = async () => {
             try{
+
+                const response = await fetch(`${process.env.REACT_APP_API}/emoji`);
+
                 const response = await fetch('http://localhost:8080/emoji');
                 if (!response.ok) {
                     throw new Error('Failed to fetch emojis');
@@ -72,6 +75,9 @@ function CoursePage() {
                 formData.append('content', content);
                 formData.append('emojiId', selectedEmoji[currentPostId] || '');
                 if (media) formData.append('media', media);
+
+
+                const response = await fetch(`${process.env.REACT_APP_API}/post`, {
 
                 const response = await fetch(`http://localhost:8080/post`, {
                     method: 'GET',
@@ -112,6 +118,9 @@ function CoursePage() {
                 if (media) formData.append('media', media);
 
 
+
+            const response = await fetch(`${process.env.REACT_APP_API}/post`, {
+
             const response = await fetch(`http://localhost:8080/post`, {
                 method: 'POST',
                 headers: {
@@ -147,7 +156,7 @@ function CoursePage() {
                 navigate('/login');
                 return;
             }
-            const response = await fetch(`http://localhost:8080/post/${currentPostId}/comment`, {
+            const response = await fetch(`${process.env.REACT_APP_API}/post/${currentPostId}/comment`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -178,7 +187,11 @@ const handleLike = async (postId) => {
             navigate('/login');
             return;
         }
+
+        const response = await fetch(`${process.env.REACT_APP_API}/post/${postId}/like`, {
+
         const response = await fetch(`http://localhost:8080/post/${postId}/like`, {
+ 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

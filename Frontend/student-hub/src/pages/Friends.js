@@ -4,6 +4,8 @@ import  Remove  from '@mui/icons-material/Remove'
 import  Add  from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
+import getUserIDToken from '../components/utils';
+
 
 // search styling
 const SearchContainer = styled(Paper)({
@@ -19,7 +21,7 @@ const SearchInput = styled(InputBase)({
     flex: 1,
 });
 
-const FriendsList = () => {
+const FriendsList = ({ setOpen, setError}) => {
     const [friends, setFriends] = useState([]);
     const [availableFriend, setAvailableFriend] = useState([]);
     const [recommendedFriends, setRecommendedFriends] = useState([]);
@@ -33,49 +35,56 @@ const FriendsList = () => {
     //fetch data
     useEffect(() => {
         const fetchData = async () => {
-            await fetchFriends();
-            await fetchAvailableFriend();
-            await fetchRecommendedFriends();
+
+            const friendsPromise = fetchFriends();
+            const avaialableFriendsPromise = fetchAvailableFriend();
+            const recommendedFriendsPromise = fetchRecommendedFriends();
+
+            Promise.all([friendsPromise, avaialableFriendsPromise, recommendedFriendsPromise])
+             .then(([friends, availableFriend, recommendedFriends]) => {
+                setFilteredData({
+                    friends,
+                    recommendedFriends,
+                    availableFriend
+                });
+             })
+             .catch(error => {
+                console.error('Error fetching data:', error);
+             });
         };
         fetchData();
     }, []);
 
 
-    //initialize filtered data after fetching
-    useEffect(() => {
-    setFilteredData({
-        friends,
-        recommendedFriends,
-        availableFriend
-    });
-}, [friends, recommendedFriends, availableFriend]);
+
 
 // friends
 const fetchFriends = async () => {
     try {
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/friends/${userId}`,{
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/${userId}`,{
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
-        if(!response.ok) {
-            throw new Error(`failed to fetch friends: ${response.statusText}`);
-        }
+
         //update friends state
         const data = await response.json();
-        setFriends(data.filter(person => person.id !== userId));
+        const filteredFriends = data.filter(person => person.id !== userId);
+        setFriends(filteredFriends)
+        return filteredFriends;
     }catch (error) {
         console.error('Error fetching friends:', error);
-    }
+        setOpen(true);
+        setError(error.message);
+      }
+
 };
 
 //recommended friends
 const fetchRecommendedFriends = async () => {
     try{
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/friends/recommendedFriends/${userId}`, {
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/recommendedFriends/${userId}`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
@@ -84,18 +93,21 @@ const fetchRecommendedFriends = async () => {
         }
         //update recommended friends state
         const data = await response.json();
-        setRecommendedFriends(data.filter(friend => friend.id !== userId));
+        const filteredRecommendedFriends = data.filter(friend => friend.id !== userId);
+        setRecommendedFriends(filteredRecommendedFriends)
+        return filteredRecommendedFriends;
     } catch (error) {
         console.error('Error fetching recommended friends:', error);
+        setOpen(true);
+        setError(error.message);
     }
 };
 
 //Available friends
 const fetchAvailableFriend = async () => {
     try {
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/friends/available/${userId}`, {
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/available/${userId}`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
@@ -107,18 +119,19 @@ const fetchAvailableFriend = async () => {
         const data = await response.json();
         const filteredAvailableFriend = data.filter(person => person.id !== parseInt(userId));
         setAvailableFriend(filteredAvailableFriend);
-        console.log('Available friend:', filteredAvailableFriend);
+        return filteredAvailableFriend;
     } catch (error) {
         console.error('Error fetching available people:', error.message);
+        setOpen(true);
+        setError(error.message);
     }
 };
 
 //add a friend
 const handleAddFriend = async (friendId) => {
     try{
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch('http://localhost:8080/friends/add', {
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/add`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -132,20 +145,27 @@ const handleAddFriend = async (friendId) => {
         }
 
         //After successfully adding friend, fetch updated data
-        await fetchFriends();
-        await fetchAvailableFriend();
-        await fetchRecommendedFriends();
+        const updatedFriends = await fetchFriends();
+        const updatedAvailableFriend = await fetchAvailableFriend();
+        const updatedRecommendedFriends = await fetchRecommendedFriends();
+
+        setFilteredData({
+            friends: updatedFriends,
+            recommendedFriends: updatedRecommendedFriends,
+            availableFriend: updatedAvailableFriend
+        });
     } catch (error) {
         console.error('Error adding friend:', error);
+        setOpen(true);
+        setError(error.message);
     }
 };
 
 //remove a friend
 const handleRemoveFriend = async (friendId) => {
     try{
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch('http://localhost:8080/friends/remove', {
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/remove`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -158,11 +178,19 @@ const handleRemoveFriend = async (friendId) => {
             throw new Error(`Failed to remove friend: ${response.statusText}`);
         }
         //After successfully removing friend, fetch updated data
-        await fetchFriends();
-        await fetchAvailableFriend();
-        await fetchRecommendedFriends();
+        const updatedFriends = await fetchFriends();
+        const updatedAvailableFriend = await fetchAvailableFriend();
+        const updatedRecommendedFriends = await fetchRecommendedFriends();
+
+        setFilteredData({
+            friends: updatedFriends,
+            recommendedFriends: updatedRecommendedFriends,
+            availableFriend: updatedAvailableFriend
+        });
     } catch (error) {
         console.error('Error removing friend:', error)
+        setOpen(true);
+        setError(error.message);
     }
 };
 
@@ -206,6 +234,7 @@ const handleSearch = (event) => {
 return (
     <Container maxwidth="sm">
         <Grid container spacing={2} alignItems="center" justify="center" style={{ minHeight: '80vh'}}>
+
             {/*Search bar */}
             <Grid item xs={12}>
                 <SearchContainer>
@@ -224,7 +253,7 @@ return (
             <Grid item xs={12}>
                 <Typography variant="h5">Friends</Typography>
                 <List>
-                    {filteredData.friends.map((person) => (
+                    {filteredData.friends?.map((person) => (
                         <ListItem key={person.id}>
                             <ListItemText primary={person.name} secondary={`${person.interest}, ${person.school}, ${person.major}`} />
                             <ListItemSecondaryAction>
@@ -240,9 +269,9 @@ return (
             <Grid item xs={12}>
                 <Typography variant="h6">Recommended Friends</Typography>
                 <List>
-                    {filteredData.recommendedFriends.map((friend) => (
+                    {filteredData.recommendedFriends?.map((friend) => (
                         <ListItem key={friend.id}>
-                            <ListItemText primary={friend.name || 'Name not available'} secondary={`${friend.interest || 'Interest not found'}, ${friend.school || 'School not found'}, ${friend.major || 'Major not found'}`} />
+                            <ListItemText primary={friend.name} secondary={`${friend.interest}, ${friend.school}, ${friend.major}`} />
                             <ListItemSecondaryAction>
                                 <IconButton edge="end" aria-label='add' onClick={() => handleAddFriend(friend.id)}>
                                     <Add />
@@ -259,7 +288,7 @@ return (
             <Grid item xs={12}>
                 <Typography variant="h6">Available People</Typography>
                 <List>
-                    {filteredData.availableFriend.map((person) => (
+                    {filteredData.availableFriend?.map((person) => (
                         <ListItem key={person.id}>
                             <ListItemText primary={person.name} secondary={`${person.interest}, ${person.school}, ${person.major}`} />
                             <ListItemSecondaryAction>

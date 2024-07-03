@@ -5,8 +5,6 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const verifyToken = require('../middleware/auth');
-const { Op } = require("sequelize")
-const schedule = require('node-schedule');
 require('dotenv').config();
 
 // validate email domain
@@ -43,7 +41,6 @@ const sendVerificationEmail = async (email, verificationCode) => {
 
 // POST route for user signup
 router.post('/signup', async (req, res) => {
-  console.log('Received signup request');
   const { email, password, name } = req.body;
 
   if (!validateEmail(email)) {
@@ -86,8 +83,6 @@ router.get('/checkVerificationCode', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
-
-    console.log('Verification code in database:', user.verificationCode);
     res.status(200).json({ verificationCode: user.verificationCode });
   } catch (error) {
     console.error('Database error:', error);
@@ -97,10 +92,7 @@ router.get('/checkVerificationCode', async (req, res) => {
 
 // POST route for email verification
 router.post('/verify', async (req, res) => {
-  console.log('Received verify request');
-
   const { email, code } = req.body;
-
   try {
     const user = await User.findOne({ where: { email, verificationCode: code } });
     if (!user) {
@@ -109,18 +101,14 @@ router.post('/verify', async (req, res) => {
 
   // verification code expiration check.
   const currentTime = new Date();
-  console.log('Current time:',currentTime);
-  console.log('Expiration time:', user.expirationTimestamp)
   if (user.expirationTimestamp < currentTime) {
     return res.status(400).json({ error: 'Verification code has expired.' });
   }
-
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     user.verificationCode = null;
     user.emailVerified = true;
     await user.save();
-
 
     res.status(200).json({ token, message: 'Email verified successfully.' });
   } catch (error) {
@@ -132,7 +120,6 @@ router.post('/verify', async (req, res) => {
 // resend verification code
 router.post('/resendverification', async (req, res) => {
   const { email } = req.body;
-
   try {
     const user = await User.findOne({ where: { email} });
     if (!user || user.emailVerified) {
@@ -160,43 +147,27 @@ router.post('/resendverification', async (req, res) => {
   }
 });
 
-// Delete unverified users every minute
-schedule.scheduleJob('*/10 * * * *', async () => {
-  await User.destroy({
-    where: {
-      emailVerified: false,
-      createdAt: { [Op.lt]: new Date(Date.now() - 600000) }
-    }
-  });
-});
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-
   try {
     // Check if the user exists
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-
-
  // Check if the email is verified
  if (!user.emailVerified) {
   return res.status(401).json({ error: 'Email not verified' });
 }
-
     // Verify the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid password' });
     }
-
     // Generate JWT token
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
     // Return the token as JSON response
     res.status(200).json({ token, userId: user.id });
-    console.log(user.id)
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -212,10 +183,8 @@ router.get('/dashboard', verifyToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-
     const dashboardData = {
       message: `Welcome to your dashboard, ${user.name}!`
-
     };
 
     res.status(200).json(dashboardData);
@@ -227,14 +196,11 @@ router.get('/dashboard', verifyToken, async (req, res) => {
 
 router.get('/user/:userId', async (req, res) => {
   const userId = req.params.userId;
-
   try{
     const user = await User.findByPk(userId);
-
     if(!user){
       return res.status(404).json({error: 'User not found'});
     }
-
     // return user data
     res.status(200).json(user);
   } catch (error){
@@ -247,16 +213,12 @@ router.get('/user/:userId', async (req, res) => {
 router.get('/courses', verifyToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
-
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-
     const coursesData = {
       message: `Welcome to your dashboard, ${user.name}!`
-
     };
-
     res.status(200).json(coursesData);
   } catch (error) {
     console.error('Courses fetch error:', error);
@@ -268,23 +230,17 @@ router.get('/courses', verifyToken, async (req, res) => {
 router.get('/mentorship', verifyToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
-
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-
-
     const mentorsData = {
       message: `Welcome to the mentorship page, ${user.name}!`
-
     };
-
     res.status(200).json(mentorsData);
   } catch (error) {
     console.error('Mentors fetch error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
 
 module.exports = router;

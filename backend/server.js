@@ -19,9 +19,17 @@ const app = express();
 const PORT = process.env.PORT || 8080;
 
 // Middleware
+
+app.use(cors({
+  origin: ['http://localhost:3000']
+}));
+app.use(bodyParser.json({ limit: '2000mb' }));
+app.use(bodyParser.urlencoded({ limit: '2000mb', extended: true }));
+
 app.use(cors());
 app.use(bodyParser.json({ limit: '200000mb' }));
 app.use(bodyParser.urlencoded({ limit: '200000mb', extended: true }));
+
 // Serve static files from the "uploads" directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

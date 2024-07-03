@@ -20,17 +20,17 @@ const SearchContainer = styled(Paper)({
     padding: 10,
   });
 
-function MentorshipPage() {
+function MentorshipPage({ setOpen, setError, error }) {
   const [mentorships, setMentorships] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
 
   useEffect(() => {
     const fetchMentorships = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch('http://localhost:8080/auth/mentorship', {
+        const response = await fetch(`${process.env.REACT_APP_API}/auth/mentorship`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -44,13 +44,15 @@ function MentorshipPage() {
         setMentorships(mentorshipData.mentorships);
         setLoading(false);
       } catch (error) {
-        setError('Failed to fetch mentorships');
+        console.error('Failed to fetch mentorships:', error);
+         setError(error.message);
+        setOpen(true);
         setLoading(false);
       }
     };
 
     fetchMentorships();
-  }, []);
+  }, [setOpen]);
 
   //search
   const handleSearch = (event) => {

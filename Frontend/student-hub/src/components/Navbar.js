@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import {AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem, Switch } from '@mui/material'
+import {AppBar, Toolbar, Typography, Button, IconButton, Menu, MenuItem } from '@mui/material'
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { useTheme } from './ThemeContext'
+
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 function Navbar({ isLoggedIn, setIsLoggedIn}) {
     const navigate = useNavigate();
-
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsEl, setSettingsEl] = useState(null);
-    const { darkMode, toggleDarkMode } = useTheme();
-
 
     //Handles logout navigation
     const handleLogout = () => {
@@ -31,16 +28,14 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
         setAnchorEl(null);
     };
 
-
     // handles the settings icon
     const handleSettingsClick = (event) => {
         setSettingsEl(event.currentTarget);
     };
 
     const handleSettingsClose = () => {
-        setSettingsEl(null);
+        setAnchorEl(null);
     };
-
 
     //rendering the app to undate.
     //anchorEl used to set the position of the menu.
@@ -87,10 +82,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
                             open={Boolean(settingsEl)}
                             onClose={handleSettingsClose}
                             >
-                                <MenuItem>
-                                    <Switch checked={darkMode} onChange={toggleDarkMode} />
-                                    Dark Mode
-                                </MenuItem>
                                 <MenuItem onClick={() => { navigate('/feedback'); handleSettingsClose(); }}>Feedback</MenuItem>
                                 <MenuItem onClick={() => { navigate('/contact'); handleSettingsClose(); }}>Contact Me</MenuItem>
                                 <MenuItem onClick={() => { navigate('/about'); handleSettingsClose(); }}>About</MenuItem>

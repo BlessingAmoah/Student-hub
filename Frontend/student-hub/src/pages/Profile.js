@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, Button, Modal, TextField, Input } from '@mui/material';
-
+import { Container, Grid, Typography, Button, Modal, Backdrop, TextField, Input } from '@mui/material';
 
 function Profile() {
   const [profile, setProfile] = useState({
@@ -30,7 +29,7 @@ function Profile() {
           throw new Error('Token not found in sessionStorage');
         }
 // profile page fetch from the server
-        const response = await fetch('http://localhost:8080/profile', {
+        const response = await fetch(`${process.env.REACT_APP_API}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -57,7 +56,7 @@ function Profile() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8080/profile', {
+      const response = await fetch(`${process.env.REACT_APP_API}/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +95,7 @@ function Profile() {
     formData.append('profilePicture', file);
 
     try {
-      const response = await fetch('http://localhost:8080/profile/profile', {
+      const response = await fetch(`${process.env.REACT_APP_API}/profile/profile`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
@@ -108,7 +107,7 @@ function Profile() {
         const data = await response.json();
         setProfile((prevProfile) => ({
           ...prevProfile,
-          profilePicture: `http://localhost:8080/${data.profilePicture}`,
+          profilePicture: `${process.env.REACT_APP_API}/${data.profilePicture}`,
         }));
       } else {
         const errorData = await response.json();
@@ -177,7 +176,7 @@ function Profile() {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Bio: {profile.bio || 'No bio provided'}
+            Bio: {profile.bio}
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -187,42 +186,42 @@ function Profile() {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Phone number: {profile.phone || 'No phone number provided'}
+            Phone number: {profile.phone}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Address: {profile.address || 'No address provided'}
+            Address: {profile.address}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            City: {profile.city || 'No city provided'}
+            City: {profile.city}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            State: {profile.state || 'No state provided'}
+            State: {profile.state}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            School: {profile.school || 'No school provided'}
+            School: {profile.school}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Major: {profile.major || 'No major provided'}
+            Major: {profile.major}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Interest: {profile.interest || 'No interest provided'}
+            Interest: {profile.interest}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Mentorship status: {profile.mentorship || 'Mentorship status not specified'}
+            Mentorship status: {profile.mentorship}
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -233,12 +232,16 @@ function Profile() {
 
         {profile && (
       <Modal
-      open={open}
-      onClose={handleClose}
-      style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
-    >
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 500,
+          }}
+        >
 
-    <div style={{  padding: 5, borderRadius: 10, backgroundColor: 'white' }}>
+    <div style={{ backgroundColor: '#fff', padding: 5, borderRadius: 10 }}>
       <h2>Edit Profile</h2>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2} columns={2}>
@@ -379,6 +382,7 @@ function Profile() {
         </Grid>
       </form>
     </div>
+
 </Modal>
 )}
       </Grid>
