@@ -3,18 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress'
 
+
+
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     //handles the submit when logged in.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
+
         try{
             const response = await fetch(`${process.env.REACT_APP_API}/auth/login`,{
                 method: 'POST',
@@ -30,6 +31,7 @@ function Login() {
                 if (data.userId !== undefined){
                   //store token and userId in sessionstorgae
                 sessionStorage.setItem('token', data.token);
+
                 sessionStorage.setItem('userId', data.userId)
 
                 // Check if the userId exist in the database
@@ -42,6 +44,14 @@ function Login() {
               } else {
                 console.error('userId is undefined in data:', data);
                 setError('Invalid server response. Please try again.');
+                navigate('/dashboard');
+              } else {
+                const { error } = await response.json();
+                setError(error);
+              }
+            } catch (error) {
+                console.error('Login failed:', error);
+                setError('Login failed. Please try again.');
               }
             } else {
               const { error } = await response.json();
@@ -125,7 +135,6 @@ function Login() {
                       </Grid>
                     )}
                   </Grid>
-                  {loading && <CircularProgress color="inherit" />}
                 </Container>
               );
             }
