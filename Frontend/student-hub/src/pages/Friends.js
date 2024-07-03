@@ -260,7 +260,7 @@ return (
                 <List>
                     {filteredData.recommendedFriends?.map((friend) => (
                         <ListItem key={friend.id}>
-                            <ListItemText primary={friend.name || 'Name not available'} secondary={`${friend.interest || 'Interest not found'}, ${friend.school || 'School not found'}, ${friend.major || 'Major not found'}`} />
+                            <ListItemText primary={friend.name} secondary={`${friend.interest}, ${friend.school}, ${friend.major}`} />
                             <ListItemSecondaryAction>
                                 <IconButton edge="end" aria-label='add' onClick={() => handleAddFriend(friend.id)}>
                                     <Add />
