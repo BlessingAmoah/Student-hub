@@ -275,7 +275,7 @@ return (
             </Grid>
             {/* Available friend */}
             <Grid item xs={12}>
-                <Typography variant="h6">Avaialble People</Typography>
+                <Typography variant="h6">Available People</Typography>
                 <List>
                     {filteredData.availableFriend?.map((person) => (
                         <ListItem key={person.id}>
