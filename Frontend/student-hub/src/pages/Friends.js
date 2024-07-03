@@ -33,22 +33,26 @@ const FriendsList = () => {
     //fetch data
     useEffect(() => {
         const fetchData = async () => {
-            await fetchFriends();
-            await fetchAvailableFriend();
-            await fetchRecommendedFriends();
+
+            const friendsPromise = fetchFriends();
+            const avaialableFriendsPromise = fetchAvailableFriend();
+            const recommendedFriendsPromise = fetchRecommendedFriends();
+
+            Promise.all([friendsPromise, avaialableFriendsPromise, recommendedFriendsPromise])
+             .then(([friends, availableFriend, recommendedFriends]) => {
+                setFilteredData({
+                    friends,
+                    recommendedFriends,
+                    availableFriend
+                });
+             })
+             .catch(error => {
+                console.error('Error fetching data:', error);
+             });
         };
         fetchData();
     }, []);
 
-
-    //initialize filtered data after fetching
-    useEffect(() => {
-    setFilteredData({
-        friends,
-        recommendedFriends,
-        availableFriend
-    });
-}, [friends, recommendedFriends, availableFriend]);
 
 // friends
 const fetchFriends = async () => {
@@ -59,12 +63,12 @@ const fetchFriends = async () => {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
-        if(!response.ok) {
-            throw new Error(`failed to fetch friends: ${response.statusText}`);
-        }
+
         //update friends state
         const data = await response.json();
-        setFriends(data.filter(person => person.id !== userId));
+        const filteredFriends = data.filter(person => person.id !== userId);
+        setFriends(filteredFriends)
+        return filteredFriends;
     }catch (error) {
         console.error('Error fetching friends:', error);
     }
@@ -84,7 +88,9 @@ const fetchRecommendedFriends = async () => {
         }
         //update recommended friends state
         const data = await response.json();
-        setRecommendedFriends(data.filter(friend => friend.id !== userId));
+        const filteredRecommendedFriends = data.filter(friend => friend.id !== userId);
+        setRecommendedFriends(filteredRecommendedFriends)
+        return filteredRecommendedFriends;
     } catch (error) {
         console.error('Error fetching recommended friends:', error);
     }
@@ -107,7 +113,7 @@ const fetchAvailableFriend = async () => {
         const data = await response.json();
         const filteredAvailableFriend = data.filter(person => person.id !== parseInt(userId));
         setAvailableFriend(filteredAvailableFriend);
-        console.log('Available friend:', filteredAvailableFriend);
+        return filteredAvailableFriend;
     } catch (error) {
         console.error('Error fetching available people:', error.message);
     }
@@ -132,9 +138,15 @@ const handleAddFriend = async (friendId) => {
         }
 
         //After successfully adding friend, fetch updated data
-        await fetchFriends();
-        await fetchAvailableFriend();
-        await fetchRecommendedFriends();
+        const updatedFriends = await fetchFriends();
+        const updatedAvailableFriend = await fetchAvailableFriend();
+        const updatedRecommendedFriends = await fetchRecommendedFriends();
+
+        setFilteredData({
+            friends: updatedFriends,
+            recommendedFriends: updatedRecommendedFriends,
+            availableFriend: updatedAvailableFriend
+        });
     } catch (error) {
         console.error('Error adding friend:', error);
     }
@@ -158,9 +170,15 @@ const handleRemoveFriend = async (friendId) => {
             throw new Error(`Failed to remove friend: ${response.statusText}`);
         }
         //After successfully removing friend, fetch updated data
-        await fetchFriends();
-        await fetchAvailableFriend();
-        await fetchRecommendedFriends();
+        const updatedFriends = await fetchFriends();
+        const updatedAvailableFriend = await fetchAvailableFriend();
+        const updatedRecommendedFriends = await fetchRecommendedFriends();
+
+        setFilteredData({
+            friends: updatedFriends,
+            recommendedFriends: updatedRecommendedFriends,
+            availableFriend: updatedAvailableFriend
+        });
     } catch (error) {
         console.error('Error removing friend:', error)
     }
@@ -224,7 +242,7 @@ return (
             <Grid item xs={12}>
                 <Typography variant="h5">Friends</Typography>
                 <List>
-                    {filteredData.friends.map((person) => (
+                    {filteredData.friends?.map((person) => (
                         <ListItem key={person.id}>
                             <ListItemText primary={person.name} secondary={`${person.interest}, ${person.school}, ${person.major}`} />
                             <ListItemSecondaryAction>
@@ -240,7 +258,7 @@ return (
             <Grid item xs={12}>
                 <Typography variant="h6">Recommended Friends</Typography>
                 <List>
-                    {filteredData.recommendedFriends.map((friend) => (
+                    {filteredData.recommendedFriends?.map((friend) => (
                         <ListItem key={friend.id}>
                             <ListItemText primary={friend.name || 'Name not available'} secondary={`${friend.interest || 'Interest not found'}, ${friend.school || 'School not found'}, ${friend.major || 'Major not found'}`} />
                             <ListItemSecondaryAction>
@@ -259,7 +277,7 @@ return (
             <Grid item xs={12}>
                 <Typography variant="h6">Avaialble People</Typography>
                 <List>
-                    {filteredData.availableFriend.map((person) => (
+                    {filteredData.availableFriend?.map((person) => (
                         <ListItem key={person.id}>
                             <ListItemText primary={person.name} secondary={`${person.interest}, ${person.school}, ${person.major}`} />
                             <ListItemSecondaryAction>

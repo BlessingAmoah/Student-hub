@@ -7,7 +7,6 @@ const { Post, Like, Comment} = require('../models');
 const { Op } = require('sequelize');
 const stringSimilarity = require('string-similarity')
 
-
 // Add a friend
 router.post('/add', verifyToken, async (req, res) => {
     try {
@@ -43,7 +42,6 @@ router.post('/add', verifyToken, async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
-
 
 // Delete a friend
 router.delete('/remove', verifyToken, async (req, res) => {
@@ -97,8 +95,6 @@ router.get('/:userId', verifyToken, async (req, res) => {
     }
 });
 
-
-
 // friend recommendation
 router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
     try{
@@ -113,9 +109,9 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
                 { model: Comment, include: [User] }
             ],
         });
-        // extract the user ids of the current user's likes and comments
-        const currentUserLikes = posts.flatMap( post => post.Likes.map(like => like.User.id));
-        const currentUserComments = posts.flatMap(post => post.Comments.map(comment => comment.User.id));
+        // extract current user's likes and comments
+        const currentUserLikes = posts.flatMap( post => post.Likes.filter(like => like.userId === parseInt(userId)).map(like => post.id));
+        const currentUserComments = posts.flatMap(post => post.Comments.filter(comment => comment.userId === parseInt(userId)).map(comment => post.id));
 
         //fetch user profile to get interests, school, and major
         const currentUser = await User.findByPk(userId);
@@ -129,13 +125,11 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
             where: {
                 id: {
                     // exclude the current user and friends
-                    [Op.notIn]: friendIds.concat(userId)
+                    [Op.notIn]: friendIds.concat(parseInt(userId))
                 },
                 [Op.or]: [
                     { id: { [Op.in]: currentUserLikes }},
-                    { id: { [Op.in]: currentUserComments}}
-                ],
-                [Op.or]: [
+                    { id: { [Op.in]: currentUserComments}},
                     { interest: { [Op.like]: `%${currentUser.interest}%` } },
                     { major: { [Op.like]: `%${ currentUser.major}%`}},
                     { school: { [Op.like]: `%${ currentUser.school}%`}}
@@ -154,16 +148,8 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
 
             //comment similarity
             const userComment = posts.flatMap(post => post.Comments.filter(comment => comment.userId === user.id).map(comment => post.id));
-            const commonComments = currentUserComments.filter(comment => userComment.icludes(comment));
+            const commonComments = currentUserComments.filter(comment => userComment.includes(comment));
             const commentScore = commonComments.length / (currentUserComments.length + userComment.length - commonComments.length) || 0;
-
-            // Post similarity
-            const currentUserPosts = posts.filter(post => post.userId === userId).map(post => post.content);
-            const userPost = posts.filter(post => post.userId === user.id).map(post => post.content);
-            const postScore = userPost.reduce((acc, post) => {
-                const bestMatch = stringSimilarity.findBestMatch(post, currentUserPosts).bestMatch.rating;
-                return acc + bestMatch;
-            }, 0) / (userPost.length || 1);
 
             // interest similarity
             const interestScore = stringSimilarity.compareTwoStrings(currentUser.interest, user.interest);
@@ -176,13 +162,13 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
 
             // total scores
             return(
-                0.1 * likeScore +
-                0.1 * commentScore +
-                0.2 * postScore +
+                0.3 * likeScore +
+                0.3 * commentScore +
                 0.2 * interestScore +
-                0.2 * schoolScore +
-                0.2 * majorScore
+                0.1 * schoolScore +
+                0.1 * majorScore
             );
+
         };
 
         // sort potential friends based on the similarity scores
@@ -190,7 +176,6 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
             ...user.toJSON(),
             similarity_Score: similarityScore(user)
         })).sort((a, b) => b.similarity_Score - a.similarity_Score);
-        console.log(sortPotentialFriend)
 
         //format the recommended friends data
         const formatRecommendation = sortPotentialFriend.map(user => ({
@@ -201,7 +186,7 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
             major: user.major,
             similarity_Score: user.similarity_Score
         }));
-        console.log(formatRecommendation)
+
 
         res.status(200).json(formatRecommendation);
     } catch(error) {

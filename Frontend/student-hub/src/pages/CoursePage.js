@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Typography, Container, Button, TextField, Card, CardContent, CardActions, IconButton, Paper, InputBase, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Grid, Typography, Container, Button, TextField, Card, CardContent, CardActions, IconButton, Paper, InputBase, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
-import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+//import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { styled } from '@mui/system';
 
 // search styling
@@ -36,7 +36,27 @@ function CoursePage() {
     const [currentComments, setCurrentComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [currentPostId, setCurrentPostId] = useState(null);
+    const [media, setMedia] = useState(null);
+    const [selectedEmoji, setSelectedEmoji] = useState({});
+    const [emojis, setEmojis] = useState([])
 
+// emoji
+    useEffect(() => {
+        const fetchEmojis = async () => {
+            try{
+                const response = await fetch('http://localhost:8080/emoji');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch emojis');
+                }
+                const emojistData = await response.json();
+                setEmojis(emojistData);
+            } catch (error) {
+                console.error('Error fetching emojis:', error);
+            }
+        };
+        fetchEmojis();
+    }, []);
+//fetch data
     useEffect(() => {
         const fetchData = async () => {
 
@@ -46,6 +66,13 @@ function CoursePage() {
                     navigate('/login');
                     return;
                 }
+
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('content', content);
+                formData.append('emojiId', selectedEmoji[currentPostId] || '');
+                if (media) formData.append('media', media);
+
                 const response = await fetch(`http://localhost:8080/post`, {
                     method: 'GET',
                     headers: {
@@ -66,7 +93,8 @@ function CoursePage() {
             }
         };
         fetchData();
-    }, [navigate]);
+    }, [navigate, title, content, selectedEmoji, media, currentPostId]);
+
 //post fetching
     const handlePostSubmit = async (event ) => {
         event.preventDefault();
@@ -76,13 +104,21 @@ function CoursePage() {
                 navigate('/login');
                 return;
             }
+
+            const formData = new FormData();
+                formData.append('title', title);
+                formData.append('content', content);
+                formData.append('emojiId', selectedEmoji[currentPostId] || '');
+                if (media) formData.append('media', media);
+
+
             const response = await fetch(`http://localhost:8080/post`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({ title, content }),
+                body: formData,
             });
             if (!response.ok) {
                 throw new Error('Failed to create post');
@@ -92,6 +128,8 @@ function CoursePage() {
             setFilteredData(prevFilteredData => [newPost, ...prevFilteredData]);
             setTitle('');
             setContent('');
+            setMedia(null);
+            setSelectedEmoji({ ...selectedEmoji, [newPost.id]: null })
             setOpenCreateModal(false);
         } catch (error) {
             setError(error.message);
@@ -99,7 +137,10 @@ function CoursePage() {
     };
 //comment fetching
     const handleCommentSubmit = async (event) => {
-        event.preventDefault();
+        if (event) {
+            event.preventDefault();
+          }
+
         try {
             const token = sessionStorage.getItem('token');
             if (!token) {
@@ -130,30 +171,31 @@ function CoursePage() {
         }
     };
 //like button
-    const handleLike = async (postId) => {
-        try {
-            const token = sessionStorage.getItem('token');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
-            const response = await fetch(`http://localhost:8080/post/${postId}/like`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-            if (!response.ok) {
-                throw new Error('Failed to like post');
-            }
-            const newLike = await response.json();
-            setData(data.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
-            setFilteredData(filteredData.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
-        } catch (error) {
-            setError(error.message);
+const handleLike = async (postId) => {
+    try {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
         }
-    };
+        const response = await fetch(`http://localhost:8080/post/${postId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ emojiId: selectedEmoji[postId] || '' }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to like post');
+        }
+        const newLike = await response.json();
+        setData(data.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
+        setFilteredData(filteredData.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
+    } catch (error) {
+        setError(error.message);
+    }
+};
 //search
     const handleSearch = (event) => {
         const searchTerm = event.target.value;
@@ -181,6 +223,11 @@ function CoursePage() {
 
     const handleCloseCommentsModal = () => {
         setOpenCommentsModal(false);
+    };
+
+    // file change
+    const handleFileChange = (event) => {
+        setMedia(event.target.files[0])
     };
 
     if (loading) {
@@ -240,16 +287,44 @@ function CoursePage() {
                         <Card>
                         <CardContent>
                             <Typography variant="h5">{post.title}</Typography>
+                            {post.mediaPath && (
+                            <>
+                                {/\.(mp4|mov|avi)$/i.test(post.mediaPath) ? (
+                                <video controls style={{ maxWidth: '100%' }}>
+                                    <source src={`http://localhost:8080/${post.mediaPath}`} type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                                ) : (
+                                <img
+                                    src={`http://localhost:8080/${post.mediaPath}`}
+                                    alt="Post media"
+                                    style={{ maxWidth: '100%' }}
+                                />
+                                )}
+                            </>
+                            )}
                             <Typography>{post.content}</Typography>
                             {post.User && (
-                                <Typography>By: {post.User.name}</Typography>
+                                <Typography>By: {post.User?.name}</Typography>
                             )}
-                            <Typography>{post.Comments.length} Comments</Typography>
-                            <Typography>{post.Likes.length} Likes</Typography>
+                            <Typography>{post.Comments?.length} Comments</Typography>
+                            <Typography>{post.Likes?.length} Likes</Typography>
                             </CardContent>
                             <CardActions>
-                                <IconButton onClick={() => handleLike(post.id)}>
-                                    <ThumbUpIcon />
+                            <IconButton onClick={() => handleLike(post.id)}>
+                                    <Select
+                                        value={selectedEmoji[post.id] || ''}
+                                        onChange={(e) => setSelectedEmoji({ ...selectedEmoji, [post.id]: e.target.value })}
+                                        displayEmpty
+                                        inputProps={{ 'aria-label': 'Select Emoji' }}
+                                    >
+                                         <MenuItem value=""><span role="img" aria-label="default emoji">👍🏻</span></MenuItem>
+                                        {emojis.map((emoji, index) => (
+                                            <MenuItem key={index} value={emoji.character}>
+                                                {emoji.character}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
                                 </IconButton>
                                 <Button onClick={() => handleOpenCommentsModal(post.id, post.Comments)}>
                                     View Comments
@@ -260,6 +335,7 @@ function CoursePage() {
                 ))}
             </Grid>
             <Dialog open={openCreateModal} onClose={handleCloseCreateModal}>
+                <form onSubmit={handlePostSubmit}>
                 <DialogTitle>Create a New Post</DialogTitle>
                 <DialogContent>
                     <TextField
@@ -283,6 +359,7 @@ function CoursePage() {
                         value={content}
                         onChange={e => setContent(e.target.value)}
                     />
+                    <input type="file" onChange={handleFileChange} />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseCreateModal} color="primary">
@@ -292,38 +369,40 @@ function CoursePage() {
                         Create
                     </Button>
                 </DialogActions>
+                </form>
             </Dialog>
             <Dialog open={openCommentsModal} onClose={handleCloseCommentsModal}>
-    <DialogTitle>Comments</DialogTitle>
-    <DialogContent>
-        {currentComments.map(comment => (
-            <Typography key={comment.id} variant="body2" gutterBottom>
-                {comment.content} - {comment.User.name}
-            </Typography>
-        ))}
-        <TextField
-            margin="dense"
-            id="newComment"
-            label="Add a comment"
-            type="text"
-            fullWidth
-            value={newComment}
-            onChange={e => setNewComment(e.target.value)}
-            onKeyDown={e => {
-                if (e.key === 'Enter') {
-                    handleCommentSubmit();
-                }
-            }}
-        />
+            <DialogTitle>Comments</DialogTitle>
+                <DialogContent>
+                    {currentComments.map(comment => (
+                        <div key={comment.id}>
+                            <Typography>{comment.content}</Typography>
+                            <Typography>By: {comment.User?.name}</Typography>
+                            <Typography>Date: {new Date(comment.createdAt).toLocaleString()}</Typography>
+                            <br />
+                        </div>
+                    ))}
+                    <form onSubmit={handleCommentSubmit}>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            label="Add Comment"
+                            type="text"
+                            fullWidth
+                            value={newComment}
+                            onChange={(e) => setNewComment(e.target.value)}
+                            required
+                        />
+                        <DialogActions>
+                            <Button onClick={handleCloseCommentsModal} color="primary">
+                                Close
+                            </Button>
+                            <Button type="submit" color="primary">
+                                Comment
+                            </Button>
+                        </DialogActions>
+                    </form>
     </DialogContent>
-    <DialogActions>
-        <Button onClick={handleCommentSubmit} color="primary">
-            Add
-        </Button>
-        <Button onClick={handleCloseCommentsModal} color="primary">
-            Close
-        </Button>
-    </DialogActions>
 
 </Dialog>
 
