@@ -88,6 +88,7 @@ router.get('/:userId', verifyToken, async (req, res) => {
         res.status(500).json({ error: 'Internal server error'})
     }
 });
+
 // friend recommendation
 router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
     try{
