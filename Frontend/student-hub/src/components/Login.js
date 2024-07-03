@@ -36,7 +36,6 @@ function Login() {
                   //store token and userId in sessionstorgae
                 sessionStorage.setItem('token', data.token);
                 sessionStorage.setItem('userId', data.userId)
-                console.log('Stored token userId in sessionStorage', data.userId)
 
                 // Check if the userId exist in the database
                 const isValidUser = await checkUserId(data.userId);
