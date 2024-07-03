@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress'
 
-
-
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -18,7 +16,6 @@ function Login() {
         setError('');
         setLoading(true);
         try{
-
             const response = await fetch('http://localhost:8080/auth/login',{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -28,9 +25,7 @@ function Login() {
             // checks if the log-in details are correct
             // if correct navigate to the dashboard
             if (response.ok) {
-
                 const data = await response.json();
-
                 // check for userId in the data and not undefined
                 if (data.userId !== undefined){
                   //store token and userId in sessionstorgae
@@ -40,17 +35,14 @@ function Login() {
                 // Check if the userId exist in the database
                 const isValidUser = await checkUserId(data.userId);
                 if (isValidUser) {
-
                   navigate('/dashboard');
                 } else {
-
                   setError('Invalid user credentials.');
                 }
               } else {
                 console.error('userId is undefined in data:', data);
                 setError('Invalid server response. Please try again.');
               }
-
             } else {
               const { error } = await response.json();
               console.error('Login failed:', error);

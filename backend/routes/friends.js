@@ -11,12 +11,10 @@ const stringSimilarity = require('string-similarity')
 router.post('/add', verifyToken, async (req, res) => {
     try {
         const { userId, friendId } = req.body;
-
         // check if the userId and friendId are the same
         if (userId === friendId){
             return res.status(400).json({ error: "Sorry, you can't add yourself as a friend"});
         }
-
         //verify if the friendId exists in Users table
         const friendUser = await User.findByPk(friendId);
         if(!friendUser){
@@ -49,7 +47,6 @@ router.delete('/remove', verifyToken, async (req, res) => {
         const {
             userId, friendId
         } = req.body;
-
         //check if the friend already exist
         const friendExist = await Friend.findOne({
             where: { userId, friendId }
@@ -57,7 +54,6 @@ router.delete('/remove', verifyToken, async (req, res) => {
         if (!friendExist) {
             return res.status(404).json({ error: 'Friend not found'});
         }
-
         // delete friend from list
         await friendExist.destroy();
         res.status(200).json({ message: 'Friend removed successfully' });
@@ -78,7 +74,6 @@ router.get('/:userId', verifyToken, async (req, res) => {
             where: { userId },
             include: [{ model: User, as: 'FriendUser', attributes: ['id', 'name', 'major', 'school', 'interest']}]
         });
-
         // format the friend list
         const formatFriends = friends.map( user =>  ({
             id: user.FriendUser.id,
@@ -87,19 +82,16 @@ router.get('/:userId', verifyToken, async (req, res) => {
             major: user.FriendUser.major,
             interest: user.FriendUser.interest
         }));
-
         res.status(200).json(formatFriends);
     } catch (error){
         console.error('Error fetching friends:', error);
         res.status(500).json({ error: 'Internal server error'})
     }
 });
-
 // friend recommendation
 router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
     try{
         const userId = req.params.userId;
-
         // fetch all post with their likes and comments
         const posts = await Post.findAll({
             include: [
@@ -137,7 +129,6 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
             },
             attributes: ['id', 'name', 'interest', 'school', 'major']
         });
-
         // calculate similarity score for potential friend
         const similarityScore = (user) => {
 

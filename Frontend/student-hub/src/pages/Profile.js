@@ -177,7 +177,7 @@ function Profile() {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Bio: {profile.bio || 'No bio provided'}
+            Bio: {profile.bio}
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -187,42 +187,42 @@ function Profile() {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Phone number: {profile.phone || 'No phone number provided'}
+            Phone number: {profile.phone}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Address: {profile.address || 'No address provided'}
+            Address: {profile.address}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            City: {profile.city || 'No city provided'}
+            City: {profile.city}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            State: {profile.state || 'No state provided'}
+            State: {profile.state}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            School: {profile.school || 'No school provided'}
+            School: {profile.school}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Major: {profile.major || 'No major provided'}
+            Major: {profile.major}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Interest: {profile.interest || 'No interest provided'}
+            Interest: {profile.interest}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Mentorship status: {profile.mentorship || 'Mentorship status not specified'}
+            Mentorship status: {profile.mentorship}
           </Typography>
         </Grid>
         <Grid item xs={12}>

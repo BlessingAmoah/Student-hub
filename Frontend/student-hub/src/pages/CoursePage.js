@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Container, Button, TextField, Card, CardContent, CardActions, IconButton, Paper, InputBase, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
-//import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { styled } from '@mui/system';
 
 // search styling

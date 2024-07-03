@@ -4,6 +4,8 @@ import  Remove  from '@mui/icons-material/Remove'
 import  Add  from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
+import { toast, ToastContainer } from 'react-toastify';
+import getUserIDToken from '../components/utils';
 
 // search styling
 const SearchContainer = styled(Paper)({
@@ -54,12 +56,15 @@ const FriendsList = () => {
     }, []);
 
 
+
+    // API URL
+    const API_BACK_URL = 'http://localhost:8080';
+
 // friends
 const fetchFriends = async () => {
     try {
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/friends/${userId}`,{
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${API_BACK_URL}/friends/${userId}`,{
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
@@ -70,16 +75,19 @@ const fetchFriends = async () => {
         setFriends(filteredFriends)
         return filteredFriends;
     }catch (error) {
-        console.error('Error fetching friends:', error);
+         // Display UI/Error toast notification
+         toast.error(`Failed to fetch friends: ${error.message}`, {
+            position: "top-center"
+        })
     }
+
 };
 
 //recommended friends
 const fetchRecommendedFriends = async () => {
     try{
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/friends/recommendedFriends/${userId}`, {
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${API_BACK_URL}/friends/recommendedFriends/${userId}`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
@@ -99,9 +107,8 @@ const fetchRecommendedFriends = async () => {
 //Available friends
 const fetchAvailableFriend = async () => {
     try {
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch(`http://localhost:8080/friends/available/${userId}`, {
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${API_BACK_URL}/friends/available/${userId}`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
@@ -122,9 +129,8 @@ const fetchAvailableFriend = async () => {
 //add a friend
 const handleAddFriend = async (friendId) => {
     try{
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch('http://localhost:8080/friends/add', {
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${API_BACK_URL}/friends/add`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -155,9 +161,8 @@ const handleAddFriend = async (friendId) => {
 //remove a friend
 const handleRemoveFriend = async (friendId) => {
     try{
-        const userId = sessionStorage.getItem('userId');
-        const token = sessionStorage.getItem('token');
-        const response = await fetch('http://localhost:8080/friends/remove', {
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${API_BACK_URL}/friends/remove`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -224,6 +229,7 @@ const handleSearch = (event) => {
 return (
     <Container maxwidth="sm">
         <Grid container spacing={2} alignItems="center" justify="center" style={{ minHeight: '80vh'}}>
+        <ToastContainer />
             {/*Search bar */}
             <Grid item xs={12}>
                 <SearchContainer>

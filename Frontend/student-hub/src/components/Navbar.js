@@ -8,11 +8,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 
 function Navbar({ isLoggedIn, setIsLoggedIn}) {
     const navigate = useNavigate();
-
     const [anchorEl, setAnchorEl] = useState(null);
     const [settingsEl, setSettingsEl] = useState(null);
     const { darkMode, toggleDarkMode } = useTheme();
-
 
     //Handles logout navigation
     const handleLogout = () => {
@@ -31,7 +29,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
         setAnchorEl(null);
     };
 
-
     // handles the settings icon
     const handleSettingsClick = (event) => {
         setSettingsEl(event.currentTarget);
@@ -40,7 +37,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
     const handleSettingsClose = () => {
         setSettingsEl(null);
     };
-
 
     //rendering the app to undate.
     //anchorEl used to set the position of the menu.
