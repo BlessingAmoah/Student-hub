@@ -1,4 +1,3 @@
-import React from 'react';
 
  // util function to fetch userId & token
  const getUserIDToken = () => {

@@ -30,7 +30,7 @@ function MentorshipPage() {
     const fetchMentorships = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch('http://localhost:8080/auth/mentorship', {
+        const response = await fetch(`${process.env.REACT_APP_API}/auth/mentorship`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

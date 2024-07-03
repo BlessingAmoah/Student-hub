@@ -30,7 +30,7 @@ function Profile() {
           throw new Error('Token not found in sessionStorage');
         }
 // profile page fetch from the server
-        const response = await fetch('http://localhost:8080/profile', {
+        const response = await fetch(`${process.env.REACT_APP_API}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -57,7 +57,7 @@ function Profile() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8080/profile', {
+      const response = await fetch(`${process.env.REACT_APP_API}/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ function Profile() {
     formData.append('profilePicture', file);
 
     try {
-      const response = await fetch('http://localhost:8080/profile/profile', {
+      const response = await fetch(`${process.env.REACT_APP_API}/profile/profile`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
@@ -108,7 +108,7 @@ function Profile() {
         const data = await response.json();
         setProfile((prevProfile) => ({
           ...prevProfile,
-          profilePicture: `http://localhost:8080/${data.profilePicture}`,
+          profilePicture: `${process.env.REACT_APP_API}/${data.profilePicture}`,
         }));
       } else {
         const errorData = await response.json();

@@ -16,7 +16,7 @@ function Login() {
         setError('');
         setLoading(true);
         try{
-            const response = await fetch('http://localhost:8080/auth/login',{
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/login`,{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -58,7 +58,7 @@ function Login() {
           try {
 
 
-            const response = await fetch(`http://localhost:8080/auth/user/${userId}`, {
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/user/${userId}`, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${sessionStorage.getItem('token')}`,

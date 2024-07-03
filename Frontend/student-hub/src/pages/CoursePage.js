@@ -43,7 +43,7 @@ function CoursePage() {
     useEffect(() => {
         const fetchEmojis = async () => {
             try{
-                const response = await fetch('http://localhost:8080/emoji');
+                const response = await fetch(`${process.env.REACT_APP_API}/emoji`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch emojis');
                 }
@@ -72,7 +72,7 @@ function CoursePage() {
                 formData.append('emojiId', selectedEmoji[currentPostId] || '');
                 if (media) formData.append('media', media);
 
-                const response = await fetch(`http://localhost:8080/post`, {
+                const response = await fetch(`${process.env.REACT_APP_API}/post`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ function CoursePage() {
                 if (media) formData.append('media', media);
 
 
-            const response = await fetch(`http://localhost:8080/post`, {
+            const response = await fetch(`${process.env.REACT_APP_API}/post`, {
                 method: 'POST',
                 headers: {
 
@@ -146,7 +146,7 @@ function CoursePage() {
                 navigate('/login');
                 return;
             }
-            const response = await fetch(`http://localhost:8080/post/${currentPostId}/comment`, {
+            const response = await fetch(`${process.env.REACT_APP_API}/post/${currentPostId}/comment`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ const handleLike = async (postId) => {
             navigate('/login');
             return;
         }
-        const response = await fetch(`http://localhost:8080/post/${postId}/like`, {
+        const response = await fetch(`${process.env.REACT_APP_API}/post/${postId}/like`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

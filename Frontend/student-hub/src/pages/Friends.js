@@ -7,6 +7,7 @@ import { styled } from '@mui/system';
 import { toast, ToastContainer } from 'react-toastify';
 import getUserIDToken from '../components/utils';
 
+
 // search styling
 const SearchContainer = styled(Paper)({
     display: 'flex',
@@ -57,14 +58,12 @@ const FriendsList = () => {
 
 
 
-    // API URL
-    const API_BACK_URL = 'http://localhost:8080';
 
 // friends
 const fetchFriends = async () => {
     try {
         const { userId, token } = getUserIDToken();
-        const response = await fetch(`${API_BACK_URL}/friends/${userId}`,{
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/${userId}`,{
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
@@ -87,7 +86,7 @@ const fetchFriends = async () => {
 const fetchRecommendedFriends = async () => {
     try{
         const { userId, token } = getUserIDToken();
-        const response = await fetch(`${API_BACK_URL}/friends/recommendedFriends/${userId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/recommendedFriends/${userId}`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
@@ -108,7 +107,7 @@ const fetchRecommendedFriends = async () => {
 const fetchAvailableFriend = async () => {
     try {
         const { userId, token } = getUserIDToken();
-        const response = await fetch(`${API_BACK_URL}/friends/available/${userId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/available/${userId}`, {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
@@ -130,7 +129,7 @@ const fetchAvailableFriend = async () => {
 const handleAddFriend = async (friendId) => {
     try{
         const { userId, token } = getUserIDToken();
-        const response = await fetch(`${API_BACK_URL}/friends/add`, {
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/add`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -162,7 +161,7 @@ const handleAddFriend = async (friendId) => {
 const handleRemoveFriend = async (friendId) => {
     try{
         const { userId, token } = getUserIDToken();
-        const response = await fetch(`${API_BACK_URL}/friends/remove`, {
+        const response = await fetch(`${process.env.REACT_APP_API}/friends/remove`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
