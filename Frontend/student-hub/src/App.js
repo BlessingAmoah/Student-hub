@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import Footer from './components/Footer';
 import { Grid, Button, Container } from '@mui/material'
 import { BrowserRouter as Router, Route, Routes} from 'react-router-dom'
-
 import Navbar from './components/Navbar'
 import Login from './components/Login';
 import Signup from './components/Signup';

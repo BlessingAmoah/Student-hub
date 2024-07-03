@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Grid, Typography, Container, Button, TextField, Card, CardContent, CardActions, IconButton, Paper, InputBase, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
-//import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import { styled } from '@mui/system';
 
 // search styling
@@ -47,7 +46,7 @@ function CoursePage() {
 
                 const response = await fetch(`${process.env.REACT_APP_API}/emoji`);
 
-                const response = await fetch('http://localhost:8080/emoji');
+
                 if (!response.ok) {
                     throw new Error('Failed to fetch emojis');
                 }
@@ -79,7 +78,7 @@ function CoursePage() {
 
                 const response = await fetch(`${process.env.REACT_APP_API}/post`, {
 
-                const response = await fetch(`http://localhost:8080/post`, {
+
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -121,7 +120,6 @@ function CoursePage() {
 
             const response = await fetch(`${process.env.REACT_APP_API}/post`, {
 
-            const response = await fetch(`http://localhost:8080/post`, {
                 method: 'POST',
                 headers: {
 
@@ -190,8 +188,6 @@ const handleLike = async (postId) => {
 
         const response = await fetch(`${process.env.REACT_APP_API}/post/${postId}/like`, {
 
-        const response = await fetch(`http://localhost:8080/post/${postId}/like`, {
- 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
