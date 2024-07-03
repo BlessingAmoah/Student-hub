@@ -4,7 +4,6 @@ import  Remove  from '@mui/icons-material/Remove'
 import  Add  from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
-import { toast, ToastContainer } from 'react-toastify';
 import getUserIDToken from '../components/utils';
 
 
@@ -22,7 +21,7 @@ const SearchInput = styled(InputBase)({
     flex: 1,
 });
 
-const FriendsList = () => {
+const FriendsList = ({ setOpen, setError}) => {
     const [friends, setFriends] = useState([]);
     const [availableFriend, setAvailableFriend] = useState([]);
     const [recommendedFriends, setRecommendedFriends] = useState([]);
@@ -74,11 +73,10 @@ const fetchFriends = async () => {
         setFriends(filteredFriends)
         return filteredFriends;
     }catch (error) {
-         // Display UI/Error toast notification
-         toast.error(`Failed to fetch friends: ${error.message}`, {
-            position: "top-center"
-        })
-    }
+        console.error('Error fetching friends:', error);
+        setOpen(true);
+        setError(error.message);
+      }
 
 };
 
@@ -100,6 +98,8 @@ const fetchRecommendedFriends = async () => {
         return filteredRecommendedFriends;
     } catch (error) {
         console.error('Error fetching recommended friends:', error);
+        setOpen(true);
+        setError(error.message);
     }
 };
 
@@ -122,6 +122,8 @@ const fetchAvailableFriend = async () => {
         return filteredAvailableFriend;
     } catch (error) {
         console.error('Error fetching available people:', error.message);
+        setOpen(true);
+        setError(error.message);
     }
 };
 
@@ -154,6 +156,8 @@ const handleAddFriend = async (friendId) => {
         });
     } catch (error) {
         console.error('Error adding friend:', error);
+        setOpen(true);
+        setError(error.message);
     }
 };
 
@@ -185,6 +189,8 @@ const handleRemoveFriend = async (friendId) => {
         });
     } catch (error) {
         console.error('Error removing friend:', error)
+        setOpen(true);
+        setError(error.message);
     }
 };
 
@@ -228,7 +234,7 @@ const handleSearch = (event) => {
 return (
     <Container maxwidth="sm">
         <Grid container spacing={2} alignItems="center" justify="center" style={{ minHeight: '80vh'}}>
-        <ToastContainer />
+
             {/*Search bar */}
             <Grid item xs={12}>
                 <SearchContainer>

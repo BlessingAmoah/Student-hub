@@ -201,7 +201,7 @@ router.get('/available/:userId', verifyToken, async ( req, res) => {
 
         res.json(availableFriend);
     } catch (error) {
-        console.error('Error fetching availe friend:', error)
+        console.error('Error fetching available friend:', error)
         res.status(500).send('Server error')
     }
 });

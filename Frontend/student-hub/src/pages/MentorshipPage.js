@@ -20,11 +20,11 @@ const SearchContainer = styled(Paper)({
     padding: 10,
   });
 
-function MentorshipPage() {
+function MentorshipPage({ setOpen, setError, error }) {
   const [mentorships, setMentorships] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
 
   useEffect(() => {
     const fetchMentorships = async () => {
@@ -44,13 +44,15 @@ function MentorshipPage() {
         setMentorships(mentorshipData.mentorships);
         setLoading(false);
       } catch (error) {
-        setError('Failed to fetch mentorships');
+        console.error('Failed to fetch mentorships:', error);
+         setError(error.message);
+        setOpen(true);
         setLoading(false);
       }
     };
 
     fetchMentorships();
-  }, []);
+  }, [setOpen]);
 
   //search
   const handleSearch = (event) => {
