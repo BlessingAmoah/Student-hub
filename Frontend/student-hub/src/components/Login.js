@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress'
+
 
 
 function Login() {
@@ -15,7 +17,7 @@ function Login() {
         setError('');
 
         try{
-            const response = await fetch('http://localhost:8080/auth/login',{
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/login`,{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -25,7 +27,23 @@ function Login() {
             // if correct navigate to the dashboard
             if (response.ok) {
                 const data = await response.json();
+                // check for userId in the data and not undefined
+                if (data.userId !== undefined){
+                  //store token and userId in sessionstorgae
                 sessionStorage.setItem('token', data.token);
+
+                sessionStorage.setItem('userId', data.userId)
+
+                // Check if the userId exist in the database
+                const isValidUser = await checkUserId(data.userId);
+                if (isValidUser) {
+                  navigate('/dashboard');
+                } else {
+                  setError('Invalid user credentials.');
+                }
+              } else {
+                console.error('userId is undefined in data:', data);
+                setError('Invalid server response. Please try again.');
                 navigate('/dashboard');
               } else {
                 const { error } = await response.json();
@@ -35,7 +53,43 @@ function Login() {
                 console.error('Login failed:', error);
                 setError('Login failed. Please try again.');
               }
-            };
+            } else {
+              const { error } = await response.json();
+              console.error('Login failed:', error);
+              setError(error);
+            }
+          } catch (error) {
+            console.error('Login failed:', error);
+            setError('Login failed. Please try again.');
+          }
+        };
+        // check database for userId
+        const checkUserId = async (userId) => {
+          try {
+
+
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/user/${userId}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+              },
+            });
+
+            if (response.ok) {
+              await response.json();
+
+              return true;
+            } else {
+              console.error(`Error fetching user ${userId}:`, response.status);
+              return false;
+            }
+
+          } catch (error) {
+            console.error('Error checking user:', error);
+            return false;
+          }
+        };
 
             // rendering state
             return (

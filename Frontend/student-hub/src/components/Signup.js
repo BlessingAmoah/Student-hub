@@ -64,7 +64,7 @@ function Signup() {
  // handle verification code resend
  const handleVerificationCodeResend = async () => {
   try {
-    const response = await fetch('http://localhost:8080/auth/resendverification', {
+    const response = await fetch(`${process.env.REACT_APP_API}/auth/resendverification`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

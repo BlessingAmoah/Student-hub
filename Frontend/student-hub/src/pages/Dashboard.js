@@ -44,12 +44,12 @@ function Dashboard() {
             try {
 
                 const token = sessionStorage.getItem('token');
-                console.log('Token:', token);
+
                 if (!token) {
                     navigate('/login');
                     return;
                 }
-                const response = await fetch(`http://localhost:8080/post`, {
+                const response = await fetch(`${process.env.REACT_APP_API}/post`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ function Dashboard() {
                 navigate('/login');
                 return;
             }
-            const response = await fetch(`http://localhost:8080/post`, {
+            const response = await fetch(`${process.env.REACT_APP_API}/post`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ function Dashboard() {
             navigate('/login');
             return;
         }
-        const response = await fetch(`http://localhost:8080/post/${currentPostId}/comment`, {
+        const response = await fetch(`${process.env.REACT_APP_API}/post/${currentPostId}/comment`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ function Dashboard() {
                 navigate('/login');
                 return;
             }
-            const response = await fetch(`http://localhost:8080/post/${postId}/like`, {
+            const response = await fetch(`${process.env.REACT_APP_API}/post/${postId}/like`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
