@@ -3,11 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button, Modal } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 
-function Signup() {
+function Signup( { setError }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [error, setError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,24 +20,21 @@ function Signup() {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8080/auth/signup`, {
+      const response = await fetch(`${process.env.REACT_APP_API}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name }),
       });
-
+      setLoading(false);
       if (response.ok) {
         setOpen(true);
-        setLoading(false);
       } else {
         const { error } = await response.json();
         setError(error);
-        setLoading(false);
       }
     } catch (error) {
-      console.error('Signup failed:', error);
+      setOpen(true);
       setError('Signup failed. Please try again.');
-      setLoading(false);
     }
   };
 // handles the verification of the email to make sure the user is not a robot
@@ -47,7 +43,7 @@ function Signup() {
     setError('');
     setVerificationLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/auth/verify`, {
+      const response = await fetch(`${process.env.REACT_APP_API}/auth/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,8 +59,8 @@ function Signup() {
         setError(error);
       }
     } catch (error) {
-      console.error('Email verification error:', error);
-      setError('Failed to verify email.');
+     setOpen(true);
+    setError('Failed to verify email.');
     }finally {
       setVerificationLoading(false);
     }
@@ -73,7 +69,7 @@ function Signup() {
  // handle verification code resend
  const handleVerificationCodeResend = async () => {
   try {
-    const response = await fetch('http://localhost:8080/auth/resendverification', {
+    const response = await fetch(`${process.env.REACT_APP_API}/auth/resendverification`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -85,16 +81,14 @@ function Signup() {
       setVerificationCode('Verification code has been resent successfully');
     } else {
       const errorData = await response.json();
-      setError(errorData.error || 'Failed to resend the verification code. Check your email or network');
+      setError(errorData.error );
+      setOpen(true);
     }
   } catch (error) {
-    console.error('Resend verification code error:', error);
+    setOpen(true);
     setError('Failed to resend verification code');
   }
 };
-
-
-
 
   const handleVerificationCodeChange = (e) => {
     setVerificationCode(e.target.value);
@@ -152,13 +146,6 @@ function Signup() {
             </Grid>
           </form>
         </Grid>
-        {error && (
-          <Grid item xs={12}>
-            <p style={{ color: 'red' }}>{error}</p>
-          </Grid>
-        )}
-
-
         <Modal
           open={open}
           onClose={handleClose}

@@ -43,7 +43,6 @@ const sendVerificationEmail = async (email, verificationCode) => {
 
 // POST route for user signup
 router.post('/signup', async (req, res) => {
-  console.log('Received signup request');
   const { email, password, name } = req.body;
 
   if (!validateEmail(email)) {

@@ -42,7 +42,7 @@ function App() {
       <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} open={open} setOpen={setOpen} setError={setError} error={error} />} />
-      <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} open={open} setOpen={setOpen}  setError={setError} error={error} />} />
+      <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} open={open} setOpen={setOpen} setError={(error) => setError(error)} />} />
       <Route path="/dashboard" element={<Dashboard open={open} setOpen={setOpen}  setError={setError} error={error}/>} />
       <Route path="/profile" element={<Profile open={open} setOpen={setOpen}  setError={setError} error={error}/>} />
       <Route path="/courses" element={<CoursePage open={open} setOpen={setOpen}  setError={setError} error={error} />} />

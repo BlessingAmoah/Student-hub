@@ -29,7 +29,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
         setAnchorEl(null);
     };
 
-
     // handles the settings icon
     const handleSettingsClick = (event) => {
         setSettingsEl(event.currentTarget);
@@ -38,7 +37,6 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
     const handleSettingsClose = () => {
         setSettingsEl(null);
     };
-
 
     //rendering the app to undate.
     //anchorEl used to set the position of the menu.
