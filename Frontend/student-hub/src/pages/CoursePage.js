@@ -21,7 +21,7 @@ const SearchIconButton = styled(IconButton)({
     padding: 10,
 });
 
-function CoursePage() {
+function CoursePage({ setOpen }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -43,21 +43,21 @@ function CoursePage() {
     useEffect(() => {
         const fetchEmojis = async () => {
             try{
-
                 const response = await fetch(`${process.env.REACT_APP_API}/emoji`);
-
-
                 if (!response.ok) {
-                    throw new Error('Failed to fetch emojis');
+                    setError(error.message)
+                    setOpen(true)
+
                 }
                 const emojistData = await response.json();
                 setEmojis(emojistData);
             } catch (error) {
-                console.error('Error fetching emojis:', error);
+                setError(error.message)
+                setOpen(true)
             }
         };
         fetchEmojis();
-    }, []);
+    }, [setOpen, error.message]);
 //fetch data
     useEffect(() => {
         const fetchData = async () => {
@@ -75,7 +75,6 @@ function CoursePage() {
                 formData.append('emojiId', selectedEmoji[currentPostId] || '');
                 if (media) formData.append('media', media);
 
-
                 const response = await fetch(`${process.env.REACT_APP_API}/post`, {
 
 
@@ -85,16 +84,13 @@ function CoursePage() {
                         'Authorization': `Bearer ${token}`,
                     },
                 });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch posts');
-                }
+                setLoading(false);
                 const result = await response.json();
                 setData(result);
                 setFilteredData(result);
-                setLoading(false);
             } catch (error) {
-                setError(error.message);
-                setLoading(false);
+                setError('Failed to fetch data:', error);
+
             }
         };
         fetchData();
@@ -116,8 +112,6 @@ function CoursePage() {
                 formData.append('emojiId', selectedEmoji[currentPostId] || '');
                 if (media) formData.append('media', media);
 
-
-
             const response = await fetch(`${process.env.REACT_APP_API}/post`, {
 
                 method: 'POST',
@@ -128,7 +122,9 @@ function CoursePage() {
                 body: formData,
             });
             if (!response.ok) {
-                throw new Error('Failed to create post');
+                setError('Failed to submit:', error);
+                 setOpen(true)
+
             }
             const newPost = await response.json();
             setData(prevData => [newPost, ...prevData]);
@@ -163,7 +159,8 @@ function CoursePage() {
                 body: JSON.stringify({ content: newComment }),
             });
             if (!response.ok) {
-                throw new Error('Failed to add comment');
+                setError('Failed to submit comment:', error);
+                setOpen(true)
             }
             const newCommentResponse = await response.json();
             // Update currentComments state
@@ -175,6 +172,7 @@ function CoursePage() {
             setNewComment('');
         } catch (error) {
             setError(error.message);
+            setOpen(true)
         }
     };
 //like button
@@ -196,13 +194,15 @@ const handleLike = async (postId) => {
             body: JSON.stringify({ emojiId: selectedEmoji[postId] || '' }),
         });
         if (!response.ok) {
-            throw new Error('Failed to like post');
+            setError('Failed to like:', error);
+           setOpen(true)
         }
         const newLike = await response.json();
         setData(data.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
         setFilteredData(filteredData.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
     } catch (error) {
         setError(error.message);
+        setOpen(true)
     }
 };
 //search
