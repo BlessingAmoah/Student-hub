@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button, Modal } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 
-function Signup( { setError }) {
+function Signup( { setError, setOpen }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [open, setOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [verificationLoading, setVerificationLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,10 +27,12 @@ function Signup( { setError }) {
       });
       setLoading(false);
       if (response.ok) {
-        setOpen(true);
+        setModalOpen(true);
       } else {
         const { error } = await response.json();
         setError(error);
+        setOpen(true);
+
       }
     } catch (error) {
       setOpen(true);
@@ -95,7 +97,7 @@ function Signup( { setError }) {
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setModalOpen(false);
   };
 
   return (
@@ -147,7 +149,7 @@ function Signup( { setError }) {
           </form>
         </Grid>
         <Modal
-          open={open}
+          open={modalOpen}
           onClose={handleClose}
           style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
         >
