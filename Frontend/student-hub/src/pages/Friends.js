@@ -73,7 +73,6 @@ const fetchFriends = async () => {
         setFriends(filteredFriends)
         return filteredFriends;
     }catch (error) {
-        console.error('Error fetching friends:', error);
         setOpen(true);
         setError(error.message);
       }
@@ -97,7 +96,7 @@ const fetchRecommendedFriends = async () => {
         setRecommendedFriends(filteredRecommendedFriends)
         return filteredRecommendedFriends;
     } catch (error) {
-        console.error('Error fetching recommended friends:', error);
+
         setOpen(true);
         setError(error.message);
     }
@@ -121,7 +120,7 @@ const fetchAvailableFriend = async () => {
         setAvailableFriend(filteredAvailableFriend);
         return filteredAvailableFriend;
     } catch (error) {
-        console.error('Error fetching available people:', error.message);
+
         setOpen(true);
         setError(error.message);
     }
@@ -155,7 +154,6 @@ const handleAddFriend = async (friendId) => {
             availableFriend: updatedAvailableFriend
         });
     } catch (error) {
-        console.error('Error adding friend:', error);
         setOpen(true);
         setError(error.message);
     }

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import Footer from './components/Footer';
-import { Grid, Button, Container } from '@mui/material'
-import { BrowserRouter as Router, Route, Routes} from 'react-router-dom'
+import { Grid, Button, Container } from '@mui/material';
+import { BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import { ThemeProvider } from './components/ThemeContext';
 import Navbar from './components/Navbar'
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -29,7 +30,7 @@ function App() {
   }, []);
 
   return (
-
+    <ThemeProvider>
     <Router>
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <Container maxWidth="sm">
@@ -40,11 +41,11 @@ function App() {
             </Snackbar>
       <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-      <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/courses" element={<CoursePage />} />
+      <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} open={open} setOpen={setOpen} setError={setError} error={error} />} />
+      <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} open={open} setOpen={setOpen}  setError={setError} error={error} />} />
+      <Route path="/dashboard" element={<Dashboard open={open} setOpen={setOpen}  setError={setError} error={error}/>} />
+      <Route path="/profile" element={<Profile open={open} setOpen={setOpen}  setError={setError} error={error}/>} />
+      <Route path="/courses" element={<CoursePage open={open} setOpen={setOpen}  setError={setError} error={error} />} />
       <Route path="/mentorship" element={<MentorshipPage  open={open} setOpen={setOpen}  setError={setError} error={error} />} />
       <Route path="/feedback" element={<Feedback />} />
       <Route path="/contact" element={<Contact />} />
@@ -56,7 +57,7 @@ function App() {
       </Container>
       <Footer />
     </Router>
-
+    </ThemeProvider>
   );
 }
 

@@ -33,14 +33,6 @@ const upload = multer({
 
 
 // Create a new post
-router.post('/', verifyToken, async (req, res) => {
-  const { title, content } = req.body;
-  try {
-    const post = await Post.create({ title, content, userId: req.userId });
-
-
-
-// Create a new post
 router.post('/', verifyToken, upload.single('media'), async (req, res) => {
   const { title, content, emojiId } = req.body;
   const mediaPath = req.file ? req.file.path : null;
@@ -71,10 +63,7 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
 // Like a post
 router.post('/:postId/like', verifyToken, async (req, res) => {
   const { postId } = req.params;
-
-  try {
   const {emojiId } = req.body;
-
   try {
 
     const existingLike = await Like.findOne({ where: { userId: req.userId, postId } });

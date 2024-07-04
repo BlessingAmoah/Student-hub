@@ -5,10 +5,9 @@ import CircularProgress from '@mui/material/CircularProgress'
 
 
 
-function Login() {
+function Login({ setOpen, setError }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -18,7 +17,7 @@ function Login() {
         setError('');
         setLoading(true);
         try{
-            const response = await fetch('http://localhost:8080/auth/login',{
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/login`,{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -28,21 +27,59 @@ function Login() {
             // if correct navigate to the dashboard
             if (response.ok) {
                 const data = await response.json();
+                // check for userId in the data and not undefined
+                if (data.userId !== undefined){
+
+                  //store token and userId in sessionstorgae
                 sessionStorage.setItem('token', data.token);
-                navigate('/dashboard');
-                setLoading(false);
+                sessionStorage.setItem('userId', data.userId)
+                // Check if the userId exist in the database
+                const isValidUser = await checkUserId(data.userId);
+
+                if (isValidUser) {
+                  navigate('/dashboard');
+                  setLoading(false);
+                } else {
+                  setError('Invalid user credentials.');
+                  setOpen(true);
+                }
+              } else {
+                setError('Invalid server response. Please try again.');
+                setOpen(true);
+              }
               } else {
                 const { error } = await response.json();
                 setError(error);
-                setLoading(false);
+                setOpen(true);
               }
             } catch (error) {
-                console.error('Login failed:', error);
-                setError('Login failed. Please try again.');
-                setLoading(false);
+                setOpen(true);
+                setError(error.message);
               }
-            };
+        };
+        // check database for userId
+        const checkUserId = async (userId) => {
+          try {
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/user/${userId}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+              },
+            });
 
+            if (response.ok) {
+              await response.json();
+              return true;
+            } else {
+              setError('UserId not a match!');
+              setOpen(true);
+            }
+          } catch (error) {
+            setOpen(true);
+            setError('Error checking user.');
+          }
+        };
             // rendering state
             return (
                 <Container maxWidth="sm">
@@ -81,11 +118,6 @@ function Login() {
                         </Grid>
                       </form>
                     </Grid>
-                    {error && (
-                      <Grid item xs={12}>
-                        <p style={{ color: 'red' }}>{error}</p>
-                      </Grid>
-                    )}
                   </Grid>
                   {loading && <CircularProgress color="inherit" />}
                 </Container>
