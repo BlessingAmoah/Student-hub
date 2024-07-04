@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress'
 
-
-
 function Login({ setOpen, setError }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -35,7 +33,6 @@ function Login({ setOpen, setError }) {
                 sessionStorage.setItem('userId', data.userId)
                 // Check if the userId exist in the database
                 const isValidUser = await checkUserId(data.userId);
-
                 if (isValidUser) {
                   navigate('/dashboard');
                   setLoading(false);
