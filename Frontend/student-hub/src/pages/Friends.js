@@ -21,7 +21,7 @@ const SearchInput = styled(InputBase)({
     flex: 1,
 });
 
-const FriendsList = ({ setOpen, setError}) => {
+const FriendsList = ({ setError }) => {
     const [friends, setFriends] = useState([]);
     const [availableFriend, setAvailableFriend] = useState([]);
     const [recommendedFriends, setRecommendedFriends] = useState([]);
@@ -50,11 +50,10 @@ const FriendsList = ({ setOpen, setError}) => {
              })
              .catch(error => {
                 setError('Error fetching data:', error);
-                setOpen(true)
              });
         };
         fetchData();
-    }, []);
+    });
 
 
 
@@ -74,7 +73,6 @@ const fetchFriends = async () => {
         setFriends(filteredFriends)
         return filteredFriends;
     }catch (error) {
-        setOpen(true);
         setError(error.message);
       }
 
@@ -91,7 +89,6 @@ const fetchRecommendedFriends = async () => {
             if (!response.ok) {
             const errorData = await response.json();
                 setError(errorData.message );
-                setOpen(true);
                 return;
 
             }
@@ -101,8 +98,6 @@ const fetchRecommendedFriends = async () => {
         setRecommendedFriends(filteredRecommendedFriends)
         return filteredRecommendedFriends;
     } catch (error) {
-
-        setOpen(true);
         setError(error.message);
     }
 };
@@ -118,7 +113,6 @@ const fetchAvailableFriend = async () => {
         if (!response.ok) {
             const errorData = await response.json();
                 setError(errorData.message );
-                setOpen(true);
                 return;
         }
         //filter out the current user from the available friends
@@ -128,8 +122,6 @@ const fetchAvailableFriend = async () => {
         setAvailableFriend(filteredAvailableFriend);
         return filteredAvailableFriend;
     } catch (error) {
-
-        setOpen(true);
         setError(error.message);
     }
 };
@@ -150,7 +142,6 @@ const handleAddFriend = async (friendId) => {
         if (!response.ok) {
             const error= await response.json();
                 setError(error.message );
-                setOpen(true);
                 return;
         }
 
@@ -165,7 +156,6 @@ const handleAddFriend = async (friendId) => {
             availableFriend: updatedAvailableFriend
         });
     } catch (error) {
-        setOpen(true);
         setError(error.message);
     }
 };
@@ -186,7 +176,6 @@ const handleRemoveFriend = async (friendId) => {
         if (!response.ok) {
             const error= await response.json();
                 setError(error.message );
-                setOpen(true);
                 return;
         }
         //After successfully removing friend, fetch updated data
@@ -200,8 +189,6 @@ const handleRemoveFriend = async (friendId) => {
             availableFriend: updatedAvailableFriend
         });
     } catch (error) {
-        console.error('Error removing friend:', error)
-        setOpen(true);
         setError(error.message);
     }
 };

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress'
 
-function Login({ setOpen, setError }) {
+function Login({ setError }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -26,13 +26,11 @@ function Login({ setOpen, setError }) {
             if (!response.ok) {
               const { error } = await response.json();
               setError(error);
-              setOpen(true);
               return;
             }
             const data = await response.json();
             if (data.userId === undefined) {
               setError('Invalid server response. Please try again.');
-              setOpen(true);
               return;
             }
             sessionStorage.setItem('token', data.token);
@@ -41,7 +39,6 @@ function Login({ setOpen, setError }) {
             const isValidUser = await checkUserId(data.userId);
             if (!isValidUser) {
               setError('Invalid user credentials.');
-              setOpen(true);
               return;
             }
             navigate('/dashboard');
@@ -49,7 +46,6 @@ function Login({ setOpen, setError }) {
         }
         catch (error) {
           setError('An unexpected error occurred. Please try again.');
-          setOpen(true);
         }
         };
         // check database for userId
@@ -68,10 +64,8 @@ function Login({ setOpen, setError }) {
               return true;
             } else {
               setError('UserId not a match!');
-              setOpen(true);
             }
           } catch (error) {
-            setOpen(true);
             setError('Error checking user.');
           }
         };

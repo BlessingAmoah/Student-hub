@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Grid, Typography, Button, Modal, TextField, Input } from '@mui/material';
 
-function Profile({ setOpen, setError, error }) {
+function Profile({ setError, error }) {
   const [profile, setProfile] = useState({
     name: '',
     profilePicture: '',
@@ -26,7 +26,6 @@ function Profile({ setOpen, setError, error }) {
         const token = sessionStorage.getItem('token');
         if (!token) {
          setError('Token not found in sessionStorage');
-         setOpen(true)
         }
 // profile page fetch from the server
         const response = await fetch(`${process.env.REACT_APP_API}/profile`, {
@@ -41,16 +40,14 @@ function Profile({ setOpen, setError, error }) {
         } else {
           const error = await response.json();
           setError('Failed to fetch profile.', error);
-          setOpen(true)
         }
       } catch (error) {
         setError('Failed to fetch profile.');
-        setOpen(true)
       }
     };
 
     fetchProfile();
-  },[setOpen, setError]);
+  },[setError]);
 //request to submit profile page update
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,11 +69,9 @@ function Profile({ setOpen, setError, error }) {
         handleClose();
       } else {
         setError('Failed to update profile.');
-        setOpen(true)
       }
     } catch (error) {
       setError('Failed to update profile.');
-      setOpen(true)
     }
   };
 //profile change
@@ -114,11 +109,9 @@ function Profile({ setOpen, setError, error }) {
       } else {
         const error = await response.json();
         setError('Failed to upload profile picture.', error);
-        setOpen(true)
       }
     } catch (error) {
       setError('Failed to upload profile picture.');
-      setOpen(true)
     }
   };
 

@@ -20,7 +20,7 @@ const SearchContainer = styled(Paper)({
     padding: 10,
   });
 
-function MentorshipPage({ setOpen, setError, error }) {
+function MentorshipPage({ setError, error }) {
   const [mentorships, setMentorships] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,12 +45,11 @@ function MentorshipPage({ setOpen, setError, error }) {
         setIsLoading(false);
       } catch (error) {
         setError('Failed to fetch mentorships');
-        setOpen(true);
       }
     };
 
     fetchMentorships();
-  }, [setOpen, setError]);
+  }, [setError]);
 
   //search
   const handleSearch = (event) => {

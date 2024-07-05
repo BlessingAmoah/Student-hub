@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button, Modal } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 
-function Signup( { setError, setOpen }) {
+function Signup( { setError }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -31,11 +31,9 @@ function Signup( { setError, setOpen }) {
       } else {
         const { error } = await response.json();
         setError(error);
-        setOpen(true);
 
       }
     } catch (error) {
-      setOpen(true);
       setError('Signup failed. Please try again.');
     }
   };
@@ -54,14 +52,12 @@ function Signup( { setError, setOpen }) {
       });
 
       if (response.ok) {
-        setOpen(false);
         navigate('/dashboard');
       } else {
         const { error } = await response.json();
         setError(error);
       }
     } catch (error) {
-     setOpen(true);
     setError('Failed to verify email.');
     }finally {
       setIsVerificationLoading(false);
@@ -84,10 +80,8 @@ function Signup( { setError, setOpen }) {
     } else {
       const errorData = await response.json();
       setError(errorData.error );
-      setOpen(true);
     }
   } catch (error) {
-    setOpen(true);
     setError('Failed to resend verification code');
   }
 };

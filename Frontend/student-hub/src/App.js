@@ -20,7 +20,6 @@ import { Snackbar, Alert } from '@mui/material';
 function App() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [open, setOpen] = useState(false);
   const [error, setError] = useState('');
 // retrieves a value from sessionStorage
 // !! converts the token value to a boolean
@@ -36,21 +35,21 @@ function App() {
       <Container maxWidth="sm">
       <Grid container spacing={2} alignItems="center" justify="center" style={{ minHeight: '100vh' }}>
             <Grid item xs={12}>
-            <Snackbar open={open} autoHideDuration={6000} onClose={() => setOpen(false)}>
+            <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
               <Alert severity="error">{error}</Alert>
             </Snackbar>
       <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} open={open} setOpen={setOpen} setError={setError} error={error} />} />
-      <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} open={open} setOpen={setOpen} setError={(error) => setError(error)} />} />
-      <Route path="/dashboard" element={<Dashboard open={open} setOpen={setOpen}  setError={setError} error={error}/>} />
-      <Route path="/profile" element={<Profile open={open} setOpen={setOpen}  setError={setError} error={error}/>} />
-      <Route path="/courses" element={<CoursePage open={open} setOpen={setOpen} setError={setError} error={error} />} />
-      <Route path="/mentorship" element={<MentorshipPage open={open} setOpen={setOpen} setError={setError} error={error} />} />
+      <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn}  setError={setError} error={error} />} />
+      <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn}  setError={(error) => setError(error)} />} />
+      <Route path="/dashboard" element={<Dashboard  setError={setError} error={error}/>} />
+      <Route path="/profile" element={<Profile  setError={setError} error={error}/>} />
+      <Route path="/courses" element={<CoursePage setError={setError} error={error} />} />
+      <Route path="/mentorship" element={<MentorshipPage setError={setError} error={error} />} />
       <Route path="/feedback" element={<Feedback />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/about" element={<About />} />
-      <Route path="/friends" element={<FriendsList open={open} setOpen={setOpen} error={error} setError={setError} />} />
+      <Route path="/friends" element={<FriendsList error={error} setError={setError} />} />
       </Routes>
       </Grid>
       </Grid>

@@ -21,7 +21,7 @@ const SearchIconButton = styled(IconButton)({
     padding: 10,
 });
 
-function Dashboard({ setOpen, setError }) {
+function Dashboard({ setError }) {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
@@ -46,14 +46,11 @@ function Dashboard({ setOpen, setError }) {
                 const response = await fetch(`${process.env.REACT_APP_API}/emoji`);
                 if (!response.ok) {
                     setError(error.message)
-                    setOpen(true)
-
                 }
                 const emojistData = await response.json();
                 setEmojis(emojistData);
             } catch (error) {
                 setError(error.message)
-                setOpen(true)
             }
         };
         fetchEmojis();
@@ -123,7 +120,6 @@ function Dashboard({ setOpen, setError }) {
             });
             if (!response.ok) {
                 setError('Failed to submit:', error);
-                 setOpen(true)
 
             }
             const newPost = await response.json();
@@ -160,7 +156,6 @@ function Dashboard({ setOpen, setError }) {
             });
             if (!response.ok) {
                 setError('Failed to submit comment:', error);
-                setOpen(true)
             }
             const updatePostComments = (post, newComment, currentPostId) => {
                 if (post.id === currentPostId) {
@@ -177,7 +172,6 @@ function Dashboard({ setOpen, setError }) {
             setNewComment('');
         } catch (error) {
             setError(error.message);
-            setOpen(true)
         }
     };
 //like button
@@ -200,7 +194,6 @@ const handleLike = async (postId) => {
         });
         if (!response.ok) {
             setError('Failed to like:', error);
-           setOpen(true)
         }
         const updatePostLikes = (post, newLike, postId) => {
             if (post.id === postId) {
@@ -213,7 +206,6 @@ const handleLike = async (postId) => {
         setFilteredData(filteredData.map(post => updatePostLikes(post, newLike)));
     } catch (error) {
         setError(error.message);
-        setOpen(true)
     }
 };
 //search
