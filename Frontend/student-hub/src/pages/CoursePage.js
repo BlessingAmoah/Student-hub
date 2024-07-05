@@ -340,8 +340,8 @@ const handleLike = async (postId) => {
                                         inputProps={{ 'aria-label': 'Select Emoji' }}
                                     >
                                          <MenuItem value=""><span role="img" aria-label="default emoji">👍🏻</span></MenuItem>
-                                        {emojis.map((emoji, index) => (
-                                            <MenuItem key={index} value={emoji.character}>
+                                        {emojis.map((emoji, id) => (
+                                            <MenuItem key={id} value={emoji.character}>
                                                 {emoji.character}
                                             </MenuItem>
                                         ))}
