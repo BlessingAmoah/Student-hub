@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Grid, Typography, Button, Modal, TextField, Input } from '@mui/material';
 
-function Profile() {
+function Profile({ setOpen, setError, error }) {
   const [profile, setProfile] = useState({
     name: '',
     profilePicture: '',
@@ -16,8 +16,7 @@ function Profile() {
     interest: '',
     mentorship: '',
   });
-  const [error, setError] = useState('');
-  const [open, setOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
 
 
@@ -26,7 +25,8 @@ function Profile() {
       try {
         const token = sessionStorage.getItem('token');
         if (!token) {
-          throw new Error('Token not found in sessionStorage');
+         setError('Token not found in sessionStorage');
+         setOpen(true)
         }
 // profile page fetch from the server
         const response = await fetch(`${process.env.REACT_APP_API}/profile`, {
@@ -39,17 +39,18 @@ function Profile() {
           const data = await response.json();
           setProfile(data);
         } else {
-          const errorData = await response.json();
-          setError(errorData.error || 'Failed to fetch profile.');
+          const error = await response.json();
+          setError('Failed to fetch profile.', error);
+          setOpen(true)
         }
       } catch (error) {
-        console.error('Profile fetch error:', error);
         setError('Failed to fetch profile.');
+        setOpen(true)
       }
     };
 
     fetchProfile();
-  }, []);
+  },[setOpen, setError]);
 //request to submit profile page update
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,10 +72,11 @@ function Profile() {
         handleClose();
       } else {
         setError('Failed to update profile.');
+        setOpen(true)
       }
     } catch (error) {
-      console.error('Profile update error:', error);
       setError('Failed to update profile.');
+      setOpen(true)
     }
   };
 //profile change
@@ -110,22 +112,23 @@ function Profile() {
           profilePicture: `${process.env.REACT_APP_API}/${data.profilePicture}`,
         }));
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to upload profile picture.');
+        const error = await response.json();
+        setError('Failed to upload profile picture.', error);
+        setOpen(true)
       }
     } catch (error) {
-      console.error('Profile picture upload error:', error);
       setError('Failed to upload profile picture.');
+      setOpen(true)
     }
   };
 
 
   const handleOpen = () => {
-    setOpen(true);
+    setModalOpen(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setModalOpen(false);
   };
 
   if (error) {
@@ -232,7 +235,7 @@ function Profile() {
 
         {profile && (
       <Modal
-      open={open}
+      open={modalOpen}
       onClose={handleClose}
       style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
     >
