@@ -163,13 +163,18 @@ function CoursePage({ setOpen, setError }) {
                 setError('Failed to submit comment:', error);
                 setOpen(true)
             }
+            const updatePostComments = (post, newComment, currentPostId) => {
+                if (post.id === currentPostId) {
+                    return { ...post, Comments: [...post.Comments, newComment]};
+                }
+                return post;
+            };
             const newCommentResponse = await response.json();
             // Update currentComments state
             setCurrentComments(prevComments => [...prevComments, newCommentResponse]);
             setCurrentComments(currentComments)
-            setData(data.map(post => post.id === currentPostId ? { ...post, Comments: [...post.Comments, newCommentResponse] } : post));
-            setFilteredData(filteredData.map(post => post.id === currentPostId ? { ...post, Comments: [...post.Comments, newCommentResponse] } : post));
-
+            setData(data.map(post => updatePostComments(post, newCommentResponse, currentPostId)));
+            setFilteredData(filteredData.map(post =>updatePostComments(post, newCommentResponse, currentPostId)));
             setNewComment('');
         } catch (error) {
             setError(error.message);
@@ -198,9 +203,15 @@ const handleLike = async (postId) => {
             setError('Failed to like:', error);
            setOpen(true)
         }
+        const updatePostLikes = (post, newLike, postId) => {
+            if (post.id === postId) {
+                return {...post, Likes: [...post.Likes, newLike]}
+            }
+            return post;
+        }
         const newLike = await response.json();
-        setData(data.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
-        setFilteredData(filteredData.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
+        setData(data.map(post => updatePostLikes(post, newLike)));
+        setFilteredData(filteredData.map(post => updatePostLikes(post, newLike)));
     } catch (error) {
         setError(error.message);
         setOpen(true)
