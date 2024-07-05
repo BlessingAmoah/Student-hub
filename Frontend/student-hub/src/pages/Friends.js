@@ -213,24 +213,24 @@ const handleSearch = (event) => {
 
     //filter friends, recommeded friends and available friend based on search term
     const filteredFriends = friends.filter(person =>
-        person.name.toLowerCase().includes(searchTerm) ||
-        person.interest.toLowerCase().includes(searchTerm) ||
-        person.school.toLowerCase().includes(searchTerm) ||
-        person.major.toLowerCase().includes(searchTerm)
+        person.name?.toLowerCase().includes(searchTerm) ||
+        person.interest?.toLowerCase().includes(searchTerm) ||
+        person.school?.toLowerCase().includes(searchTerm) ||
+        person.major?.toLowerCase().includes(searchTerm)
         );
 
     const filteredRecommendedFriends = recommendedFriends.filter(friend =>
-        friend.name.toLowerCase().includes(searchTerm)  ||
-        friend.interest.toLowerCase().includes(searchTerm) ||
-        friend.school.toLowerCase().includes(searchTerm) ||
-        friend.major.toLowerCase().includes(searchTerm)
+        friend.name?.toLowerCase().includes(searchTerm)  ||
+        friend.interest?.toLowerCase().includes(searchTerm) ||
+        friend.school?.toLowerCase().includes(searchTerm) ||
+        friend.major?.toLowerCase().includes(searchTerm)
         );
 
     const filteredAvailableFriend = availableFriend.filter(person =>
-        person.name.toLowerCase().includes(searchTerm) ||
-        person.interest.toLowerCase().includes(searchTerm) ||
-        person.school.toLowerCase().includes(searchTerm) ||
-        person.major.toLowerCase().includes(searchTerm)
+        person.name?.toLowerCase().includes(searchTerm) ||
+        person.interest?.toLowerCase().includes(searchTerm) ||
+        person.school?.toLowerCase().includes(searchTerm) ||
+        person.major?.toLowerCase().includes(searchTerm)
         );
 
     //update filtered data
