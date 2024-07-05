@@ -21,15 +21,15 @@ const SearchIconButton = styled(IconButton)({
     padding: 10,
 });
 
-function CoursePage({ setOpen }) {
+function CoursePage({ setOpen, setError }) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
-    const [error, setError] = useState('');
+    const [error] = useState('');
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredData, setFilteredData] = useState(null);
+    const [filteredData, setFilteredData] = useState([]);
     const [openCreateModal, setOpenCreateModal] = useState(false);
     const [openCommentsModal, setOpenCommentsModal] = useState(false);
     const [currentComments, setCurrentComments] = useState([]);
@@ -38,6 +38,7 @@ function CoursePage({ setOpen }) {
     const [media, setMedia] = useState(null);
     const [selectedEmoji, setSelectedEmoji] = useState({});
     const [emojis, setEmojis] = useState([])
+
 
 // emoji
     useEffect(() => {
@@ -57,7 +58,7 @@ function CoursePage({ setOpen }) {
             }
         };
         fetchEmojis();
-    }, [setOpen, error.message]);
+    });
 //fetch data
     useEffect(() => {
         const fetchData = async () => {
