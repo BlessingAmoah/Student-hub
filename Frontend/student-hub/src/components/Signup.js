@@ -8,16 +8,16 @@ function Signup( { setError, setOpen }) {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [modalOpen, setModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerificationLoading, setIsVerificationLoading] = useState(false);
   const navigate = useNavigate();
 
   //handles the submit button when signing up.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setIsLoading(true);
 
     try {
       const response = await fetch(`${process.env.REACT_APP_API}/auth/signup`, {
@@ -25,9 +25,9 @@ function Signup( { setError, setOpen }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name }),
       });
-      setLoading(false);
+      setIsLoading(false);
       if (response.ok) {
-        setModalOpen(true);
+        setIsModalOpen(true);
       } else {
         const { error } = await response.json();
         setError(error);
@@ -43,7 +43,7 @@ function Signup( { setError, setOpen }) {
   const handleVerificationSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setVerificationLoading(true);
+    setIsVerificationLoading(true);
     try {
       const response = await fetch(`${process.env.REACT_APP_API}/auth/verify`, {
         method: 'POST',
@@ -64,7 +64,7 @@ function Signup( { setError, setOpen }) {
      setOpen(true);
     setError('Failed to verify email.');
     }finally {
-      setVerificationLoading(false);
+      setIsVerificationLoading(false);
     }
   };
 
@@ -97,7 +97,7 @@ function Signup( { setError, setOpen }) {
   };
 
   const handleClose = () => {
-    setModalOpen(false);
+    setIsModalOpen(false);
   };
 
   return (
@@ -149,7 +149,7 @@ function Signup( { setError, setOpen }) {
           </form>
         </Grid>
         <Modal
-          open={modalOpen}
+          open={isModalOpen}
           onClose={handleClose}
           style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
         >
@@ -180,10 +180,10 @@ function Signup( { setError, setOpen }) {
                 Resend Verification Code
               </Button>
               </p>
-              {verificationLoading && <CircularProgress color="inherit" />}
+              {isVerificationLoading && <CircularProgress color="inherit" />}
             </div>
         </Modal>
-        {loading && <CircularProgress color="inherit" />}
+        {isLoading && <CircularProgress color="inherit" />}
       </Grid>
     </Container>
   );

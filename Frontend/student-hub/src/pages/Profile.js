@@ -16,7 +16,7 @@ function Profile({ setOpen, setError, error }) {
     interest: '',
     mentorship: '',
   });
-  const [modalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
 
 
@@ -124,11 +124,11 @@ function Profile({ setOpen, setError, error }) {
 
 
   const handleOpen = () => {
-    setModalOpen(true);
+    setIsModalOpen(true);
   };
 
   const handleClose = () => {
-    setModalOpen(false);
+    setIsModalOpen(false);
   };
 
   if (error) {
@@ -235,7 +235,7 @@ function Profile({ setOpen, setError, error }) {
 
         {profile && (
       <Modal
-      open={modalOpen}
+      open={isModalOpen}
       onClose={handleClose}
       style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
     >

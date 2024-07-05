@@ -23,15 +23,15 @@ const SearchIconButton = styled(IconButton)({
 
 function CoursePage({ setOpen, setError }) {
     const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const [error] = useState('');
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredData, setFilteredData] = useState([]);
-    const [openCreateModal, setOpenCreateModal] = useState(false);
-    const [openCommentsModal, setOpenCommentsModal] = useState(false);
+    const [isOpenCreateModal, setIsOpenCreateModal] = useState(false);
+    const [isOpenCommentsModal, setIsOpenCommentsModal] = useState(false);
     const [currentComments, setCurrentComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [currentPostId, setCurrentPostId] = useState(null);
@@ -85,7 +85,7 @@ function CoursePage({ setOpen, setError }) {
                         'Authorization': `Bearer ${token}`,
                     },
                 });
-                setLoading(false);
+                setIsLoading(false);
                 const result = await response.json();
                 setData(result);
                 setFilteredData(result);
@@ -134,7 +134,7 @@ function CoursePage({ setOpen, setError }) {
             setContent('');
             setMedia(null);
             setSelectedEmoji({ ...selectedEmoji, [newPost.id]: null })
-            setOpenCreateModal(false);
+            setIsOpenCreateModal(false);
         } catch (error) {
             setError(error.message);
         }
@@ -218,21 +218,21 @@ const handleLike = async (postId) => {
     };
 
     const handleOpenCreateModal = () => {
-        setOpenCreateModal(true);
+        setIsOpenCreateModal(true);
     };
 
     const handleCloseCreateModal = () => {
-        setOpenCreateModal(false);
+        setIsOpenCreateModal(false);
     };
 
     const handleOpenCommentsModal = (postId, comments) => {
         setCurrentPostId(postId);
         setCurrentComments(comments);
-        setOpenCommentsModal(true);
+        setIsOpenCommentsModal(true);
     };
 
     const handleCloseCommentsModal = () => {
-        setOpenCommentsModal(false);
+        setIsOpenCommentsModal(false);
     };
 
     // file change
@@ -240,7 +240,7 @@ const handleLike = async (postId) => {
         setMedia(event.target.files[0])
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <Container maxWidth="sm">
                 <Grid container spacing={2} alignItems="center" justifyContent="center" style={{ minHeight: '80vh' }}>
@@ -344,7 +344,7 @@ const handleLike = async (postId) => {
                     </Grid>
                 ))}
             </Grid>
-            <Dialog open={openCreateModal} onClose={handleCloseCreateModal}>
+            <Dialog open={isOpenCreateModal} onClose={handleCloseCreateModal}>
                 <form onSubmit={handlePostSubmit}>
                 <DialogTitle>Create a New Post</DialogTitle>
                 <DialogContent>
@@ -381,7 +381,7 @@ const handleLike = async (postId) => {
                 </DialogActions>
                 </form>
             </Dialog>
-            <Dialog open={openCommentsModal} onClose={handleCloseCommentsModal}>
+            <Dialog open={isOpenCommentsModal} onClose={handleCloseCommentsModal}>
             <DialogTitle>Comments</DialogTitle>
                 <DialogContent>
                     {currentComments.map(comment => (

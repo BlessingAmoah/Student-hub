@@ -6,14 +6,14 @@ import CircularProgress from '@mui/material/CircularProgress'
 function Login({ setOpen, setError }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     //handles the submit when logged in.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
+        setIsLoading(true);
         try{
             const response = await fetch(`${process.env.REACT_APP_API}/auth/login`,{
                 method: 'POST',
@@ -35,7 +35,7 @@ function Login({ setOpen, setError }) {
                 const isValidUser = await checkUserId(data.userId);
                 if (isValidUser) {
                   navigate('/dashboard');
-                  setLoading(false);
+                  setIsLoading(false);
                 } else {
                   setError('Invalid user credentials.');
                   setOpen(true);
@@ -116,7 +116,7 @@ function Login({ setOpen, setError }) {
                       </form>
                     </Grid>
                   </Grid>
-                  {loading && <CircularProgress color="inherit" />}
+                  {isLoading && <CircularProgress color="inherit" />}
                 </Container>
               );
             }

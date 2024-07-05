@@ -22,7 +22,7 @@ const SearchContainer = styled(Paper)({
 
 function MentorshipPage({ setOpen, setError, error }) {
   const [mentorships, setMentorships] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
 
@@ -42,7 +42,7 @@ function MentorshipPage({ setOpen, setError, error }) {
         } else {
           setMentorships([]); // or setError('Failed to fetch mentorships');
         }
-        setLoading(false);
+        setIsLoading(false);
       } catch (error) {
         setError('Failed to fetch mentorships');
         setOpen(true);
@@ -58,7 +58,7 @@ function MentorshipPage({ setOpen, setError, error }) {
 
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Container maxWidth="sm">
         <Grid container spacing={2} alignItems="center" justify="center" style={{ minHeight: '80vh' }}>
