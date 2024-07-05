@@ -23,36 +23,34 @@ function Login({ setOpen, setError }) {
 
             // checks if the log-in details are correct
             // if correct navigate to the dashboard
-            if (response.ok) {
-                const data = await response.json();
-                // check for userId in the data and not undefined
-                if (data.userId !== undefined){
+            if (!response.ok) {
+              const { error } = await response.json();
+              setError(error);
+              setOpen(true);
+              return;
+            }
+            const data = await response.json();
+            if (data.userId === undefined) {
+              setError('Invalid server response. Please try again.');
+              setOpen(true);
+              return;
+            }
+            sessionStorage.setItem('token', data.token);
+            sessionStorage.setItem('userId', data.userId)
 
-                  //store token and userId in sessionstorgae
-                sessionStorage.setItem('token', data.token);
-                sessionStorage.setItem('userId', data.userId)
-                // Check if the userId exist in the database
-                const isValidUser = await checkUserId(data.userId);
-                if (isValidUser) {
-                  navigate('/dashboard');
-                  setIsLoading(false);
-                } else {
-                  setError('Invalid user credentials.');
-                  setOpen(true);
-                }
-              } else {
-                setError('Invalid server response. Please try again.');
-                setOpen(true);
-              }
-              } else {
-                const { error } = await response.json();
-                setError(error);
-                setOpen(true);
-              }
-            } catch (error) {
-                setOpen(true);
-                setError(error.message);
-              }
+            const isValidUser = await checkUserId(data.userId);
+            if (!isValidUser) {
+              setError('Invalid user credentials.');
+              setOpen(true);
+              return;
+            }
+            navigate('/dashboard');
+            setIsLoading(false);
+        }
+        catch (error) {
+          setError('An unexpected error occurred. Please try again.');
+          setOpen(true);
+        }
         };
         // check database for userId
         const checkUserId = async (userId) => {
