@@ -36,23 +36,21 @@ function MentorshipPage({ setOpen, setError, error }) {
           },
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch mentorships');
-        }
-
         const mentorshipData = await response.json();
-        setMentorships(mentorshipData.mentorships);
+        if (mentorshipData && mentorshipData.mentorships) {
+          setMentorships(mentorshipData.mentorships);
+        } else {
+          setMentorships([]); // or setError('Failed to fetch mentorships');
+        }
         setLoading(false);
       } catch (error) {
-        console.error('Failed to fetch mentorships:', error);
-         setError(error.message);
+        setError('Failed to fetch mentorships');
         setOpen(true);
-        setLoading(false);
       }
     };
 
     fetchMentorships();
-  }, [setOpen]);
+  }, [setOpen, setError]);
 
   //search
   const handleSearch = (event) => {

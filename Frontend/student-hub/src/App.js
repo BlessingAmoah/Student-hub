@@ -46,7 +46,7 @@ function App() {
       <Route path="/dashboard" element={<Dashboard open={open} setOpen={setOpen}  setError={setError} error={error}/>} />
       <Route path="/profile" element={<Profile open={open} setOpen={setOpen}  setError={setError} error={error}/>} />
       <Route path="/courses" element={<CoursePage open={open} setOpen={setOpen} setError={setError} error={error} />} />
-      <Route path="/mentorship" element={<MentorshipPage  open={open} setOpen={setOpen}  setError={setError} error={error} />} />
+      <Route path="/mentorship" element={<MentorshipPage open={open} setOpen={setOpen} setError={setError} error={error} />} />
       <Route path="/feedback" element={<Feedback />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/about" element={<About />} />
