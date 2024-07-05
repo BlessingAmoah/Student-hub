@@ -49,7 +49,8 @@ const FriendsList = ({ setOpen, setError}) => {
                 });
              })
              .catch(error => {
-                console.error('Error fetching data:', error);
+                setError('Error fetching data:', error);
+                setOpen(true)
              });
         };
         fetchData();
@@ -87,9 +88,13 @@ const fetchRecommendedFriends = async () => {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
-        if (!response.ok) {
-            throw new Error(`Failed to fetch recommended friends: ${response.statusText}`);
-        }
+            if (!response.ok) {
+            const errorData = await response.json();
+                setError(errorData.message );
+                setOpen(true);
+                return;
+
+            }
         //update recommended friends state
         const data = await response.json();
         const filteredRecommendedFriends = data.filter(friend => friend.id !== userId);
@@ -111,7 +116,10 @@ const fetchAvailableFriend = async () => {
             headers: { Authorization: `Bearer ${token}`}
         });
         if (!response.ok) {
-            throw new Error(`Failed to fetch available friends: ${response.statusText}`);
+            const errorData = await response.json();
+                setError(errorData.message );
+                setOpen(true);
+                return;
         }
         //filter out the current user from the available friends
         //update available friends state
@@ -140,7 +148,10 @@ const handleAddFriend = async (friendId) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to add friend: ${response.statusText}`);
+            const error= await response.json();
+                setError(error.message );
+                setOpen(true);
+                return;
         }
 
         //After successfully adding friend, fetch updated data
@@ -173,7 +184,10 @@ const handleRemoveFriend = async (friendId) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to remove friend: ${response.statusText}`);
+            const error= await response.json();
+                setError(error.message );
+                setOpen(true);
+                return;
         }
         //After successfully removing friend, fetch updated data
         const updatedFriends = await fetchFriends();
