@@ -38,6 +38,12 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
         setSettingsEl(null);
     };
 
+    const handleNavigation = (path) => {
+        navigate(path);
+        handleClose();
+        handleSettingsClose();
+      };
+
     //rendering the app to undate.
     //anchorEl used to set the position of the menu.
     return(
@@ -67,7 +73,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
                                 open={Boolean(anchorEl)}
                                 onClose={handleClose}
                                 >
-                                    <MenuItem onClick={() => { navigate('/profile'); handleClose(); }}>Profile</MenuItem>
+                                    <MenuItem onClick={() => handleNavigation('/profile')}>Profile</MenuItem>
                                     <MenuItem onClick={handleLogout}>Logout</MenuItem>
                                 </Menu>
                                 <IconButton
@@ -87,9 +93,9 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
                                         <Switch checked={darkMode} onChange={toggleDarkMode} />
                                         Dark Mode
                                     </MenuItem>
-                                    <MenuItem onClick={() => { navigate('/feedback'); handleSettingsClose(); }}>Feedback</MenuItem>
-                                    <MenuItem onClick={() => { navigate('/contact'); handleSettingsClose(); }}>Contact Me</MenuItem>
-                                    <MenuItem onClick={() => { navigate('/about'); handleSettingsClose(); }}>About</MenuItem>
+                                    <MenuItem onClick={() => handleNavigation ('/feedback')}>Feedback</MenuItem>
+                                    <MenuItem onClick={() =>  handleNavigation('/contact')}>Contact Me</MenuItem>
+                                    <MenuItem onClick={() =>  handleNavigation('/about')}>About</MenuItem>
                                 </Menu>
                         </>
                     ) : (
