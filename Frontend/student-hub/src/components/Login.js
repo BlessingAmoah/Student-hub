@@ -2,23 +2,22 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress'
-
-
+import { useError } from './ErrorContext'
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const { setError } = useError();
 
     //handles the submit when logged in.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        setLoading(true);
+        setIsLoading(true);
         try{
-            const response = await fetch('http://localhost:8080/auth/login',{
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/login`,{
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
@@ -26,23 +25,52 @@ function Login() {
 
             // checks if the log-in details are correct
             // if correct navigate to the dashboard
-            if (response.ok) {
-                const data = await response.json();
-                sessionStorage.setItem('token', data.token);
-                navigate('/dashboard');
-                setLoading(false);
-              } else {
-                const { error } = await response.json();
-                setError(error);
-                setLoading(false);
-              }
-            } catch (error) {
-                console.error('Login failed:', error);
-                setError('Login failed. Please try again.');
-                setLoading(false);
-              }
-            };
+            if (!response.ok) {
+              const { error } = await response.json();
+              setError(error);
+              return;
+            }
+            const data = await response.json();
+            if (data.userId === undefined) {
+              setError('Invalid server response. Please try again.');
+              return;
+            }
+            sessionStorage.setItem('token', data.token);
+            sessionStorage.setItem('userId', data.userId)
 
+            const isValidUser = await checkUserId(data.userId);
+            if (!isValidUser) {
+              setError('Invalid user credentials.');
+              return;
+            }
+            navigate('/dashboard');
+            setIsLoading(false);
+        }
+        catch (error) {
+          setError('An unexpected error occurred. Please try again.');
+        }
+        };
+        // check database for userId
+        const checkUserId = async (userId) => {
+          try {
+            const response = await fetch(`${process.env.REACT_APP_API}/auth/user/${userId}`, {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+              },
+            });
+
+            if (response.ok) {
+              await response.json();
+              return true;
+            } else {
+              setError('UserId not a match!');
+            }
+          } catch (error) {
+            setError('Error checking user.');
+          }
+        };
             // rendering state
             return (
                 <Container maxWidth="sm">
@@ -81,13 +109,8 @@ function Login() {
                         </Grid>
                       </form>
                     </Grid>
-                    {error && (
-                      <Grid item xs={12}>
-                        <p style={{ color: 'red' }}>{error}</p>
-                      </Grid>
-                    )}
                   </Grid>
-                  {loading && <CircularProgress color="inherit" />}
+                  {isLoading && <CircularProgress color="inherit" />}
                 </Container>
               );
             }

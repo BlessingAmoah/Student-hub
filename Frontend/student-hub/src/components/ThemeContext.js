@@ -7,24 +7,24 @@ const ThemeContext = createContext();
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const theme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: darkMode ? 'dark' : 'light',
+          mode: isDarkMode ? 'dark' : 'light',
         },
       }),
-    [darkMode]
+    [isDarkMode]
   );
 
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+    setIsDarkMode(!isDarkMode);
   };
 
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleDarkMode }}>
       <MuiThemeProvider theme={theme}>
         <CssBaseline />
         {children}

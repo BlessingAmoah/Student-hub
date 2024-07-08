@@ -2,52 +2,51 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button, Modal } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useError } from './ErrorContext'
 
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [error, setError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerificationLoading, setIsVerificationLoading] = useState(false);
   const navigate = useNavigate();
+  const { setError } = useError();
+
 
   //handles the submit button when signing up.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    setIsLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8080/auth/signup`, {
+      const response = await fetch(`${process.env.REACT_APP_API}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name }),
       });
-
+      setIsLoading(false);
       if (response.ok) {
-        setOpen(true);
-        setLoading(false);
+        setIsModalOpen(true);
       } else {
         const { error } = await response.json();
         setError(error);
-        setLoading(false);
+
       }
     } catch (error) {
-      console.error('Signup failed:', error);
       setError('Signup failed. Please try again.');
-      setLoading(false);
     }
   };
 // handles the verification of the email to make sure the user is not a robot
   const handleVerificationSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setVerificationLoading(true);
+    setIsVerificationLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/auth/verify`, {
+      const response = await fetch(`${process.env.REACT_APP_API}/auth/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,24 +55,22 @@ function Signup() {
       });
 
       if (response.ok) {
-        setOpen(false);
         navigate('/dashboard');
       } else {
         const { error } = await response.json();
         setError(error);
       }
     } catch (error) {
-      console.error('Email verification error:', error);
-      setError('Failed to verify email.');
+    setError('Failed to verify email.');
     }finally {
-      setVerificationLoading(false);
+      setIsVerificationLoading(false);
     }
   };
 
  // handle verification code resend
  const handleVerificationCodeResend = async () => {
   try {
-    const response = await fetch('http://localhost:8080/auth/resendverification', {
+    const response = await fetch(`${process.env.REACT_APP_API}/auth/resendverification`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -85,23 +82,19 @@ function Signup() {
       setVerificationCode('Verification code has been resent successfully');
     } else {
       const errorData = await response.json();
-      setError(errorData.error || 'Failed to resend the verification code. Check your email or network');
+      setError(errorData.error );
     }
   } catch (error) {
-    console.error('Resend verification code error:', error);
     setError('Failed to resend verification code');
   }
 };
-
-
-
 
   const handleVerificationCodeChange = (e) => {
     setVerificationCode(e.target.value);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setIsModalOpen(false);
   };
 
   return (
@@ -152,15 +145,8 @@ function Signup() {
             </Grid>
           </form>
         </Grid>
-        {error && (
-          <Grid item xs={12}>
-            <p style={{ color: 'red' }}>{error}</p>
-          </Grid>
-        )}
-
-
         <Modal
-          open={open}
+          open={isModalOpen}
           onClose={handleClose}
           style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
         >
@@ -191,10 +177,10 @@ function Signup() {
                 Resend Verification Code
               </Button>
               </p>
-              {verificationLoading && <CircularProgress color="inherit" />}
+              {isVerificationLoading && <CircularProgress color="inherit" />}
             </div>
         </Modal>
-        {loading && <CircularProgress color="inherit" />}
+        {isLoading && <CircularProgress color="inherit" />}
       </Grid>
     </Container>
   );

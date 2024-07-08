@@ -43,7 +43,6 @@ const sendVerificationEmail = async (email, verificationCode) => {
 
 // POST route for user signup
 router.post('/signup', async (req, res) => {
-  console.log('Received signup request');
   const { email, password, name } = req.body;
 
   if (!validateEmail(email)) {
@@ -195,12 +194,28 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
     // Return the token as JSON response
-    res.status(200).json({ token });
+    res.status(200).json({ token, userId: user.id });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+router.get('/user/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try{
+    const user = await User.findByPk(userId);
+    if(!user){
+      return res.status(404).json({error: 'User not found'});
+    }
+    // return user data
+    res.status(200).json(user);
+  } catch (error){
+    console.error('Error fetching user:', error);
+    res.status(500).json({error: 'Internal server error'})
+  }
+})
 
 // GET route for dashboard data
 router.get('/dashboard', verifyToken, async (req, res) => {

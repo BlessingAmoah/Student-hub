@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Grid, Typography, IconButton, InputBase, Paper } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
+import { useError } from '../components/ErrorContext'
 
 //search styling
 const SearchContainer = styled(Paper)({
@@ -22,35 +23,35 @@ const SearchContainer = styled(Paper)({
 
 function MentorshipPage() {
   const [mentorships, setMentorships] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const {error, setError } = useError();
+
 
   useEffect(() => {
     const fetchMentorships = async () => {
       try {
         const token = sessionStorage.getItem('token');
-        const response = await fetch('http://localhost:8080/auth/mentorship', {
+        const response = await fetch(`${process.env.REACT_APP_API}/auth/mentorship`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to fetch mentorships');
-        }
-
         const mentorshipData = await response.json();
-        setMentorships(mentorshipData.mentorships);
-        setLoading(false);
+        if (mentorshipData && mentorshipData.mentorships) {
+          setMentorships(mentorshipData.mentorships);
+        } else {
+          setMentorships([]); // or setError('Failed to fetch mentorships');
+        }
+        setIsLoading(false);
       } catch (error) {
         setError('Failed to fetch mentorships');
-        setLoading(false);
       }
     };
 
     fetchMentorships();
-  }, []);
+  }, [setError]);
 
   //search
   const handleSearch = (event) => {
@@ -58,7 +59,7 @@ function MentorshipPage() {
 
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Container maxWidth="sm">
         <Grid container spacing={2} alignItems="center" justify="center" style={{ minHeight: '80vh' }}>

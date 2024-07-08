@@ -15,6 +15,10 @@ module.exports = (sequelize) => {
     content: {
       type: DataTypes.TEXT,
       allowNull: false
+    },
+    mediaPath: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
 
   });

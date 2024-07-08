@@ -3,7 +3,9 @@
 #development
 /config
 
-uploads
+/uploads
+
+ Student-hub
 
 # dependencies
 /node_modules
