@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, Button, Modal, Backdrop, TextField, Input } from '@mui/material';
+import { Container, Grid, Typography, Button, Modal, TextField, Input } from '@mui/material';
+import { useError } from '../components/ErrorContext'
+
 
 function Profile() {
   const [profile, setProfile] = useState({
@@ -16,8 +18,8 @@ function Profile() {
     interest: '',
     mentorship: '',
   });
-  const [error, setError] = useState('');
-  const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const {error, setError } = useError();
 
 
 
@@ -26,7 +28,7 @@ function Profile() {
       try {
         const token = sessionStorage.getItem('token');
         if (!token) {
-          throw new Error('Token not found in sessionStorage');
+         setError('Token not found in sessionStorage');
         }
 // profile page fetch from the server
         const response = await fetch(`${process.env.REACT_APP_API}/profile`, {
@@ -39,17 +41,16 @@ function Profile() {
           const data = await response.json();
           setProfile(data);
         } else {
-          const errorData = await response.json();
-          setError(errorData.error || 'Failed to fetch profile.');
+          const error = await response.json();
+          setError('Failed to fetch profile.', error);
         }
       } catch (error) {
-        console.error('Profile fetch error:', error);
         setError('Failed to fetch profile.');
       }
     };
 
     fetchProfile();
-  }, []);
+  },[setError]);
 //request to submit profile page update
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -73,7 +74,6 @@ function Profile() {
         setError('Failed to update profile.');
       }
     } catch (error) {
-      console.error('Profile update error:', error);
       setError('Failed to update profile.');
     }
   };
@@ -110,22 +110,21 @@ function Profile() {
           profilePicture: `${process.env.REACT_APP_API}/${data.profilePicture}`,
         }));
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to upload profile picture.');
+        const error = await response.json();
+        setError('Failed to upload profile picture.', error);
       }
     } catch (error) {
-      console.error('Profile picture upload error:', error);
       setError('Failed to upload profile picture.');
     }
   };
 
 
   const handleOpen = () => {
-    setOpen(true);
+    setIsModalOpen(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setIsModalOpen(false);
   };
 
   if (error) {
@@ -232,16 +231,12 @@ function Profile() {
 
         {profile && (
       <Modal
-          open={open}
-          onClose={handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-          }}
-        >
+      open={isModalOpen}
+      onClose={handleClose}
+      style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
+    >
 
-    <div style={{ backgroundColor: '#fff', padding: 5, borderRadius: 10 }}>
+    <div style={{  padding: 5, borderRadius: 10, backgroundColor: 'white' }}>
       <h2>Edit Profile</h2>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={2} columns={2}>
@@ -382,12 +377,10 @@ function Profile() {
         </Grid>
       </form>
     </div>
-
 </Modal>
 )}
       </Grid>
     </Container>
   );
 }
-
 export default Profile;

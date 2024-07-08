@@ -16,8 +16,8 @@ router.post('/add', verifyToken, async (req, res) => {
             return res.status(400).json({ error: "Sorry, you can't add yourself as a friend"});
         }
         //verify if the friendId exists in Users table
-        const friendUser = await User.findByPk(friendId);
-        if(!friendUser){
+        const isUser = await User.findByPk(friendId);
+        if(!isUser){
             return res.status(404).json({ error: 'friend not found'});
         }
         // check if the friend already exist
@@ -31,7 +31,7 @@ router.post('/add', verifyToken, async (req, res) => {
         const newFriend = await Friend.create({
             userId,
             friendId,
-            friendName: friendUser.name
+            friendName: isUser.name
         });
         res.status(201).json(newFriend);
     }

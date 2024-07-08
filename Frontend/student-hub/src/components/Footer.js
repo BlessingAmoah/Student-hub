@@ -6,7 +6,7 @@ const Footer = () => {
     return (
         <footer>
             <Container>
-                <Typography variant='h4' align='center'>
+                <Typography variant='h6' align='center' padding={'10px'}>
                     ©️ 2024 Student-Hub!!!
                 </Typography>
             </Container>

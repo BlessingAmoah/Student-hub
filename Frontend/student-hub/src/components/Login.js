@@ -2,20 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress'
-
-
+import { useError } from './ErrorContext'
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const { setError } = useError();
 
     //handles the submit when logged in.
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
+        setIsLoading(true);
         try{
             const response = await fetch(`${process.env.REACT_APP_API}/auth/login`,{
                 method: 'POST',
@@ -25,49 +25,34 @@ function Login() {
 
             // checks if the log-in details are correct
             // if correct navigate to the dashboard
-            if (response.ok) {
-                const data = await response.json();
-                // check for userId in the data and not undefined
-                if (data.userId !== undefined){
-                  //store token and userId in sessionstorgae
-                sessionStorage.setItem('token', data.token);
-
-                sessionStorage.setItem('userId', data.userId)
-
-                // Check if the userId exist in the database
-                const isValidUser = await checkUserId(data.userId);
-                if (isValidUser) {
-                  navigate('/dashboard');
-                } else {
-                  setError('Invalid user credentials.');
-                }
-              } else {
-                console.error('userId is undefined in data:', data);
-                setError('Invalid server response. Please try again.');
-                navigate('/dashboard');
-              } else {
-                const { error } = await response.json();
-                setError(error);
-              }
-            } catch (error) {
-                console.error('Login failed:', error);
-                setError('Login failed. Please try again.');
-              }
-            } else {
+            if (!response.ok) {
               const { error } = await response.json();
-              console.error('Login failed:', error);
               setError(error);
+              return;
             }
-          } catch (error) {
-            console.error('Login failed:', error);
-            setError('Login failed. Please try again.');
-          }
+            const data = await response.json();
+            if (data.userId === undefined) {
+              setError('Invalid server response. Please try again.');
+              return;
+            }
+            sessionStorage.setItem('token', data.token);
+            sessionStorage.setItem('userId', data.userId)
+
+            const isValidUser = await checkUserId(data.userId);
+            if (!isValidUser) {
+              setError('Invalid user credentials.');
+              return;
+            }
+            navigate('/dashboard');
+            setIsLoading(false);
+        }
+        catch (error) {
+          setError('An unexpected error occurred. Please try again.');
+        }
         };
         // check database for userId
         const checkUserId = async (userId) => {
           try {
-
-
             const response = await fetch(`${process.env.REACT_APP_API}/auth/user/${userId}`, {
               method: 'GET',
               headers: {
@@ -78,19 +63,14 @@ function Login() {
 
             if (response.ok) {
               await response.json();
-
               return true;
             } else {
-              console.error(`Error fetching user ${userId}:`, response.status);
-              return false;
+              setError('UserId not a match!');
             }
-
           } catch (error) {
-            console.error('Error checking user:', error);
-            return false;
+            setError('Error checking user.');
           }
         };
-
             // rendering state
             return (
                 <Container maxWidth="sm">
@@ -129,12 +109,8 @@ function Login() {
                         </Grid>
                       </form>
                     </Grid>
-                    {error && (
-                      <Grid item xs={12}>
-                        <p style={{ color: 'red' }}>{error}</p>
-                      </Grid>
-                    )}
                   </Grid>
+                  {isLoading && <CircularProgress color="inherit" />}
                 </Container>
               );
             }

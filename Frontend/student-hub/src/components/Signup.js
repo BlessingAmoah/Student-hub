@@ -1,36 +1,42 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Grid, TextField, Button, Modal, Backdrop, Fade } from '@mui/material';
+import { Container, Grid, TextField, Button, Modal } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
+import { useError } from './ErrorContext'
 
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [error, setError] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
-  const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isVerificationLoading, setIsVerificationLoading] = useState(false);
   const navigate = useNavigate();
+  const { setError } = useError();
+
 
   //handles the submit button when signing up.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8080/auth/signup`, {
+      const response = await fetch(`${process.env.REACT_APP_API}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, name }),
       });
-
+      setIsLoading(false);
       if (response.ok) {
-        setOpen(true);
+        setIsModalOpen(true);
       } else {
         const { error } = await response.json();
         setError(error);
+
       }
     } catch (error) {
-      console.error('Signup failed:', error);
       setError('Signup failed. Please try again.');
     }
   };
@@ -38,9 +44,9 @@ function Signup() {
   const handleVerificationSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+    setIsVerificationLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/auth/verify`, {
+      const response = await fetch(`${process.env.REACT_APP_API}/auth/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,15 +55,15 @@ function Signup() {
       });
 
       if (response.ok) {
-        setOpen(false);
         navigate('/dashboard');
       } else {
         const { error } = await response.json();
         setError(error);
       }
     } catch (error) {
-      console.error('Email verification error:', error);
-      setError('Failed to verify email.');
+    setError('Failed to verify email.');
+    }finally {
+      setIsVerificationLoading(false);
     }
   };
 
@@ -76,23 +82,19 @@ function Signup() {
       setVerificationCode('Verification code has been resent successfully');
     } else {
       const errorData = await response.json();
-      setError(errorData.error || 'Failed to resend the verification code. Check your email or network');
+      setError(errorData.error );
     }
   } catch (error) {
-    console.error('Resend verification code error:', error);
     setError('Failed to resend verification code');
   }
 };
-
-
-
 
   const handleVerificationCodeChange = (e) => {
     setVerificationCode(e.target.value);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setIsModalOpen(false);
   };
 
   return (
@@ -143,24 +145,13 @@ function Signup() {
             </Grid>
           </form>
         </Grid>
-        {error && (
-          <Grid item xs={12}>
-            <p style={{ color: 'red' }}>{error}</p>
-          </Grid>
-        )}
-
-
         <Modal
-          open={open}
+          open={isModalOpen}
           onClose={handleClose}
-          closeAfterTransition
-          BackdropComponent={Backdrop}
-          BackdropProps={{
-            timeout: 500,
-          }}
+          style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
         >
-          <Fade in={open}>
-            <div style={{ backgroundColor: '#fff', padding: 20, borderRadius: 10, maxWidth: 400, margin: 'auto', marginTop: '20vh' }}>
+
+            <div style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, maxWidth: 400, margin: 'auto', marginTop: '20vh' }}>
               <h2>Email Verification Code Has Been Sent To Your Email</h2>
               <form onSubmit={handleVerificationSubmit}>
                 <Grid container spacing={2}>
@@ -186,9 +177,10 @@ function Signup() {
                 Resend Verification Code
               </Button>
               </p>
+              {isVerificationLoading && <CircularProgress color="inherit" />}
             </div>
-          </Fade>
         </Modal>
+        {isLoading && <CircularProgress color="inherit" />}
       </Grid>
     </Container>
   );
