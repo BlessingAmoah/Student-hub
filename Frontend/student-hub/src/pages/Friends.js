@@ -5,6 +5,7 @@ import  Add  from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import getUserIDToken from '../components/utils';
+import { useError } from '../components/ErrorContext'
 
 
 // search styling
@@ -21,11 +22,12 @@ const SearchInput = styled(InputBase)({
     flex: 1,
 });
 
-const FriendsList = ({ setError }) => {
+const FriendsList = () => {
     const [friends, setFriends] = useState([]);
     const [availableFriend, setAvailableFriend] = useState([]);
     const [recommendedFriends, setRecommendedFriends] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const { setError } = useError();
     const [filteredData, setFilteredData] = useState({
         friends: [],
         recommendedFriends: [],
@@ -53,7 +55,7 @@ const FriendsList = ({ setError }) => {
              });
         };
         fetchData();
-    });
+    },[]);
 
 
 

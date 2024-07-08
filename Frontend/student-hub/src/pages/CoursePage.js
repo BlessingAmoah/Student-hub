@@ -3,6 +3,8 @@ import { Grid, Typography, Container, Button, TextField, Card, CardContent, Card
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
+import { useError } from '../components/ErrorContext'
+
 
 // search styling
 const SearchContainer = styled(Paper)({
@@ -21,7 +23,7 @@ const SearchIconButton = styled(IconButton)({
     padding: 10,
 });
 
-function CoursePage({ setError }) {
+function CoursePage() {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
@@ -38,6 +40,7 @@ function CoursePage({ setError }) {
     const [media, setMedia] = useState(null);
     const [selectedEmoji, setSelectedEmoji] = useState({});
     const [emojis, setEmojis] = useState([])
+    const { setError } = useError();
 
 
 // emoji
@@ -93,7 +96,7 @@ function CoursePage({ setError }) {
             }
         };
         fetchData();
-    }, [navigate, title, content, selectedEmoji, media, currentPostId]);
+    }, [navigate, title, content, selectedEmoji, media, currentPostId, setError]);
 
 //post fetching
     const handlePostSubmit = async (event ) => {

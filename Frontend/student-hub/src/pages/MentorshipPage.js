@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Container, Grid, Typography, IconButton, InputBase, Paper } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
+import { useError } from '../components/ErrorContext'
 
 //search styling
 const SearchContainer = styled(Paper)({
@@ -20,10 +21,11 @@ const SearchContainer = styled(Paper)({
     padding: 10,
   });
 
-function MentorshipPage({ setError, error }) {
+function MentorshipPage() {
   const [mentorships, setMentorships] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const {error, setError } = useError();
 
 
   useEffect(() => {

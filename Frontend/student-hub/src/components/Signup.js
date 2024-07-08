@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button, Modal } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
+import { useError } from './ErrorContext'
 
-function Signup( { setError }) {
+function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -12,6 +13,8 @@ function Signup( { setError }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isVerificationLoading, setIsVerificationLoading] = useState(false);
   const navigate = useNavigate();
+  const { setError } = useError();
+
 
   //handles the submit button when signing up.
   const handleSubmit = async (e) => {

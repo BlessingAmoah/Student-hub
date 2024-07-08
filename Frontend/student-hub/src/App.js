@@ -15,12 +15,13 @@ import Profile from './pages/Profile';
 import MentorshipPage from './pages/MentorshipPage';
 import FriendsList from './pages/Friends';
 import { Snackbar, Alert } from '@mui/material';
+import { useError } from './components/ErrorContext';
 
 
 function App() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [error, setError] = useState('');
+  const { error, setError } = useError();
 // retrieves a value from sessionStorage
 // !! converts the token value to a boolean
   useEffect(() => {
@@ -40,16 +41,16 @@ function App() {
             </Snackbar>
       <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn}  setError={setError} error={error} />} />
-      <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn}  setError={(error) => setError(error)} />} />
-      <Route path="/dashboard" element={<Dashboard  setError={setError} error={error}/>} />
-      <Route path="/profile" element={<Profile  setError={setError} error={error}/>} />
-      <Route path="/courses" element={<CoursePage setError={setError} error={error} />} />
-      <Route path="/mentorship" element={<MentorshipPage setError={setError} error={error} />} />
+      <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+      <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} />} />
+      <Route path="/dashboard" element={<Dashboard  />} />
+      <Route path="/profile" element={<Profile />} />
+      <Route path="/courses" element={<CoursePage  />} />
+      <Route path="/mentorship" element={<MentorshipPage  />} />
       <Route path="/feedback" element={<Feedback />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/about" element={<About />} />
-      <Route path="/friends" element={<FriendsList error={error} setError={setError} />} />
+      <Route path="/friends" element={<FriendsList />} />
       </Routes>
       </Grid>
       </Grid>

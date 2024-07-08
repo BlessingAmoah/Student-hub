@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Grid, Typography, Button, Modal, TextField, Input } from '@mui/material';
+import { useError } from '../components/ErrorContext'
 
-function Profile({ setError, error }) {
+
+function Profile() {
   const [profile, setProfile] = useState({
     name: '',
     profilePicture: '',
@@ -17,6 +19,7 @@ function Profile({ setError, error }) {
     mentorship: '',
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const {error, setError } = useError();
 
 
 
