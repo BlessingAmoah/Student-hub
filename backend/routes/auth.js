@@ -191,8 +191,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
+    const token = jwt.sign({ id: user.id, tokenVersion: user.tokenVersion }, process.env.JWT_SECRET, { expiresIn: '1h' });
     // Return the token as JSON response
     res.status(200).json({ token, userId: user.id });
   } catch (error) {
@@ -246,8 +245,8 @@ router.post('/reset-password', async (req, res) => {
     // reset password and clear the verification code after successful verification
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
-    //clear code after verification
     user.verificationCode = null;
+    user.tokenVersion += 1;
     await user.save();
 
     res.status(200).json({ message: 'Password reset successful.'})
