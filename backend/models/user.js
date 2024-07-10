@@ -52,10 +52,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      state: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
       school: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -70,6 +66,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       mentorship: {
         type: DataTypes.STRING,
+        allowNull: true,
+      },
+      status: {
+        type: DataTypes.ENUM('accepted', 'rejected', 'requested'),
+        defaultValue: 'none',
+      },
+      note: {
+        type: DataTypes.TEXT,
         allowNull: true,
       },
       expirationTimestamp: {

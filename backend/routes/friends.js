@@ -93,7 +93,58 @@ router.get('/:userId', verifyToken, async (req, res) => {
 router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
     try{
         const userId = req.params.userId;
-        // fetch all post with their likes and comments
+
+          // fetch current user's friends - 1st degree
+          const friends = await Friend.findAll({ where: { userId }});
+          const friendIds = friends.map(friend => friend.friendId);
+
+          // helper function to fetch friends of  a given userId  excluding the current friends and the user
+          const excludeFriends = async (userIds, excludeIds) => {
+            return await Friend.findAll({
+                where: {
+                    userId: { [Op.in]: userIds},
+                    friendId: { [Op.notIn]: excludeIds}
+                }
+            });
+          };
+
+          // friends of friends - 2nd degree
+          const friendsOfFriends = await excludeFriends(friendIds, [...friendIds, userId]);
+
+
+          // count the occurrences of each friendId for friend of friends (2nd degree)
+          const countFriends = friendsOfFriends.reduce((acc, friend) => {
+              acc[friend.friendId] = (acc[friend.friendId] || 0) + 1;
+              return acc;
+          }, {});
+
+          // fetch friends of friends of friends 3rd degree
+          const secondDegreeFriendIds = Object.keys(countFriends).map(id => parseInt(id));
+          console.log('second:',secondDegreeFriendIds)
+          const friendsOfFriendsOfFriends = await excludeFriends(secondDegreeFriendIds, [...friendIds, userId, ...secondDegreeFriendIds]);
+
+          // count the occurences of each friendId for friend of friend of friends (3rd degree)
+          const countFriendsOfFriends = friendsOfFriendsOfFriends.reduce((acc, friend) => {
+              acc[friend.friendId] = (acc[friend.friendId] || 0) + 1;
+              return acc;
+          }, {})
+
+          //connectivity score
+          const connectivityScore = (user) => {
+            const mutualFriends = friends.filter(friend => friend.friendId === user.id).length;
+            const mutualFriendsOfFriends = friendsOfFriends.filter(friend => friend.friendId === user.id).length;
+            const mutualFriendsOfFriendsOfFriends = friendsOfFriendsOfFriends.filter(friend => friend.friendId === user.id).length;
+
+            return(
+                0.2 * mutualFriends +
+                0.25 * mutualFriendsOfFriends +
+               0.05  * mutualFriendsOfFriendsOfFriends
+            );
+
+          }
+
+
+          // fetch all post with their likes and comments
         const posts = await Post.findAll({
             include: [
                 // Include the likes with user information
@@ -109,12 +160,8 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
         //fetch user profile to get interests, school, and major
         const currentUser = await User.findByPk(userId);
 
-        // fetch current user's friends
-        const friends = await Friend.findAll({ where: { userId }});
-        const friendIds = friends.map(friend => friend.friendId);
-
-        // fecth users who interacted with the same posts ( likes or comments)
-        const potentialFriends = await User.findAll({
+        // fecth users who interacted with the same posts ( likes or comments), interest, school, major
+        const similarityCheck = await User.findAll({
             where: {
                 id: {
                     // exclude the current user and friends
@@ -130,9 +177,8 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
             },
             attributes: ['id', 'name', 'interest', 'school', 'major']
         });
-        // calculate similarity score for potential friend
+        // calculate similarity score
         const similarityScore = (user) => {
-
             // likes similarity
             const userLikes = posts.flatMap(post => post.Likes.filter(like => like.userId === user.id).map(like => post.id));
             const commonLikes = currentUserLikes.filter(like => userLikes.includes(like));
@@ -152,22 +198,38 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
             // school similarity
             const schoolScore = stringSimilarity.compareTwoStrings(currentUser.school, user.school);
 
-            // total scores
+            // total similarity scores
             return(
-                0.3 * likeScore +
-                0.3 * commentScore +
-                0.2 * interestScore +
+                0.1 * likeScore +
+                0.1 * commentScore +
+                0.1 * interestScore +
                 0.1 * schoolScore +
                 0.1 * majorScore
             );
-
         };
 
-        // sort potential friends based on the similarity scores
+        // fetch Ids from the similarity check
+        const similarityCheckIds = similarityCheck.map(user => user.id)
+        // sum of counts for potential friends from 2nd and 3rd degree
+        const friendsCount = {...countFriends, ...countFriendsOfFriends };
+
+        // add similarity check to friendscount
+        similarityCheckIds.forEach(id => {
+            friendsCount[id] = (friendsCount[id] || 0) + 1;
+        })
+
+        // potential friends
+        const potentialFriends = await User.findAll({
+            where: {id: {[Op.in]: Object.keys(friendsCount).map(id => parseInt(id) )}},
+            attributes: ['id', 'name', 'interest', 'school', 'major']
+        });
+
+
+        // sort potential friends based on the similarity scores and Connectivity Score
         const sortPotentialFriend = potentialFriends.map(user => ({
             ...user.toJSON(),
-            similarity_Score: similarityScore(user)
-        })).sort((a, b) => b.similarity_Score - a.similarity_Score);
+            score: similarityScore(user) + connectivityScore(user)
+        })).sort((a, b) => b.score - a.score);
 
         //format the recommended friends data
         const formatRecommendation = sortPotentialFriend.map(user => ({
@@ -176,8 +238,9 @@ router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
             interest: user.interest,
             school: user.school,
             major: user.major,
-            similarity_Score: user.similarity_Score
+            score: user.score
         }));
+
 
 
         res.status(200).json(formatRecommendation);
