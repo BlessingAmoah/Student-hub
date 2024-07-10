@@ -191,8 +191,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
+    const token = jwt.sign({ id: user.id, tokenVersion: user.tokenVersion }, process.env.JWT_SECRET, { expiresIn: '1h' });
     // Return the token as JSON response
     res.status(200).json({ token, userId: user.id });
   } catch (error) {
@@ -200,6 +199,62 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+// password request code
+router.post('/password-resetcode', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ where: { email }});
+    if (!user) {
+      return res.status(400).json({ error: 'User not found'});
+    }
+
+    //generate code for verification
+    const codeReset = generateVerificationCode();
+    user.verificationCode = codeReset;
+    await user.save();
+
+    await sendVerificationEmail(email, codeReset);
+    res.status(200).json({ message: 'Password reset code has been sent to your email.'});
+  } catch(error) {
+    console.error('Password reset code reqest error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// reset password
+router.post('/reset-password', async (req, res) => {
+  const { email, code, newPassword, confirmPassword } = req.body;
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ error: 'Passwords do match. Try again!!!' })
+  }
+
+  try {
+    const user = await User.findOne({ where: { email }});
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // check if the code matches the code stored in the database
+    if (user.verificationCode !== code){
+      return res.status(400).json({ error: 'Invalid code.'});
+    }
+
+    // reset password and clear the verification code after successful verification
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.verificationCode = null;
+    user.tokenVersion += 1;
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successful.'})
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({ error: 'Internal server error'});
+  }
+})
 
 router.get('/user/:userId', async (req, res) => {
   const userId = req.params.userId;
