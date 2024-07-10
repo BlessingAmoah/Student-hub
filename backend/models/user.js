@@ -52,10 +52,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      state: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
       school: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -72,9 +68,21 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      status: {
+        type: DataTypes.ENUM('accepted', 'rejected', 'requested'),
+        defaultValue: 'none',
+      },
+      note: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       expirationTimestamp: {
         type: DataTypes.DATE,
         allowNull: true,
+      },
+      tokenVersion: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -95,6 +103,8 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Post, { foreignKey: 'userId' });
       User.hasMany(models.Comment, { foreignKey: 'userId' });
       User.hasMany(models.Like, { foreignKey: 'userId' });
+      User.hasMany(models.Friend, { as: 'UserFriends', foreignKey: 'userId'});
+      User.hasMany(models.Friend, { as: 'FriendUserFriends', foreignKey: 'friendId'})
     };
 
     return User;

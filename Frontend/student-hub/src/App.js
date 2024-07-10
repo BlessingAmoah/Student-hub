@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import Footer from './components/Footer';
-import { Grid, Button, Container } from '@mui/material'
-import { BrowserRouter as Router, Route, Routes} from 'react-router-dom'
-import { ThemeProvider } from './components/ThemeContext'
+import { Grid, Button, Container } from '@mui/material';
+import { BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import { ThemeProvider } from './components/ThemeContext';
 import Navbar from './components/Navbar'
 import Login from './components/Login';
 import Signup from './components/Signup';
@@ -13,10 +13,15 @@ import Dashboard from './pages/Dashboard';
 import CoursePage from './pages/CoursePage';
 import Profile from './pages/Profile';
 import MentorshipPage from './pages/MentorshipPage';
+import FriendsList from './pages/Friends';
+import { Snackbar, Alert } from '@mui/material';
+import { useError } from './components/ErrorContext';
+
 
 function App() {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { error, setError } = useError();
 // retrieves a value from sessionStorage
 // !! converts the token value to a boolean
   useEffect(() => {
@@ -31,17 +36,22 @@ function App() {
       <Container maxWidth="sm">
       <Grid container spacing={2} alignItems="center" justify="center" style={{ minHeight: '100vh' }}>
             <Grid item xs={12}>
+            <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
+              <Alert severity="error">{error}</Alert>
+            </Snackbar>
       <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+      <Route path="/reset-password" element={<Login setIsLoggedIn={setIsLoggedIn} isResetMode={true} />} />
       <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/dashboard" element={<Dashboard  />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/courses" element={<CoursePage />} />
-      <Route path="/mentorship" element={<MentorshipPage />} />
+      <Route path="/courses" element={<CoursePage  />} />
+      <Route path="/mentorship" element={<MentorshipPage  />} />
       <Route path="/feedback" element={<Feedback />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/about" element={<About />} />
+      <Route path="/friends" element={<FriendsList />} />
       </Routes>
       </Grid>
       </Grid>

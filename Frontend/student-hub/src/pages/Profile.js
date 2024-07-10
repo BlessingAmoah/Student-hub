@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Grid, Typography, Button, Modal, TextField, Input } from '@mui/material';
+import { useError } from '../components/ErrorContext'
 
 
 function Profile() {
@@ -17,8 +18,8 @@ function Profile() {
     interest: '',
     mentorship: '',
   });
-  const [error, setError] = useState('');
-  const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const {error, setError } = useError();
 
 
 
@@ -27,10 +28,10 @@ function Profile() {
       try {
         const token = sessionStorage.getItem('token');
         if (!token) {
-          throw new Error('Token not found in sessionStorage');
+         setError('Token not found in sessionStorage');
         }
 // profile page fetch from the server
-        const response = await fetch('http://localhost:8080/profile', {
+        const response = await fetch(`${process.env.REACT_APP_API}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -40,24 +41,23 @@ function Profile() {
           const data = await response.json();
           setProfile(data);
         } else {
-          const errorData = await response.json();
-          setError(errorData.error || 'Failed to fetch profile.');
+          const error = await response.json();
+          setError('Failed to fetch profile.', error);
         }
       } catch (error) {
-        console.error('Profile fetch error:', error);
         setError('Failed to fetch profile.');
       }
     };
 
     fetchProfile();
-  }, []);
+  },[setError]);
 //request to submit profile page update
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8080/profile', {
+      const response = await fetch(`${process.env.REACT_APP_API}/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +74,6 @@ function Profile() {
         setError('Failed to update profile.');
       }
     } catch (error) {
-      console.error('Profile update error:', error);
       setError('Failed to update profile.');
     }
   };
@@ -96,7 +95,7 @@ function Profile() {
     formData.append('profilePicture', file);
 
     try {
-      const response = await fetch('http://localhost:8080/profile/profile', {
+      const response = await fetch(`${process.env.REACT_APP_API}/profile/profile`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
@@ -108,25 +107,24 @@ function Profile() {
         const data = await response.json();
         setProfile((prevProfile) => ({
           ...prevProfile,
-          profilePicture: `http://localhost:8080/${data.profilePicture}`,
+          profilePicture: `${process.env.REACT_APP_API}/${data.profilePicture}`,
         }));
       } else {
-        const errorData = await response.json();
-        setError(errorData.error || 'Failed to upload profile picture.');
+        const error = await response.json();
+        setError('Failed to upload profile picture.', error);
       }
     } catch (error) {
-      console.error('Profile picture upload error:', error);
       setError('Failed to upload profile picture.');
     }
   };
 
 
   const handleOpen = () => {
-    setOpen(true);
+    setIsModalOpen(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setIsModalOpen(false);
   };
 
   if (error) {
@@ -177,7 +175,7 @@ function Profile() {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Bio: {profile.bio || 'No bio provided'}
+            Bio: {profile.bio}
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -187,42 +185,42 @@ function Profile() {
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Phone number: {profile.phone || 'No phone number provided'}
+            Phone number: {profile.phone}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Address: {profile.address || 'No address provided'}
+            Address: {profile.address}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            City: {profile.city || 'No city provided'}
+            City: {profile.city}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            State: {profile.state || 'No state provided'}
+            State: {profile.state}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            School: {profile.school || 'No school provided'}
+            School: {profile.school}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Major: {profile.major || 'No major provided'}
+            Major: {profile.major}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Interest: {profile.interest || 'No interest provided'}
+            Interest: {profile.interest}
           </Typography>
         </Grid>
         <Grid item xs={12}>
           <Typography variant="body1">
-            Mentorship status: {profile.mentorship || 'Mentorship status not specified'}
+            Mentorship status: {profile.mentorship}
           </Typography>
         </Grid>
         <Grid item xs={12}>
@@ -233,7 +231,7 @@ function Profile() {
 
         {profile && (
       <Modal
-      open={open}
+      open={isModalOpen}
       onClose={handleClose}
       style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
     >
@@ -385,5 +383,4 @@ function Profile() {
     </Container>
   );
 }
-
 export default Profile;
