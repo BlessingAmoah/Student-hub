@@ -19,6 +19,7 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       profilePicture: user.profilePicture,
       interest: user.interest,
       mentorship: user.mentorship,
+      school: user.school,
     }));
 
     // return the formatted data
