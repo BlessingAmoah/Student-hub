@@ -85,6 +85,8 @@ router.get('/checkVerificationCode', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
+
+    console.log('Verification code in database:', user.verificationCode);
     res.status(200).json({ verificationCode: user.verificationCode });
   } catch (error) {
     console.error('Database error:', error);
@@ -94,7 +96,10 @@ router.get('/checkVerificationCode', async (req, res) => {
 
 // POST route for email verification
 router.post('/verify', async (req, res) => {
+  console.log('Received verify request');
+
   const { email, code } = req.body;
+
   try {
     const user = await User.findOne({ where: { email, verificationCode: code } });
     if (!user) {
@@ -103,14 +108,18 @@ router.post('/verify', async (req, res) => {
 
   // verification code expiration check.
   const currentTime = new Date();
+  console.log('Current time:',currentTime);
+  console.log('Expiration time:', user.expirationTimestamp)
   if (user.expirationTimestamp < currentTime) {
     return res.status(400).json({ error: 'Verification code has expired.' });
   }
+
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     user.verificationCode = null;
     user.emailVerified = true;
     await user.save();
+
 
     res.status(200).json({ token, message: 'Email verified successfully.' });
   } catch (error) {
@@ -122,6 +131,7 @@ router.post('/verify', async (req, res) => {
 // resend verification code
 router.post('/resendverification', async (req, res) => {
   const { email } = req.body;
+
   try {
     const user = await User.findOne({ where: { email} });
     if (!user || user.emailVerified) {
@@ -160,23 +170,28 @@ schedule.scheduleJob('*/10 * * * *', async () => {
 });
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
+
   try {
     // Check if the user exists
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+
  // Check if the email is verified
  if (!user.emailVerified) {
   return res.status(401).json({ error: 'Email not verified' });
 }
+
     // Verify the password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid password' });
     }
+
     // Generate JWT token
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ id: user.id, tokenVersion: user.tokenVersion }, process.env.JWT_SECRET, { expiresIn: '1h' });
     // Return the token as JSON response
     res.status(200).json({ token, userId: user.id });
   } catch (error) {
@@ -184,29 +199,66 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+// password request code
+router.post('/password-resetcode', async (req, res) => {
+  const { email } = req.body;
 
-// GET route for dashboard data
-router.get('/dashboard', verifyToken, async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id);
+    const user = await User.findOne({ where: { email }});
+    if (!user) {
+      return res.status(400).json({ error: 'User not found'});
+    }
+
+    //generate code for verification
+    const codeReset = generateVerificationCode();
+    user.verificationCode = codeReset;
+    await user.save();
+
+    await sendVerificationEmail(email, codeReset);
+    res.status(200).json({ message: 'Password reset code has been sent to your email.'});
+  } catch(error) {
+    console.error('Password reset code reqest error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// reset password
+router.post('/reset-password', async (req, res) => {
+  const { email, code, newPassword, confirmPassword } = req.body;
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({ error: 'Passwords do match. Try again!!!' })
+  }
+
+  try {
+    const user = await User.findOne({ where: { email }});
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const dashboardData = {
-      message: `Welcome to your dashboard, ${user.name}!`
-    };
+    // check if the code matches the code stored in the database
+    if (user.verificationCode !== code){
+      return res.status(400).json({ error: 'Invalid code.'});
+    }
 
-    res.status(200).json(dashboardData);
+    // reset password and clear the verification code after successful verification
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    user.verificationCode = null;
+    user.tokenVersion += 1;
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successful.'})
   } catch (error) {
-    console.error('Dashboard fetch error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Password reset error:', error);
+    res.status(500).json({ error: 'Internal server error'});
   }
-});
+})
 
 router.get('/user/:userId', async (req, res) => {
   const userId = req.params.userId;
+
   try{
     const user = await User.findByPk(userId);
     if(!user){
@@ -220,16 +272,42 @@ router.get('/user/:userId', async (req, res) => {
   }
 })
 
+// GET route for dashboard data
+router.get('/dashboard', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+
+    const dashboardData = {
+      message: `Welcome to your dashboard, ${user.name}!`
+
+    };
+
+    res.status(200).json(dashboardData);
+  } catch (error) {
+    console.error('Dashboard fetch error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 //GET route for course data
 router.get('/courses', verifyToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+
     const coursesData = {
       message: `Welcome to your dashboard, ${user.name}!`
+
     };
+
     res.status(200).json(coursesData);
   } catch (error) {
     console.error('Courses fetch error:', error);
@@ -241,17 +319,23 @@ router.get('/courses', verifyToken, async (req, res) => {
 router.get('/mentorship', verifyToken, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
+
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+
     const mentorsData = {
       message: `Welcome to the mentorship page, ${user.name}!`
+
     };
+
     res.status(200).json(mentorsData);
   } catch (error) {
     console.error('Mentors fetch error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 module.exports = router;

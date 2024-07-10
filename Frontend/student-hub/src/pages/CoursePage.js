@@ -3,6 +3,8 @@ import { Grid, Typography, Container, Button, TextField, Card, CardContent, Card
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
+import { useError } from '../components/ErrorContext'
+
 
 // search styling
 const SearchContainer = styled(Paper)({
@@ -23,21 +25,23 @@ const SearchIconButton = styled(IconButton)({
 
 function CoursePage() {
     const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
-    const [error, setError] = useState('');
+    const [error] = useState('');
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
-    const [filteredData, setFilteredData] = useState(null);
-    const [openCreateModal, setOpenCreateModal] = useState(false);
-    const [openCommentsModal, setOpenCommentsModal] = useState(false);
+    const [filteredData, setFilteredData] = useState([]);
+    const [isOpenCreateModal, setIsOpenCreateModal] = useState(false);
+    const [isOpenCommentsModal, setIsOpenCommentsModal] = useState(false);
     const [currentComments, setCurrentComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [currentPostId, setCurrentPostId] = useState(null);
     const [media, setMedia] = useState(null);
     const [selectedEmoji, setSelectedEmoji] = useState({});
     const [emojis, setEmojis] = useState([])
+    const { setError } = useError();
+
 
 // emoji
     useEffect(() => {
@@ -45,16 +49,17 @@ function CoursePage() {
             try{
                 const response = await fetch(`${process.env.REACT_APP_API}/emoji`);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch emojis');
+                    setError(error.message)
+
                 }
                 const emojistData = await response.json();
                 setEmojis(emojistData);
             } catch (error) {
-                console.error('Error fetching emojis:', error);
+                setError(error.message)
             }
         };
         fetchEmojis();
-    }, []);
+    });
 //fetch data
     useEffect(() => {
         const fetchData = async () => {
@@ -73,26 +78,25 @@ function CoursePage() {
                 if (media) formData.append('media', media);
 
                 const response = await fetch(`${process.env.REACT_APP_API}/post`, {
+
+
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`,
                     },
                 });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch posts');
-                }
+                setIsLoading(false);
                 const result = await response.json();
                 setData(result);
                 setFilteredData(result);
-                setLoading(false);
             } catch (error) {
-                setError(error.message);
-                setLoading(false);
+                setError('Failed to fetch data:', error);
+
             }
         };
         fetchData();
-    }, [navigate, title, content, selectedEmoji, media, currentPostId]);
+    }, [navigate, title, content, selectedEmoji, media, currentPostId, setError]);
 
 //post fetching
     const handlePostSubmit = async (event ) => {
@@ -110,8 +114,8 @@ function CoursePage() {
                 formData.append('emojiId', selectedEmoji[currentPostId] || '');
                 if (media) formData.append('media', media);
 
-
             const response = await fetch(`${process.env.REACT_APP_API}/post`, {
+
                 method: 'POST',
                 headers: {
 
@@ -120,7 +124,8 @@ function CoursePage() {
                 body: formData,
             });
             if (!response.ok) {
-                throw new Error('Failed to create post');
+                setError('Failed to submit:', error);
+
             }
             const newPost = await response.json();
             setData(prevData => [newPost, ...prevData]);
@@ -129,7 +134,7 @@ function CoursePage() {
             setContent('');
             setMedia(null);
             setSelectedEmoji({ ...selectedEmoji, [newPost.id]: null })
-            setOpenCreateModal(false);
+            setIsOpenCreateModal(false);
         } catch (error) {
             setError(error.message);
         }
@@ -155,15 +160,20 @@ function CoursePage() {
                 body: JSON.stringify({ content: newComment }),
             });
             if (!response.ok) {
-                throw new Error('Failed to add comment');
+                setError('Failed to submit comment:', error);
             }
+            const updatePostComments = (post, newComment, currentPostId) => {
+                if (post.id === currentPostId) {
+                    return { ...post, Comments: [...post.Comments, newComment]};
+                }
+                return post;
+            };
             const newCommentResponse = await response.json();
             // Update currentComments state
             setCurrentComments(prevComments => [...prevComments, newCommentResponse]);
             setCurrentComments(currentComments)
-            setData(data.map(post => post.id === currentPostId ? { ...post, Comments: [...post.Comments, newCommentResponse] } : post));
-            setFilteredData(filteredData.map(post => post.id === currentPostId ? { ...post, Comments: [...post.Comments, newCommentResponse] } : post));
-
+            setData(data.map(post => updatePostComments(post, newCommentResponse, currentPostId)));
+            setFilteredData(filteredData.map(post =>updatePostComments(post, newCommentResponse, currentPostId)));
             setNewComment('');
         } catch (error) {
             setError(error.message);
@@ -177,7 +187,9 @@ const handleLike = async (postId) => {
             navigate('/login');
             return;
         }
+
         const response = await fetch(`${process.env.REACT_APP_API}/post/${postId}/like`, {
+
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -186,11 +198,17 @@ const handleLike = async (postId) => {
             body: JSON.stringify({ emojiId: selectedEmoji[postId] || '' }),
         });
         if (!response.ok) {
-            throw new Error('Failed to like post');
+            setError('Failed to like:', error);
+        }
+        const updatePostLikes = (post, newLike, postId) => {
+            if (post.id === postId) {
+                return {...post, Likes: [...post.Likes, newLike]}
+            }
+            return post;
         }
         const newLike = await response.json();
-        setData(data.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
-        setFilteredData(filteredData.map(post => post.id === postId ? { ...post, Likes: [...post.Likes, newLike] } : post));
+        setData(data.map(post => updatePostLikes(post, newLike)));
+        setFilteredData(filteredData.map(post => updatePostLikes(post, newLike)));
     } catch (error) {
         setError(error.message);
     }
@@ -207,21 +225,21 @@ const handleLike = async (postId) => {
     };
 
     const handleOpenCreateModal = () => {
-        setOpenCreateModal(true);
+        setIsOpenCreateModal(true);
     };
 
     const handleCloseCreateModal = () => {
-        setOpenCreateModal(false);
+        setIsOpenCreateModal(false);
     };
 
     const handleOpenCommentsModal = (postId, comments) => {
         setCurrentPostId(postId);
         setCurrentComments(comments);
-        setOpenCommentsModal(true);
+        setIsOpenCommentsModal(true);
     };
 
     const handleCloseCommentsModal = () => {
-        setOpenCommentsModal(false);
+        setIsOpenCommentsModal(false);
     };
 
     // file change
@@ -229,7 +247,7 @@ const handleLike = async (postId) => {
         setMedia(event.target.files[0])
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <Container maxWidth="sm">
                 <Grid container spacing={2} alignItems="center" justifyContent="center" style={{ minHeight: '80vh' }}>
@@ -318,8 +336,8 @@ const handleLike = async (postId) => {
                                         inputProps={{ 'aria-label': 'Select Emoji' }}
                                     >
                                          <MenuItem value=""><span role="img" aria-label="default emoji">👍🏻</span></MenuItem>
-                                        {emojis.map((emoji, index) => (
-                                            <MenuItem key={index} value={emoji.character}>
+                                        {emojis.map((emoji, id) => (
+                                            <MenuItem key={id} value={emoji.character}>
                                                 {emoji.character}
                                             </MenuItem>
                                         ))}
@@ -333,7 +351,7 @@ const handleLike = async (postId) => {
                     </Grid>
                 ))}
             </Grid>
-            <Dialog open={openCreateModal} onClose={handleCloseCreateModal}>
+            <Dialog open={isOpenCreateModal} onClose={handleCloseCreateModal}>
                 <form onSubmit={handlePostSubmit}>
                 <DialogTitle>Create a New Post</DialogTitle>
                 <DialogContent>
@@ -370,7 +388,7 @@ const handleLike = async (postId) => {
                 </DialogActions>
                 </form>
             </Dialog>
-            <Dialog open={openCommentsModal} onClose={handleCloseCommentsModal}>
+            <Dialog open={isOpenCommentsModal} onClose={handleCloseCommentsModal}>
             <DialogTitle>Comments</DialogTitle>
                 <DialogContent>
                     {currentComments.map(comment => (

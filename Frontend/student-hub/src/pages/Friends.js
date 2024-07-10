@@ -5,6 +5,7 @@ import  Add  from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import getUserIDToken from '../components/utils';
+import { useError } from '../components/ErrorContext'
 
 
 // search styling
@@ -21,11 +22,12 @@ const SearchInput = styled(InputBase)({
     flex: 1,
 });
 
-const FriendsList = ({ setOpen, setError}) => {
+const FriendsList = () => {
     const [friends, setFriends] = useState([]);
     const [availableFriend, setAvailableFriend] = useState([]);
     const [recommendedFriends, setRecommendedFriends] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const { setError } = useError();
     const [filteredData, setFilteredData] = useState({
         friends: [],
         recommendedFriends: [],
@@ -49,11 +51,11 @@ const FriendsList = ({ setOpen, setError}) => {
                 });
              })
              .catch(error => {
-                console.error('Error fetching data:', error);
+                setError('Error fetching data:', error);
              });
         };
         fetchData();
-    }, []);
+    },[]);
 
 
 
@@ -73,8 +75,6 @@ const fetchFriends = async () => {
         setFriends(filteredFriends)
         return filteredFriends;
     }catch (error) {
-        console.error('Error fetching friends:', error);
-        setOpen(true);
         setError(error.message);
       }
 
@@ -88,17 +88,18 @@ const fetchRecommendedFriends = async () => {
             method: 'GET',
             headers: { Authorization: `Bearer ${token}`}
         });
-        if (!response.ok) {
-            throw new Error(`Failed to fetch recommended friends: ${response.statusText}`);
-        }
+            if (!response.ok) {
+            const errorData = await response.json();
+                setError(errorData.message );
+                return;
+
+            }
         //update recommended friends state
         const data = await response.json();
         const filteredRecommendedFriends = data.filter(friend => friend.id !== userId);
         setRecommendedFriends(filteredRecommendedFriends)
         return filteredRecommendedFriends;
     } catch (error) {
-        console.error('Error fetching recommended friends:', error);
-        setOpen(true);
         setError(error.message);
     }
 };
@@ -112,7 +113,9 @@ const fetchAvailableFriend = async () => {
             headers: { Authorization: `Bearer ${token}`}
         });
         if (!response.ok) {
-            throw new Error(`Failed to fetch available friends: ${response.statusText}`);
+            const errorData = await response.json();
+                setError(errorData.message );
+                return;
         }
         //filter out the current user from the available friends
         //update available friends state
@@ -121,8 +124,6 @@ const fetchAvailableFriend = async () => {
         setAvailableFriend(filteredAvailableFriend);
         return filteredAvailableFriend;
     } catch (error) {
-        console.error('Error fetching available people:', error.message);
-        setOpen(true);
         setError(error.message);
     }
 };
@@ -141,7 +142,9 @@ const handleAddFriend = async (friendId) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to add friend: ${response.statusText}`);
+            const error= await response.json();
+                setError(error.message );
+                return;
         }
 
         //After successfully adding friend, fetch updated data
@@ -155,8 +158,6 @@ const handleAddFriend = async (friendId) => {
             availableFriend: updatedAvailableFriend
         });
     } catch (error) {
-        console.error('Error adding friend:', error);
-        setOpen(true);
         setError(error.message);
     }
 };
@@ -175,7 +176,9 @@ const handleRemoveFriend = async (friendId) => {
         });
 
         if (!response.ok) {
-            throw new Error(`Failed to remove friend: ${response.statusText}`);
+            const error= await response.json();
+                setError(error.message );
+                return;
         }
         //After successfully removing friend, fetch updated data
         const updatedFriends = await fetchFriends();
@@ -188,8 +191,6 @@ const handleRemoveFriend = async (friendId) => {
             availableFriend: updatedAvailableFriend
         });
     } catch (error) {
-        console.error('Error removing friend:', error)
-        setOpen(true);
         setError(error.message);
     }
 };
@@ -201,24 +202,24 @@ const handleSearch = (event) => {
 
     //filter friends, recommeded friends and available friend based on search term
     const filteredFriends = friends.filter(person =>
-        person.name.toLowerCase().includes(searchTerm) ||
-        person.interest.toLowerCase().includes(searchTerm) ||
-        person.school.toLowerCase().includes(searchTerm) ||
-        person.major.toLowerCase().includes(searchTerm)
+        person.name?.toLowerCase().includes(searchTerm) ||
+        person.interest?.toLowerCase().includes(searchTerm) ||
+        person.school?.toLowerCase().includes(searchTerm) ||
+        person.major?.toLowerCase().includes(searchTerm)
         );
 
     const filteredRecommendedFriends = recommendedFriends.filter(friend =>
-        friend.name.toLowerCase().includes(searchTerm)  ||
-        friend.interest.toLowerCase().includes(searchTerm) ||
-        friend.school.toLowerCase().includes(searchTerm) ||
-        friend.major.toLowerCase().includes(searchTerm)
+        friend.name?.toLowerCase().includes(searchTerm)  ||
+        friend.interest?.toLowerCase().includes(searchTerm) ||
+        friend.school?.toLowerCase().includes(searchTerm) ||
+        friend.major?.toLowerCase().includes(searchTerm)
         );
 
     const filteredAvailableFriend = availableFriend.filter(person =>
-        person.name.toLowerCase().includes(searchTerm) ||
-        person.interest.toLowerCase().includes(searchTerm) ||
-        person.school.toLowerCase().includes(searchTerm) ||
-        person.major.toLowerCase().includes(searchTerm)
+        person.name?.toLowerCase().includes(searchTerm) ||
+        person.interest?.toLowerCase().includes(searchTerm) ||
+        person.school?.toLowerCase().includes(searchTerm) ||
+        person.major?.toLowerCase().includes(searchTerm)
         );
 
     //update filtered data
