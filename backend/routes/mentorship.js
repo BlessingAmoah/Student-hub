@@ -43,7 +43,7 @@ router.post('/request-mentor', verifyToken, async (req, res) => {
     }
 
     // update user's status for mentor request
-    await User.update({ status: 'requested', note }, { where: { id: req.userId } });
+    await User.update({ mentorId: userId, status: 'requested', note }, { where: { id: req.userId } });
 
     res.status(201).json({ message: 'Mentor request sent successfully' });
   }catch (error) {
@@ -60,7 +60,7 @@ router.get('/mentor-requests', verifyToken, async (req, res) => {
         mentorship: 'Mentee',
         status: 'requested'
       },
-      attributes: ['id', 'name', 'profilePicture', 'interest', 'mentorship', 'note', 'status'],
+      attributes: ['id', 'name', 'profilePicture', 'interest', 'mentorship', 'note', 'status', 'mentorId'],
     })
     res.status(200).json(mentorshipRequest);
   } catch (error) {
@@ -71,7 +71,7 @@ router.get('/mentor-requests', verifyToken, async (req, res) => {
 
 //respond to a mentorship request
 router.post('/respond-mentorship', verifyToken, async (req, res) => {
-  const { userId, status } = req.body;
+  const { userId,mentorId, status } = req.body;
 
   try {
     const mentee = await User.findByPk(userId);
@@ -82,8 +82,15 @@ router.post('/respond-mentorship', verifyToken, async (req, res) => {
 
     // Update mentee's status based on accepted or rejected
     if(mentee) {
-      await User.update({ status: status }, { where: { id: userId}});
+      await User.update({ status: status}, { where: { id: userId}});
     }
+
+     // Update mentorId only if status is accepted
+     if (status === 'accepted')
+       {
+        await User.update({ mentorId }, { where: { id: userId } });
+      }
+
     res.status(200).json({ message: 'Mentorship status updated successfully'});
   } catch (error) {
     console.error('Respond mentorship error:', error)
@@ -95,32 +102,23 @@ router.post('/respond-mentorship', verifyToken, async (req, res) => {
 router.get('/:userId/mentees', verifyToken, async (req, res) => {
   try{
     const userId = parseInt(req.params.userId);
-    console.log((`fetching mentees for userId: ${userId}`))
 
-    const mentees = await User.findAll({
+    const mentor = await User.findOne({
+      where: { id: userId}
+    })
+
+    if (!mentor) {
+      return res.status(404).json({error: 'No mentor found'})
+    }
+
+    const mentees = await mentor.getMentees({
       where: {
-        id: userId,
         status: 'accepted',
       },
       attributes: ['id', 'name', 'major', 'school', 'interest', 'email', 'profilePicture', 'bio']
     });
 
-    if (!mentees) {
-      return res.status(404).json({error: 'No mentees found for this mentor'})
-    }
-    console.log('Mentees:', mentees)
-    const formatMentee = mentees.map(user => ({
-      id: user.id,
-      name: user.name,
-      school: user.school,
-      major: user.major,
-      interest: user.interest,
-      email: user.email,
-      profilePicture: user.profilePicture,
-      bio: user.bio
-    }))
-    console.log('Mentees found:', formatMentee)
-    res.status(200).json(formatMentee)
+    res.status(200).json(mentees)
   }catch (error) {
     console.error('Error fetching mentees:', error);
     res.status(400).json({ error: 'No mentees found for this mentor'})

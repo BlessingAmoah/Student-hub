@@ -38,7 +38,7 @@ function MentorshipPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const {error, setError } = useError();
   const [isOpenRequestDialog, setIsOpenRequestDialog] = useState(false);
-  const [selectdMentorId, setSelectedMentorId] = useState(null);
+  const [selectedMentorId, setSelectedMentorId] = useState(null);
   const [note, setNote] = useState('');
   const [mentorshipRequest, setMentorshipRequest] = useState([]);
   const [isOpenSideBar, setIsOpenSideBar] = useState(false);
@@ -54,9 +54,10 @@ function MentorshipPage() {
     const fetchMentorships = async () => {
       setIsLoading(true)
       try {
+        const { token } = getUserIDToken();
         const response = await fetch(`${process.env.REACT_APP_API}/mentorship/mentorship`, {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -79,10 +80,11 @@ function MentorshipPage() {
   useEffect(() => {
     const fetchMentorshipRequest = async () => {
       try {
+        const { token } = getUserIDToken();
         const response = await fetch(`${process.env.REACT_APP_API}/mentorship/mentor-requests`, {
           method: 'GET',
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -108,13 +110,14 @@ function MentorshipPage() {
   //request mentor
   const handleRequestMentor = async () => {
     try {
+      const { token } = getUserIDToken();
       const response = await fetch(`${process.env.REACT_APP_API}/mentorship/request-mentor`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionStorage.getItem('token')}`
+          Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ userId: selectdMentorId, note })
+        body: JSON.stringify({ userId: selectedMentorId, note })
       });
 
       if (!response.ok) {
@@ -125,18 +128,21 @@ function MentorshipPage() {
       handleCloseRequestDialog();
     } catch (error) {
       setError('Error requesting mentor:', error)
+
     }
   };
 
-  const handleRespondMentorship = async (userId, status) => {
+  // respond to a mentor ship request.
+  const handleRespondMentorship = async (userId,mentorId, status) => {
     try{
+      const { token } = getUserIDToken();
       const response = await fetch(`${process.env.REACT_APP_API}/mentorship/respond-mentorship`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionStorage.getItem('token')}`,
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ userId, status})
+        body: JSON.stringify({ userId,mentorId, status})
       });
 
       if (!response.ok) {
@@ -152,6 +158,7 @@ function MentorshipPage() {
     }
   };
 
+  // fetch mentees information for a mentor
   const fetchMentees = async () => {
     try{
       const { userId, token } = getUserIDToken();
@@ -346,19 +353,20 @@ function MentorshipPage() {
                   <Typography variant="body2">{request.interest}</Typography>
                   <Typography variant="body2">{request.school}</Typography>
                   <Typography variant="body2">{request.note}</Typography>
+                  <Typography variant="body2">{request.mentorId}</Typography>
                 </CardContent>
                 <CardActions>
                   <Button
                     variant="contained"
                     color="primary"
-                    onClick={() => handleRespondMentorship(request.id, 'accepted')}
+                    onClick={() => handleRespondMentorship(request.id,request.mentorId, 'accepted')}
                   >
                     Accept
                   </Button>
                   <Button
                     variant="contained"
                     color="secondary"
-                    onClick={() => handleRespondMentorship(request.id, 'rejected')}
+                    onClick={() => handleRespondMentorship(request.id,request.mentorId,  'rejected')}
                   >
                     Reject
                   </Button>
