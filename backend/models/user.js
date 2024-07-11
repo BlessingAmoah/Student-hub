@@ -52,10 +52,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
-      state: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
       school: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -72,6 +68,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: true,
       },
+      status: {
+        type: DataTypes.ENUM('accepted', 'rejected', 'requested'),
+        defaultValue: 'none',
+      },
+      note: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       expirationTimestamp: {
         type: DataTypes.DATE,
         allowNull: true,
@@ -79,6 +83,10 @@ module.exports = (sequelize, DataTypes) => {
       tokenVersion: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
+      },
+      mentorId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -95,12 +103,15 @@ module.exports = (sequelize, DataTypes) => {
     );
 
 
+
     User.associate = (models) => {
       User.hasMany(models.Post, { foreignKey: 'userId' });
       User.hasMany(models.Comment, { foreignKey: 'userId' });
       User.hasMany(models.Like, { foreignKey: 'userId' });
       User.hasMany(models.Friend, { as: 'UserFriends', foreignKey: 'userId'});
       User.hasMany(models.Friend, { as: 'FriendUserFriends', foreignKey: 'friendId'})
+      User.hasMany(models.User, { as: 'Mentees', foreignKey: 'mentorId'})
+      User.belongsTo(models.User, { as: 'Mentor', foreignKey: 'mentorId'})
     };
 
     return User;

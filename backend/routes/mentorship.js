@@ -2,11 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { User } = require('../models');
 const verifyToken = require('../middleware/auth');
+const { Op } = require('sequelize');
 
 //get route for mentorship information
 router.get('/mentorship', verifyToken, async (req, res) => {
   try {
 
+    const userId = req.userId
     // fetch all users
     const users = await User.findAll({
       attributes: ['id', 'name', 'profilePicture', 'interest', 'mentorship', 'school'],
@@ -20,7 +22,7 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       interest: user.interest,
       mentorship: user.mentorship,
       school: user.school,
-    }));
+    })).filter (user => user.id !== userId);
 
     // return the formatted data
     res.status(200).json({ users: formattedUser || users});
@@ -32,7 +34,7 @@ router.get('/mentorship', verifyToken, async (req, res) => {
 
 // request a mentor
 router.post('/request-mentor', verifyToken, async (req, res) => {
-  const { userId, note } = re.body
+  const { userId, note } = req.body
 
   try{
     const mentor = await User.findByPk(userId);
@@ -51,7 +53,7 @@ router.post('/request-mentor', verifyToken, async (req, res) => {
 });
 
 // fetch mentorship request for a mentor
-router.get('/mentor-requests', verifyToken, async (res) => {
+router.get('/mentor-requests', verifyToken, async (req, res) => {
   try {
     const mentorshipRequest = await User.findAll({
       where: {
@@ -88,5 +90,42 @@ router.post('/respond-mentorship', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Internal server error'});
   }
 })
+
+//Get Mentees List
+router.get('/:userId/mentees', verifyToken, async (req, res) => {
+  try{
+    const userId = parseInt(req.params.userId);
+    console.log((`fetching mentees for userId: ${userId}`))
+
+    const mentees = await User.findAll({
+      where: {
+        id: userId,
+        status: 'accepted',
+      },
+      attributes: ['id', 'name', 'major', 'school', 'interest', 'email', 'profilePicture', 'bio']
+    });
+
+    if (!mentees) {
+      return res.status(404).json({error: 'No mentees found for this mentor'})
+    }
+    console.log('Mentees:', mentees)
+    const formatMentee = mentees.map(user => ({
+      id: user.id,
+      name: user.name,
+      school: user.school,
+      major: user.major,
+      interest: user.interest,
+      email: user.email,
+      profilePicture: user.profilePicture,
+      bio: user.bio
+    }))
+    console.log('Mentees found:', formatMentee)
+    res.status(200).json(formatMentee)
+  }catch (error) {
+    console.error('Error fetching mentees:', error);
+    res.status(400).json({ error: 'No mentees found for this mentor'})
+  }
+})
+
 
 module.exports = router;
