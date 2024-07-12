@@ -271,10 +271,20 @@ function MentorshipPage() {
         </SearchIconButton>
       </SearchContainer>
 
-<Button onClick={handleOpenMenteeList}>Mentee List</Button>
-<Button onClick={handlePendingRequest}>Pending Request</Button>
-<Button onClick={handleOpenMentorList}>Mentor</Button>
-
+{userRole === 'Mentor' ? (
+  <Grid container spacing={2} alignItems="center" justify="center">
+    <Grid item xs={12}>
+      <Button onClick={handleOpenMenteeList}>Mentee List</Button>
+      <Button onClick={handlePendingRequest}>Pending Request</Button>
+    </Grid>
+  </Grid>
+) : (
+  <Grid container spacing={2} alignItems="center" justify="center">
+    <Grid item xs={12}>
+      <Button onClick={handleOpenMentorList}>Mentor</Button>
+    </Grid>
+  </Grid>
+)}
         </Grid>
        {filteredMentorship.map((mentorship) => {
         if (mentorship.mentorship === 'Mentor') {
