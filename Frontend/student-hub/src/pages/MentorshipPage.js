@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent, CardActions, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Box, List,Drawer, ListItem, ListItemText, Divider } from '@mui/material';
+import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent, CardActions, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
 import Skeleton from '@mui/material/Skeleton'
 import getUserIDToken from '../components/utils';
 
-
 //search styling
 const SearchContainer = styled(Paper)({
     display: 'flex',
     alignItems: 'center',
     padding: '2px 4px',
-    marginBottm: '20px'
+    marginBottom: '20px'
   })
 
   const SearchInput = styled(InputBase)({
@@ -31,7 +30,6 @@ const SearchContainer = styled(Paper)({
     },
   });
 
-
 function MentorshipPage() {
   const [mentorships, setMentorships] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,13 +39,11 @@ function MentorshipPage() {
   const [selectedMentorId, setSelectedMentorId] = useState(null);
   const [note, setNote] = useState('');
   const [mentorshipRequest, setMentorshipRequest] = useState([]);
-  const [isOpenSideBar, setIsOpenSideBar] = useState(false);
   const [filteredMentorshipRequest, setFilteredMentorshipRequest] = useState([]);
   const [isPendingRequestDialogOpen, setIsPendingRequestDialogOpen] = useState(false);
-  const [isMember, setIsMember] = useState(false);
+  const [userRole, setUserRole] = useState(null)
   const [filteredMenteeList, setFilteredMenteeList] = useState([]);
-
-
+  const [filteredMentorList, setFilteredMentorList] = useState([]);
 
   // fetch mentorship informations
   useEffect(() => {
@@ -91,7 +87,6 @@ function MentorshipPage() {
         if (!response.ok) {
           setError('Failed to fetch mentorship');
         }
-
         const requestData = await response.json();
         setMentorshipRequest(requestData);
       }
@@ -100,7 +95,7 @@ function MentorshipPage() {
       }
     };
     fetchMentorshipRequest();
-  }, [])
+  }, [setError])
 
   //search
   const handleSearch = (event) => {
@@ -123,16 +118,14 @@ function MentorshipPage() {
       if (!response.ok) {
         setError('Failed to fetch mentorship');
       }
-
       alert('Mentor request sent successfuly');
       handleCloseRequestDialog();
     } catch (error) {
       setError('Error requesting mentor:', error)
-
     }
   };
 
-  // respond to a mentor ship request.
+  // respond to a mentorship request.
   const handleRespondMentorship = async (userId,mentorId, status) => {
     try{
       const { token } = getUserIDToken();
@@ -169,15 +162,29 @@ function MentorshipPage() {
           Authorization: `Bearer ${token}`
         }
       });
-
       const data = await response.json();
-
-      const filteredMenteeList = data.filter(person => person.id !== userId);
-      setFilteredMenteeList(filteredMenteeList)
+        setFilteredMenteeList(data)
     } catch(error) {
       setError('Error fetching mentees')
     }
   }
+
+  // fetch mentor information for mentee
+    const fetchMentor = async () => {
+      try {
+        const { userId, token } = getUserIDToken();
+        const response = await fetch(`${process.env.REACT_APP_API}/mentorship/${userId}/mentor`,{
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data= await response.json();
+        setFilteredMentorList(data)
+      } catch (error) {
+        setError('Failed to fetch mentor')
+      }
+    };
 
   const handleOpenRequestDialog = (userId) => {
     setSelectedMentorId(userId);
@@ -190,10 +197,6 @@ function MentorshipPage() {
     setNote('');
   }
 
-  const handleToggleSideBar = (open) => {
-   setIsOpenSideBar(open);
-  }
-
   const handlePendingRequest = () => {
     const pendingRequest = mentorshipRequest.filter(
       (request) => request.mentorship === 'Mentee' && request.status === 'requested'
@@ -202,35 +205,29 @@ function MentorshipPage() {
     setIsPendingRequestDialogOpen(true);
   }
 
-  const handleMenteeList = async () => {
+  const handleOpenMenteeList = async () => {
+    setUserRole('Mentee')
    await fetchMentees();
-   setIsMember(true)
   }
   const handleClosePendingRequest = () => {
     setIsPendingRequestDialogOpen(false);
   }
 
   const handleCloseMenteeList = () => {
-    setIsMember(false);
+    setUserRole(null);
   }
+  const handleOpenMentorList = async () => {
+    setUserRole('Mentor');
+    await fetchMentor();
 
-  const sideBar = (
-    <Box sx={{ width: 250 }} role="presentation">
-      <List>
-        {[ 'Pending request', 'Members'].map ((text, bar) => (
-          <ListItem button disablePadding key={text} onClick={text === 'Pending request' ? handlePendingRequest : text === 'Members' ? handleMenteeList : null}>
-            {bar > 0 && <Divider />}
-             <ListItemText primary={text} />
-          </ListItem>
-        ))}
-      </List>
-    </Box>
-  )
+   }
+   const handleCloseMentorList = () => {
+    setUserRole(null);
+   }
 
   const filteredMentorship = mentorships.filter((mentorship) =>
   mentorship.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
 
   if (isLoading) {
     return (
@@ -273,10 +270,11 @@ function MentorshipPage() {
           <SearchIcon />
         </SearchIconButton>
       </SearchContainer>
-      <Button onClick={() => handleToggleSideBar(true)}>sideBar</Button>
-      <Drawer open={isOpenSideBar} onClose={() => handleToggleSideBar(false)}>
-        {sideBar}
-      </Drawer>
+
+<Button onClick={handleOpenMenteeList}>Mentee List</Button>
+<Button onClick={handlePendingRequest}>Pending Request</Button>
+<Button onClick={handleOpenMentorList}>Mentor</Button>
+
         </Grid>
        {filteredMentorship.map((mentorship) => {
         if (mentorship.mentorship === 'Mentor') {
@@ -310,6 +308,7 @@ function MentorshipPage() {
                 return null;
               })}
       </Grid>
+
       {/* Request Mentor Dialog */}
       <Dialog open={isOpenRequestDialog} onClose={handleCloseRequestDialog}>
         <DialogTitle>Request Mentor</DialogTitle>
@@ -383,35 +382,64 @@ function MentorshipPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Mentee */}
-      <Dialog open={isMember} onClose={handleCloseMenteeList}>
-      <DialogTitle>Mentorship Partner</DialogTitle>
-      <DialogContent>
-      {filteredMenteeList.length === 0 ? (
-            <Typography variant="body1">No Mentee Found.</Typography>
-          ):(
-            filteredMenteeList.map((mentee)=> (
-              <Card key={mentee.id} style={{ marginBottom: '10px'}}>
-                <CardContent>
-                <Avatar alt={mentee.name} src={mentee.profilePicture} />
-                  <Typography variant="h6">{mentee.name}</Typography>
-                  <Typography variant="body2">{mentee.interest}</Typography>
-                  <Typography variant="body2">{mentee.school}</Typography>
-                  <Typography variant="body2">{mentee.major}</Typography>
-                  <Typography variant="body2">{mentee.email}</Typography>
-                  <Typography variant="body2">{mentee.bio}</Typography>
-                </CardContent>
-                </Card>
+      {/* Mentee informations */}
+{ userRole === 'Mentee' && filteredMenteeList.length > 0 && (
+  <Dialog open={true} onClose={handleCloseMenteeList}>
+    <DialogTitle>Mentee List</DialogTitle>
+    <DialogContent>
+              {filteredMenteeList.length === 0 ? (
+                <Typography variant="body1">No Mentees Found.</Typography>
+              ) : (
+                filteredMenteeList.map((mentee) => (
+                  <Card key={mentee.id} style={{ marginBottom: '10px' }}>
+                    <CardContent>
+                      <Avatar alt={mentee.name} src={mentee.profilePicture} />
+                      <Typography variant="h6">{mentee.name}</Typography>
+                      <Typography variant="body2">{mentee.interest}</Typography>
+                      <Typography variant="body2">{mentee.school}</Typography>
+                      <Typography variant="body2">{mentee.major}</Typography>
+                      <Typography variant="body2">{mentee.email}</Typography>
+                      <Typography variant="body2">{mentee.bio}</Typography>
+                    </CardContent>
+                  </Card>
                 ))
-                )
-              }
-      </DialogContent>
-      <DialogActions>
-          <Button onClick={handleCloseMenteeList} color="primary">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseMenteeList} color="primary">
+                Close
+              </Button>
+            </DialogActions>
+  </Dialog>
+)}
+ {/* Mentor informations */}
+{ userRole === 'Mentor' && filteredMentorList.length > 0 && (
+  <Dialog open={true} onClose={handleCloseMentorList}>
+    <DialogTitle>Mentor</DialogTitle>
+            <DialogContent>
+              {filteredMentorList.length === 0 ? (
+                <Typography variant="body1">No Mentors Found.</Typography>
+              ) : (
+                filteredMentorList.map((mentor) => (
+                  <Card key={mentor.id} style={{ marginBottom: '10px' }}>
+                    <CardContent>
+                      <Avatar alt={mentor.name} src={mentor.profilePicture} />
+                      <Typography variant="h6">{mentor.name}</Typography>
+                      <Typography variant="body2">{mentor.interest}</Typography>
+                      <Typography variant="body2">{mentor.email}</Typography>
+                      <Typography variant="body2">{mentor.bio}</Typography>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseMentorList} color="primary">
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+)}
     </Container>
   );
 }

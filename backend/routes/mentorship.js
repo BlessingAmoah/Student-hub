@@ -98,7 +98,7 @@ router.post('/respond-mentorship', verifyToken, async (req, res) => {
   }
 })
 
-//Get Mentees List
+//Get Mentees List for a mentor
 router.get('/:userId/mentees', verifyToken, async (req, res) => {
   try{
     const userId = parseInt(req.params.userId);
@@ -125,5 +125,27 @@ router.get('/:userId/mentees', verifyToken, async (req, res) => {
   }
 })
 
+// get mentor list for a mentee
+router.get('/:userId/mentor', verifyToken, async (req, res) => {
+  try {
+    const mentee = await User.findOne({
+      where: { id: req.params.userId },
+    });
+
+    const mentor = await mentee.getMentor({
+      attributes: ['id', 'name', 'profilePicture', 'interest', 'bio', 'email']
+    });
+
+    if (!mentee || !mentor){
+      return res.status(404).json({ error: 'No mentor found'})
+    }
+    const mentorData = [mentor];
+    res.status(200).json(mentorData);
+    console.log('mentor:', mentor)
+  }catch(error) {
+    console.error('Error fetching mentor:', error);
+    res.status(500).json({ error: 'Internal server error'})
+  }
+});
 
 module.exports = router;
