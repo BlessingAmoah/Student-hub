@@ -84,6 +84,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      mentorId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,
@@ -99,12 +103,15 @@ module.exports = (sequelize, DataTypes) => {
     );
 
 
+
     User.associate = (models) => {
       User.hasMany(models.Post, { foreignKey: 'userId' });
       User.hasMany(models.Comment, { foreignKey: 'userId' });
       User.hasMany(models.Like, { foreignKey: 'userId' });
       User.hasMany(models.Friend, { as: 'UserFriends', foreignKey: 'userId'});
       User.hasMany(models.Friend, { as: 'FriendUserFriends', foreignKey: 'friendId'})
+      User.hasMany(models.User, { as: 'Mentees', foreignKey: 'mentorId'})
+      User.belongsTo(models.User, { as: 'Mentor', foreignKey: 'mentorId'})
     };
 
     return User;
