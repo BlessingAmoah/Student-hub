@@ -297,8 +297,8 @@ function MentorshipPage() {
           <Tooltip
               title={
                 <TooltipContent>
-                  <Typography variant="subtitle2">{mentorship.school}</Typography>
-                  <Typography variant="body2">{mentorship.bio}</Typography>
+                  <Typography variant="subtitle2">School: {mentorship.school}</Typography>
+                  <Typography variant="body2"> Bio: {mentorship.bio}</Typography>
                 </TooltipContent>
               }
               placement="top"
