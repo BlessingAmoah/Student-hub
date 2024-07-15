@@ -6,6 +6,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import getUserIDToken from '../components/utils';
 import { useError } from '../components/ErrorContext'
+import Skeleton from '@mui/material/Skeleton'
 
 
 // search styling
@@ -24,6 +25,7 @@ const SearchInput = styled(InputBase)({
 
 const FriendsList = () => {
     const [friends, setFriends] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
     const [availableFriend, setAvailableFriend] = useState([]);
     const [recommendedFriends, setRecommendedFriends] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -37,7 +39,7 @@ const FriendsList = () => {
     //fetch data
     useEffect(() => {
         const fetchData = async () => {
-
+            setIsLoading(true)
             const friendsPromise = fetchFriends();
             const avaialableFriendsPromise = fetchAvailableFriend();
             const recommendedFriendsPromise = fetchRecommendedFriends();
@@ -53,6 +55,7 @@ const FriendsList = () => {
              .catch(error => {
                 setError('Error fetching data:', error);
              });
+             setIsLoading(false)
         };
         fetchData();
     },[]);
@@ -62,6 +65,7 @@ const FriendsList = () => {
 
 // friends
 const fetchFriends = async () => {
+    setIsLoading(true)
     try {
         const { userId, token } = getUserIDToken();
         const response = await fetch(`${process.env.REACT_APP_API}/friends/${userId}`,{
@@ -73,15 +77,17 @@ const fetchFriends = async () => {
         const data = await response.json();
         const filteredFriends = data.filter(person => person.id !== userId);
         setFriends(filteredFriends)
+        setIsLoading(false);
         return filteredFriends;
     }catch (error) {
         setError(error.message);
       }
-
+      setIsLoading(false)
 };
 
 //recommended friends
 const fetchRecommendedFriends = async () => {
+    setIsLoading(true)
     try{
         const { userId, token } = getUserIDToken();
         const response = await fetch(`${process.env.REACT_APP_API}/friends/recommendedFriends/${userId}`, {
@@ -98,14 +104,17 @@ const fetchRecommendedFriends = async () => {
         const data = await response.json();
         const filteredRecommendedFriends = data.filter(friend => friend.id !== userId);
         setRecommendedFriends(filteredRecommendedFriends)
+        setIsLoading(false);
         return filteredRecommendedFriends;
     } catch (error) {
         setError(error.message);
     }
+    setIsLoading(false)
 };
 
 //Available friends
 const fetchAvailableFriend = async () => {
+    setIsLoading(true)
     try {
         const { userId, token } = getUserIDToken();
         const response = await fetch(`${process.env.REACT_APP_API}/friends/available/${userId}`, {
@@ -122,10 +131,12 @@ const fetchAvailableFriend = async () => {
         const data = await response.json();
         const filteredAvailableFriend = data.filter(person => person.id !== parseInt(userId));
         setAvailableFriend(filteredAvailableFriend);
+        setIsLoading(false);
         return filteredAvailableFriend;
     } catch (error) {
         setError(error.message);
     }
+    setIsLoading(false)
 };
 
 //add a friend
@@ -229,6 +240,22 @@ const handleSearch = (event) => {
         availableFriend: filteredAvailableFriend
     });
 };
+
+if (isLoading) {
+    return (
+      <Container maxWidth="sm">
+        <Grid container spacing={3} alignItems="center" justify="center">
+          {Array.from(new Array(6)).map((_, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Skeleton variant="rect" width="100%" height={150} />
+              <Skeleton variant="text" />
+              <Skeleton variant="text" />
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    );
+  }
 
 
 //rendering
