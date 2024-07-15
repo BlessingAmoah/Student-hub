@@ -89,166 +89,150 @@ router.get('/:userId', verifyToken, async (req, res) => {
     }
 });
 
-// friend recommendation
-router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
-    try{
-        const userId = req.params.userId;
+// Helper function to perform BFS
+const bfs = async (startUserId, degree) => {
+    let queue = [{ userId: startUserId, depth: 0 }];
+    let visited = new Set();
+    let friends = new Map();
 
-          // fetch current user's friends - 1st degree
-          const friends = await Friend.findAll({ where: { userId }});
-          const friendIds = friends.map(friend => friend.friendId);
-
-          // helper function to fetch friends of  a given userId  excluding the current friends and the user
-          const excludeFriends = async (userIds, excludeIds) => {
-            return await Friend.findAll({
-                where: {
-                    userId: { [Op.in]: userIds},
-                    friendId: { [Op.notIn]: excludeIds}
-                }
-            });
-          };
-
-          // friends of friends - 2nd degree
-          const friendsOfFriends = await excludeFriends(friendIds, [...friendIds, userId]);
-
-
-          // count the occurrences of each friendId for friend of friends (2nd degree)
-          const countFriends = friendsOfFriends.reduce((acc, friend) => {
-              acc[friend.friendId] = (acc[friend.friendId] || 0) + 1;
-              return acc;
-          }, {});
-
-          // fetch friends of friends of friends 3rd degree
-          const secondDegreeFriendIds = Object.keys(countFriends).map(id => parseInt(id));
-          console.log('second:',secondDegreeFriendIds)
-          const friendsOfFriendsOfFriends = await excludeFriends(secondDegreeFriendIds, [...friendIds, userId, ...secondDegreeFriendIds]);
-
-          // count the occurences of each friendId for friend of friend of friends (3rd degree)
-          const countFriendsOfFriends = friendsOfFriendsOfFriends.reduce((acc, friend) => {
-              acc[friend.friendId] = (acc[friend.friendId] || 0) + 1;
-              return acc;
-          }, {})
-
-          //connectivity score
-          const connectivityScore = (user) => {
-            const mutualFriends = friends.filter(friend => friend.friendId === user.id).length;
-            const mutualFriendsOfFriends = friendsOfFriends.filter(friend => friend.friendId === user.id).length;
-            const mutualFriendsOfFriendsOfFriends = friendsOfFriendsOfFriends.filter(friend => friend.friendId === user.id).length;
-
-            return(
-                0.2 * mutualFriends +
-                0.25 * mutualFriendsOfFriends +
-               0.05  * mutualFriendsOfFriendsOfFriends
-            );
-
+        while (queue.length > 0) {
+          const { userId, depth } = queue.shift();
+          if (!visited.has(userId)) {
+            visited.add(userId);
+            if (depth < degree){
+              try{
+            const userFriends = await Friend.findAll({ where: { userId } });
+            for (const friend of userFriends) {
+                if (!visited.has(friend.friendId)) {
+                    queue.push({ userId: friend.friendId, depth: depth + 1 });
+                    friends.set(friend.friendId, { count: (friends.get(friend.friendId)?.count || 0) + 1, degree: depth + 1 });
+                  }
+            }
+          } catch (error) {
+            console.error(`Error fetching friends for user ${userId}:`, error);
           }
+        }
+      }
+    }
+        return friends;
+      };
 
+  router.get('/recommendedFriends/:userId', verifyToken, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const degree = 3;
 
-          // fetch all post with their likes and comments
-        const posts = await Post.findAll({
-            include: [
-                // Include the likes with user information
-                { model: Like, include: [User] },
-                // Include comments with user information
-                { model: Comment, include: [User] }
-            ],
-        });
-        // extract current user's likes and comments
-        const currentUserLikes = posts.flatMap( post => post.Likes.filter(like => like.userId === parseInt(userId)).map(like => post.id));
-        const currentUserComments = posts.flatMap(post => post.Comments.filter(comment => comment.userId === parseInt(userId)).map(comment => post.id));
+      // Fetch current user's friends (1st degree)
+      const currentFriends = await Friend.findAll({ where: { userId }});
+        const currentFriendIds = currentFriends.map(friend => friend.friendId);
 
-        //fetch user profile to get interests, school, and major
-        const currentUser = await User.findByPk(userId);
+     // fetch current user's friends  degrees using BFS helper function up to 3rd degree
+     const friendDegrees = await bfs(userId, degree)
 
-        // fecth users who interacted with the same posts ( likes or comments), interest, school, major
-        const similarityCheck = await User.findAll({
-            where: {
-                id: {
-                    // exclude the current user and friends
-                    [Op.notIn]: friendIds.concat(parseInt(userId))
-                },
-                [Op.or]: [
-                    { id: { [Op.in]: currentUserLikes }},
-                    { id: { [Op.in]: currentUserComments}},
-                    { interest: { [Op.like]: `%${currentUser.interest}%` } },
-                    { major: { [Op.like]: `%${ currentUser.major}%`}},
-                    { school: { [Op.like]: `%${ currentUser.school}%`}}
-                ]
-            },
-            attributes: ['id', 'name', 'interest', 'school', 'major']
-        });
-        // calculate similarity score
-        const similarityScore = (user) => {
-            // likes similarity
-            const userLikes = posts.flatMap(post => post.Likes.filter(like => like.userId === user.id).map(like => post.id));
-            const commonLikes = currentUserLikes.filter(like => userLikes.includes(like));
-            const likeScore = commonLikes.length / (currentUserLikes.length + userLikes.length - commonLikes.length) || 0;
+      // Calculate connectivity score
+      const connectivityScore = (friendId) => {
+        const friendData = friendDegrees.get(friendId);
+        const isDirectFriend = currentFriendIds.includes(friendId) ? 1 : 0;
+        const isSecondDegreeFriend = friendData && friendData.degree === 2 ? 1 : 0;
+        const isThirdDegreeFriend = friendData && friendData.degree === 3 ? 1 : 0;
 
-            //comment similarity
-            const userComment = posts.flatMap(post => post.Comments.filter(comment => comment.userId === user.id).map(comment => post.id));
-            const commonComments = currentUserComments.filter(comment => userComment.includes(comment));
-            const commentScore = commonComments.length / (currentUserComments.length + userComment.length - commonComments.length) || 0;
+        const score = (
+          0.25 * isDirectFriend +
+          0.2 * isSecondDegreeFriend +
+          0.05 * isThirdDegreeFriend
+        );
+        return score;
+      };
 
-            // interest similarity
-            const interestScore = stringSimilarity.compareTwoStrings(currentUser.interest, user.interest);
+      // Fetch all posts with their likes and comments
+      const posts = await Post.findAll({
+        include: [
+          { model: Like, include: [User] },
+          { model: Comment, include: [User] }
+        ],
+      });
 
-            // major similarity
-            const majorScore = stringSimilarity.compareTwoStrings(currentUser.major, user.major);
+      // Extract current user's likes and comments
+      const currentUserLikes = posts.flatMap(post => post.Likes.filter(like => like.userId === userId).map(like => post.id));
+      const currentUserComments = posts.flatMap(post => post.Comments.filter(comment => comment.userId === userId).map(comment => post.id));
 
-            // school similarity
-            const schoolScore = stringSimilarity.compareTwoStrings(currentUser.school, user.school);
+      // Fetch user profile to get interests, school, and major
+      const currentUser = await User.findByPk(userId);
 
-            // total similarity scores
-            return(
-                0.1 * likeScore +
-                0.1 * commentScore +
-                0.1 * interestScore +
-                0.1 * schoolScore +
-                0.1 * majorScore
-            );
+      // Fetch users who interacted with the same posts (likes or comments), interest, school, major
+      const similarityCheck = await User.findAll({
+        where: {
+          id: {
+            [Op.notIn]: currentFriendIds.concat(userId)
+          },
+          [Op.or]: [
+            { id: { [Op.in]: currentUserLikes } },
+            { id: { [Op.in]: currentUserComments } },
+            { interest: { [Op.like]: `%${currentUser.interest}%` } },
+            { major: { [Op.like]: `%${currentUser.major}%` } },
+            { school: { [Op.like]: `%${currentUser.school}%` } }
+          ]
+        },
+        attributes: ['id', 'name', 'interest', 'school', 'major']
+      });
+
+      // Calculate similarity score
+      const similarityScore = (user) => {
+        const userLikes = posts.flatMap(post => post.Likes.filter(like => like.userId === user.id).map(like => post.id));
+        const commonLikes = currentUserLikes.filter(like => userLikes.includes(like));
+        const likeScore = commonLikes.length / (currentUserLikes.length - commonLikes.length) || 0;
+
+        const userComments = posts.flatMap(post => post.Comments.filter(comment => comment.userId === user.id).map(comment => post.id));
+        const commonComments = currentUserComments.filter(comment => userComments.includes(comment));
+        const commentScore = commonComments.length / (currentUserComments.length - commonComments.length) || 0;
+
+        const interestScore = stringSimilarity.compareTwoStrings(currentUser.interest, user.interest);
+        const majorScore = stringSimilarity.compareTwoStrings(currentUser.major, user.major);
+        const schoolScore = stringSimilarity.compareTwoStrings(currentUser.school, user.school);
+
+        const score = (
+            0.1 * likeScore +
+            0.1 * commentScore +
+            0.1 * interestScore +
+            0.1 * schoolScore +
+            0.1 * majorScore
+          );
+
+          return score;
         };
 
-        // fetch Ids from the similarity check
-        const similarityCheckIds = similarityCheck.map(user => user.id)
-        // sum of counts for potential friends from 2nd and 3rd degree
-        const friendsCount = {...countFriends, ...countFriendsOfFriends };
+      // potential friends based on BFS results and similarity check
+      const potentialFriendIds = new Set([...friendDegrees.keys(), ...similarityCheck.map(user => user.id)]);
+      potentialFriendIds.delete(userId);
 
-        // add similarity check to friendscount
-        similarityCheckIds.forEach(id => {
-            friendsCount[id] = (friendsCount[id] || 0) + 1;
-        })
+      const potentialFriends = await User.findAll({
+        where: { id: { [Op.in]: Array.from(potentialFriendIds) } },
+        attributes: ['id', 'name', 'interest', 'school', 'major']
+      });
 
-        // potential friends
-        const potentialFriends = await User.findAll({
-            where: {id: {[Op.in]: Object.keys(friendsCount).map(id => parseInt(id) )}},
-            attributes: ['id', 'name', 'interest', 'school', 'major']
-        });
+      // Sort potential friends based on the similarity scores and connectivity score
+      const sortedPotentialFriends = potentialFriends.map(user => ({
+        ...user.toJSON(),
+        score: similarityScore(user) + connectivityScore(user.id)
+      })).sort((a, b) => b.score - a.score);
 
+      // Format the recommended friends data
+      const formatRecommendation = sortedPotentialFriends.filter(user => !currentFriendIds.includes(user.id))
+      .map(user => ({
+        id: user.id,
+        name: user.name,
+        interest: user.interest,
+        school: user.school,
+        major: user.major,
+        score: user.score
+      }));
 
-        // sort potential friends based on the similarity scores and Connectivity Score
-        const sortPotentialFriend = potentialFriends.map(user => ({
-            ...user.toJSON(),
-            score: similarityScore(user) + connectivityScore(user)
-        })).sort((a, b) => b.score - a.score);
-
-        //format the recommended friends data
-        const formatRecommendation = sortPotentialFriend.map(user => ({
-            id: user.id,
-            name: user.name,
-            interest: user.interest,
-            school: user.school,
-            major: user.major,
-            score: user.score
-        }));
-
-
-
-        res.status(200).json(formatRecommendation);
-    } catch(error) {
-        console.error('Error fetching recommended friends:', error);
-        res.status(500).json({ error: 'internal server error' })
+      res.status(200).json(formatRecommendation);
+    } catch (error) {
+      console.error('Error fetching recommended friends:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-});
+  });
 
 // available people not friends
 router.get('/available/:userId', verifyToken, async ( req, res) => {
