@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent, CardActions, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent, CardActions, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
@@ -28,6 +28,10 @@ const SearchContainer = styled(Paper)({
       transform: 'scale(1.02)',
       boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
     },
+  });
+
+  const TooltipContent = styled('div')({
+    padding: '8px',
   });
 
 function MentorshipPage() {
@@ -290,6 +294,16 @@ function MentorshipPage() {
         if (mentorship.mentorship === 'Mentor') {
           return (
         <Grid item xs={12} sm={6} md={4} key={mentorship.id}>
+          <Tooltip
+              title={
+                <TooltipContent>
+                  <Typography variant="subtitle2">{mentorship.school}</Typography>
+                  <Typography variant="body2">{mentorship.bio}</Typography>
+                </TooltipContent>
+              }
+              placement="top"
+              arrow
+            >
           <CardHover>
             <Card>
               <CardContent>
@@ -312,6 +326,7 @@ function MentorshipPage() {
                 )}
             </Card>
           </CardHover>
+          </Tooltip>
           </Grid>
           );
                 }
