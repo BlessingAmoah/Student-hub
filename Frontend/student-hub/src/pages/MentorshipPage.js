@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent, CardActions, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent, CardActions, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
@@ -30,6 +30,10 @@ const SearchContainer = styled(Paper)({
     },
   });
 
+  const TooltipContent = styled('div')({
+    padding: '8px',
+  });
+
 function MentorshipPage() {
   const [mentorships, setMentorships] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +50,8 @@ function MentorshipPage() {
   const [filteredMentorList, setFilteredMentorList] = useState([]);
 
   // fetch mentorship informations
+  // delay loading state to 1 minute
+const delayTime = 60000;
   useEffect(() => {
     const fetchMentorships = async () => {
       setIsLoading(true)
@@ -62,7 +68,9 @@ function MentorshipPage() {
         }
 
         const mentorshipData = await response.json();
-        setIsLoading(false);
+        setTimeout(() => {
+          setIsLoading(false)
+          }, delayTime);
         setMentorships(mentorshipData.users || mentorshipData);
       } catch (error) {
         setError('Failed to fetch mentorships');
@@ -290,6 +298,16 @@ function MentorshipPage() {
         if (mentorship.mentorship === 'Mentor') {
           return (
         <Grid item xs={12} sm={6} md={4} key={mentorship.id}>
+          <Tooltip
+              title={
+                <TooltipContent>
+                  <Typography variant="subtitle2">School: {mentorship.school}</Typography>
+                  <Typography variant="body2"> Bio: {mentorship.bio}</Typography>
+                </TooltipContent>
+              }
+              placement="top"
+              arrow
+            >
           <CardHover>
             <Card>
               <CardContent>
@@ -312,6 +330,7 @@ function MentorshipPage() {
                 )}
             </Card>
           </CardHover>
+          </Tooltip>
           </Grid>
           );
                 }

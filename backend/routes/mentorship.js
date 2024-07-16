@@ -11,7 +11,7 @@ router.get('/mentorship', verifyToken, async (req, res) => {
     const userId = req.userId
     // fetch all users
     const users = await User.findAll({
-      attributes: ['id', 'name', 'profilePicture', 'interest', 'mentorship', 'school'],
+      attributes: ['id', 'name', 'profilePicture', 'interest', 'mentorship', 'school', 'bio'],
     });
 
     // format the fetch user information
@@ -22,6 +22,7 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       interest: user.interest,
       mentorship: user.mentorship,
       school: user.school,
+      bio: user.bio,
     })).filter (user => user.id !== userId);
 
     // return the formatted data
