@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent, CardActions, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent,  Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
@@ -42,8 +42,32 @@ function MentorshipPage() {
   const [filteredMentorshipRequests, setFilteredMentorshipRequests] = useState([]);
   const [isPendingRequestDialogOpen, setIsPendingRequestDialogOpen] = useState(false);
   const [userRole, setUserRole] = useState(null)
+  const [isListOpen, setIsListOpen] = useState(true);
   const [filteredMenteeLists, setFilteredMenteeLists] = useState([]);
   const [filteredMentorLists, setFilteredMentorLists] = useState([]);
+
+  // fetch userRole
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const { token } = getUserIDToken();
+        const response = await fetch(`${process.env.REACT_APP_API}/mentorship/user-role`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          setError('Failed to fetch user role');
+        }
+        const data = await response.json();
+        setUserRole(data.userRole);
+      } catch (error) {
+        setError('Failed to fetch user role');
+      }
+    };
+    fetchUserRole();
+  }, [setError]);
+
 
   // fetch mentorship informations
   useEffect(() => {
@@ -62,9 +86,9 @@ function MentorshipPage() {
         }
 
         const mentorshipData = await response.json();
-
+        const mentors = mentorshipData.formattedUser.filter((user) => user.mentorship !== 'Mentee');
         setIsLoading(false);
-        setMentorships(mentorshipData.formattedUser || []);
+        setMentorships(mentors || []);
       } catch (error) {
         setError('Failed to fetch mentorships');
       }
@@ -89,7 +113,6 @@ function MentorshipPage() {
           setError('Failed to fetch mentorship');
         }
         const requestData = await response.json();
-
         setMentorshipRequests(requestData);
       }
       catch (error) {
@@ -207,7 +230,8 @@ function MentorshipPage() {
   }
 
   const handleOpenMenteeList = async () => {
-    setUserRole('Mentee')
+    setUserRole('Mentor')
+    setIsListOpen(true);
    await fetchMentees();
   }
   const handleClosePendingRequest = () => {
@@ -215,17 +239,16 @@ function MentorshipPage() {
   }
 
   const handleCloseMenteeList = () => {
-    setUserRole(null);
+    setIsListOpen(false);
   }
   const handleOpenMentorList = async () => {
-    setUserRole('Mentor');
+    setUserRole('Mentee');
     await fetchMentor();
-
+    setIsListOpen(true);
    }
    const handleCloseMentorList = () => {
-    setUserRole(null);
+    setIsListOpen(false);
    }
-
   const filteredMentorship = mentorships.filter((mentorship) =>
   mentorship.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -257,91 +280,161 @@ function MentorshipPage() {
   }
 
   return (
-    <Container maxWidth="sm">
-      <Grid container spacing={2} alignItems="center" justify="center" style={{ minHeight: '80vh' }}>
+    <Container maxWidth="md">
+      <Grid container spacing={3}>
         <Grid item xs={12}>
-        <SearchContainer>
-        <SearchInput
-          placeholder="Search Boards"
-          inputProps={{ 'aria-label': 'search boards' }}
-          value={searchTerm}
-          onChange={handleSearch}
-        />
-        <SearchIconButton type="submit"  aria-label="search">
-          <SearchIcon />
-        </SearchIconButton>
-      </SearchContainer>
-
-
-      {userRole === 'Mentor' ? (
-        <Grid container spacing={2} alignItems="center" justify="center">
-          <Grid item xs={12}>
-            <Button onClick={handleOpenMenteeList}>Mentee List</Button>
-            <Button onClick={handlePendingRequest}>Pending Request</Button>
-          </Grid>
         </Grid>
-      ) : (
-        <Grid container spacing={2} alignItems="center" justify="center">
-          <Grid item xs={12}>
-            <Button onClick={handleOpenMentorList}>Mentor</Button>
-          </Grid>
+        <Grid item xs={12}>
+          <SearchContainer>
+            <SearchInput
+              placeholder="Search Mentorship"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+            <SearchIconButton>
+              <SearchIcon />
+            </SearchIconButton>
+          </SearchContainer>
         </Grid>
-      )}
+        <Grid item xs={12}>
+          {userRole !== 'Mentor' && (
+            <>
+              {filteredMentorship.map((mentor) => (
+                <Grid item xs={12} sm={16} md={8} key={mentor.id} sx={{ p:2}}>
+                <CardHover>
+                  <CardContent>
+                    <Grid container alignItems="center">
+                      <Grid item xs={3}>
+                        <Avatar alt={mentor.name} src={mentor.profilePicture} />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="h6" component="h3">
+                          {mentor.name}
+                        </Typography>
+                        <Typography color="textSecondary">
+                          {mentor.interest}
+                        </Typography>
+                        <Typography color="textSecondary">
+                          {mentor.mentorship}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleOpenRequestDialog(mentor.id)}
+                        >
+                          Request Mentorship
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
 
+                </CardHover>
+                </Grid>
+              ))}
+            </>
+          )}
+          { isListOpen && userRole === 'Mentor' && (
+            <div>
+              <Typography variant="h6" component="h2" gutterBottom>
+                Mentees List
+              </Typography>
+              {filteredMenteeLists.map((mentee) => (
+                <CardHover key={mentee.id}>
+                  <CardContent>
+                    <Grid container alignItems="center">
+                      <Grid item xs={3}>
+                        <Avatar alt={mentee.name} src={mentee.profilePicture} />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="h6" component="h3">
+                          {mentee.name}
+                        </Typography>
+                        <Typography variant="body2">
+                          Interest: {mentee.interest}
+                          </Typography>
+                      <Typography variant="body2">
+                        School: {mentee.school}
+                        </Typography>
+                      <Typography variant="body2">
+                       Major:  {mentee.major}
+                        </Typography>
+                      <Typography variant="body2">
+                       Email: {mentee.email}
+                        </Typography>
+                        <Typography color="textSecondary">
+                        Bio:  {mentee.bio}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+              <Button onClick={handleCloseMenteeList} color="primary">
+                Close
+              </Button>
+
+                  </CardContent>
+                </CardHover>
+              ))}
+
+            </div>
+          )}
         </Grid>
-       {filteredMentorship.map((mentorship) => {
-        if (mentorship.mentorship === 'Mentor') {
-          return (
-        <Grid item xs={12} sm={6} md={4} key={mentorship.id}>
-          <CardHover>
-            <Card>
-              <CardContent>
-                <Avatar alt={mentorship.name} src={mentorship.profilePicture} />
-                <Typography variant="h6">{mentorship.name}</Typography>
-                <Typography variant="body2">{mentorship.interest}</Typography>
-                <Typography variant="body2">{mentorship.mentorship}</Typography>
-              </CardContent>
-
-                {mentorship.mentorship !== 'Mentee' && (
-                  <CardActions>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => handleOpenRequestDialog(mentorship.id)}
-                    >
-                      Request Mentor
-                    </Button>
-                  </CardActions>
-                )}
-            </Card>
-          </CardHover>
-          </Grid>
-          );
-                }
-                return null;
-              })}
+        <Grid item xs={12}>
+          { isListOpen && userRole === 'Mentee' && (
+            <div>
+              <Typography variant="h6" component="h2" gutterBottom>
+                My Mentor
+              </Typography>
+              {filteredMentorLists.map((mentor) => (
+                <CardHover key={mentor.id}>
+                  <CardContent>
+                    <Grid container alignItems="center">
+                      <Grid item xs={3}>
+                        <Avatar alt={mentor.name} src={mentor.profilePicture} />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="h6" component="h3">
+                          {mentor.name}
+                        </Typography>
+                        <Typography color="textSecondary">
+                         Bio: {mentor.bio}
+                        </Typography>
+                        <Typography variant="body2">
+                         Interest: {mentor.interest}
+                          </Typography>
+                      <Typography variant="body2">
+                       Email: {mentor.email}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                    <Button onClick={handleCloseMentorList} color="primary">
+                Close
+              </Button>
+                  </CardContent>
+                </CardHover>
+              ))}
+            </div>
+          )}
+        </Grid>
       </Grid>
 
-      {/* Request Mentor Dialog */}
       <Dialog open={isOpenRequestDialog} onClose={handleCloseRequestDialog}>
-        <DialogTitle>Request Mentor</DialogTitle>
+        <DialogTitle>Request Mentorship</DialogTitle>
         <DialogContent>
           <DialogContentText>
-          To request this mentor, please add a note explaining why you want to be mentored by them.
+            Please enter a note explaining why you want this person to be your mentor.
           </DialogContentText>
           <TextField
             autoFocus
             margin="dense"
-            id="note"
             label="Note"
-            type="text"
             fullWidth
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRequestDialog} color="secondary">
+          <Button onClick={handleCloseRequestDialog} color="primary">
             Cancel
           </Button>
           <Button onClick={handleRequestMentor} color="primary">
@@ -350,43 +443,55 @@ function MentorshipPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Pending Request */}
-      <Dialog open={isPendingRequestDialogOpen} onClose={handleClosePendingRequest}>
-        <DialogTitle>Mentorship Requests</DialogTitle>
+      <Dialog
+        open={isPendingRequestDialogOpen}
+        onClose={handleClosePendingRequest}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>Pending Mentorship Requests</DialogTitle>
         <DialogContent>
-          {filteredMentorshipRequests.length === 0 ? (
-            <Typography variant="body1">No mentorship requests found.</Typography>
-          ):(
-            filteredMentorshipRequests.map((request)=> (
-              <Card key={request.id} style={{ marginBottom: '10px'}}>
-                <CardContent>
-                <Avatar alt={request.name} src={request.profilePicture} />
-                  <Typography variant="h6">{request.name}</Typography>
-                  <Typography variant="body2">{request.interest}</Typography>
-                  <Typography variant="body2">{request.school}</Typography>
-                  <Typography variant="body2">{request.note}</Typography>
-                  <Typography variant="body2">{request.mentorId}</Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleRespondMentorship(request.id,request.mentorId, 'accepted')}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={() => handleRespondMentorship(request.id,request.mentorId,  'rejected')}
-                  >
-                    Reject
-                  </Button>
-                </CardActions>
-              </Card>
-            ))
-          )
-        }
+          <Grid container spacing={2}>
+            {filteredMentorshipRequests.map((request) => (
+              <Grid item xs={12} key={request.id}>
+                <CardHover>
+                  <CardContent>
+                    <Grid container alignItems="center">
+                      <Grid item xs={3}>
+                        <Avatar alt={request.name} src={request.profilePicture} />
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="h6" component="h3">
+                          {request.name}
+                        </Typography>
+                        <Typography color="textSecondary">{request.bio}</Typography>
+                      </Grid>
+                      <Grid item xs={3}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() =>
+                            handleRespondMentorship(request.userId, request.mentorId, 'accepted')
+                          }
+                        >
+                          Accept
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="secondary"
+                          onClick={() =>
+                            handleRespondMentorship(request.userId, request.mentorId, 'rejected')
+                          }
+                        >
+                          Reject
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </CardHover>
+              </Grid>
+            ))}
+          </Grid>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClosePendingRequest} color="primary">
@@ -395,64 +500,24 @@ function MentorshipPage() {
         </DialogActions>
       </Dialog>
 
-      {/* Mentee informations */}
-{ userRole === 'Mentee' && filteredMenteeLists.length > 0 && (
-  <Dialog open={true} onClose={handleCloseMenteeList}>
-    <DialogTitle>Mentee List</DialogTitle>
-    <DialogContent>
-              {filteredMenteeLists.length === 0 ? (
-                <Typography variant="body1">No Mentees Found.</Typography>
-              ) : (
-                filteredMenteeLists.map((mentee) => (
-                  <Card key={mentee.id} style={{ marginBottom: '10px' }}>
-                    <CardContent>
-                      <Avatar alt={mentee.name} src={mentee.profilePicture} />
-                      <Typography variant="h6">{mentee.name}</Typography>
-                      <Typography variant="body2">{mentee.interest}</Typography>
-                      <Typography variant="body2">{mentee.school}</Typography>
-                      <Typography variant="body2">{mentee.major}</Typography>
-                      <Typography variant="body2">{mentee.email}</Typography>
-                      <Typography variant="body2">{mentee.bio}</Typography>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseMenteeList} color="primary">
-                Close
+      <Grid container sx={{ justifyContent: 'space-between' }} item xs={7.5}>
+      {userRole === 'Mentor' && (
+        <Button onClick={handlePendingRequest} color="primary" variant="contained">
+          Pending Requests
+        </Button>
+      )}
+      {userRole === 'Mentor' && (
+              <Button onClick={handleOpenMenteeList} color="primary" variant="contained">
+                My Mentees
               </Button>
-            </DialogActions>
-  </Dialog>
-)}
- {/* Mentor informations */}
-{ userRole === 'Mentor' && filteredMentorLists.length > 0 && (
-  <Dialog open={true} onClose={handleCloseMentorList}>
-    <DialogTitle>Mentor</DialogTitle>
-            <DialogContent>
-              {filteredMentorLists.length === 0 ? (
-                <Typography variant="body1">No Mentors Found.</Typography>
-              ) : (
-                filteredMentorLists.map((mentor) => (
-                  <Card key={mentor.id} style={{ marginBottom: '10px' }}>
-                    <CardContent>
-                      <Avatar alt={mentor.name} src={mentor.profilePicture} />
-                      <Typography variant="h6">{mentor.name}</Typography>
-                      <Typography variant="body2">{mentor.interest}</Typography>
-                      <Typography variant="body2">{mentor.email}</Typography>
-                      <Typography variant="body2">{mentor.bio}</Typography>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseMentorList} color="primary">
-                Close
-              </Button>
-            </DialogActions>
-          </Dialog>
-)}
+            )}
+            </Grid>
+
+      {userRole === 'Mentee' && (
+        <Button onClick={handleOpenMentorList} color="primary" variant="contained">
+          My Mentor
+        </Button>
+      )}
     </Container>
   );
 }

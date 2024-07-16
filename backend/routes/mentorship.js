@@ -124,6 +124,24 @@ router.post('/respond-mentorship', verifyToken, async (req, res) => {
   }
 })
 
+// Get user role
+router.get('/user-role', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.userId, {
+      attributes: ['mentorship']
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json({ userRole: user.mentorship });
+  } catch (error) {
+    console.error('Error fetching user role:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 //Get Mentees List for a mentor
 router.get('/:userId/mentees', verifyToken, async (req, res) => {
   try{
