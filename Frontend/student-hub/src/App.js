@@ -16,7 +16,7 @@ import MentorshipPage from './pages/MentorshipPage';
 import FriendsList from './pages/Friends';
 import { Snackbar, Alert } from '@mui/material';
 import { useError } from './components/ErrorContext';
-
+import ResetPassword from './components/ResetPassword';
 
 function App() {
 
@@ -42,7 +42,7 @@ function App() {
       <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
-      <Route path="/reset-password" element={<Login setIsLoggedIn={setIsLoggedIn} isResetMode={true} />} />
+      <Route path="/reset-password" element={<ResetPassword setIsLoggedIn={setIsLoggedIn} />} />
       <Route path="/signup" element={<Signup setIsLoggedIn={setIsLoggedIn} />} />
       <Route path="/dashboard" element={<Dashboard  />} />
       <Route path="/profile" element={<Profile />} />

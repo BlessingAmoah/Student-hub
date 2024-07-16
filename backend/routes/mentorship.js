@@ -30,8 +30,9 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       // add current user to the set to exclude
       relatedUserIds.add(userId);
 
-    // fetch all users except current user and ther mentors/mentees
+    // fetch all users except current user and their mentors/mentees
     const users = await User.findAll({
+
       attributes: ['id', 'name', 'profilePicture', 'interest', 'mentorship', 'school'],
       where: {
         id: {
@@ -48,7 +49,8 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       interest: user.interest,
       mentorship: user.mentorship,
       school: user.school,
-    }))
+      bio: user.bio,
+    })).filter (user => user.id !== userId);
 
     // return the formatted data
     res.status(200).json({formattedUser});

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
+import Skeleton from '@mui/material/Skeleton'
 
 
 // search styling
@@ -43,8 +44,11 @@ function Dashboard() {
     const { setError } = useError();
 
 // emoji
+// delay loading state to 1 minute
+const delayTime = 60000;
     useEffect(() => {
         const fetchEmojis = async () => {
+            setIsLoading(true)
             try{
                 const response = await fetch(`${process.env.REACT_APP_API}/emoji`);
                 if (!response.ok) {
@@ -55,13 +59,16 @@ function Dashboard() {
             } catch (error) {
                 setError(error.message)
             }
+            setTimeout(() => {
+                setIsLoading(false)
+                }, delayTime);
         };
         fetchEmojis();
-    });
+    }, []);
 //fetch data
     useEffect(() => {
         const fetchData = async () => {
-
+            setIsLoading(true)
             try {
                 const token = sessionStorage.getItem('token');
                 if (!token) {
@@ -92,6 +99,7 @@ function Dashboard() {
                 setError('Failed to fetch data:', error);
 
             }
+            setIsLoading(false)
         };
         fetchData();
     }, [navigate, title, content, selectedEmoji, media, currentPostId, setError]);
@@ -249,12 +257,13 @@ const handleLike = async (postId) => {
         return (
             <Container maxWidth="sm">
                 <Grid container spacing={2} alignItems="center" justifyContent="center" style={{ minHeight: '80vh' }}>
-                    <Grid item xs={12}>
-                        <Typography variant="h4">Dashboard</Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                        <Typography variant="body1">Loading courses...</Typography>
-                    </Grid>
+                {Array.from(new Array(6)).map((_, index) => (
+                        <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Skeleton variant="rect" width="100%" height={150} />
+                        <Skeleton variant="text" />
+                        <Skeleton variant="text" />
+                        </Grid>
+                    ))}
                 </Grid>
             </Container>
         );

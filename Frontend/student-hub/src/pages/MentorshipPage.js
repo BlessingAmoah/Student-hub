@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent,  Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent, CardActions, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
@@ -28,6 +28,10 @@ const SearchContainer = styled(Paper)({
       transform: 'scale(1.02)',
       boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
     },
+  });
+
+  const TooltipContent = styled('div')({
+    padding: '8px',
   });
 
 function MentorshipPage() {
@@ -70,6 +74,8 @@ function MentorshipPage() {
 
 
   // fetch mentorship informations
+  // delay loading state to 1 minute
+const delayTime = 60000;
   useEffect(() => {
     const fetchMentorships = async () => {
       setIsLoading(true)
@@ -87,8 +93,10 @@ function MentorshipPage() {
 
         const mentorshipData = await response.json();
         const mentors = mentorshipData.formattedUser.filter((user) => user.mentorship !== 'Mentee');
-        setIsLoading(false);
-        setMentorships(mentors || []);
+        setTimeout(() => {
+          setIsLoading(false)
+          }, delayTime);
+       setMentorships(mentors || []);
       } catch (error) {
         setError('Failed to fetch mentorships');
       }
@@ -284,6 +292,7 @@ function MentorshipPage() {
       <Grid container spacing={3}>
         <Grid item xs={12}>
         </Grid>
+
         <Grid item xs={12}>
           <SearchContainer>
             <SearchInput
@@ -301,6 +310,16 @@ function MentorshipPage() {
             <>
               {filteredMentorship.map((mentor) => (
                 <Grid item xs={12} sm={16} md={8} key={mentor.id} sx={{ p:2}}>
+                  <Tooltip
+              title={
+                <TooltipContent>
+                  <Typography variant="subtitle2">School: {mentor.school}</Typography>
+                  <Typography variant="body2"> Bio: {mentor.bio}</Typography>
+                </TooltipContent>
+              }
+              placement="top"
+              arrow
+            >
                 <CardHover>
                   <CardContent>
                     <Grid container alignItems="center">
@@ -329,7 +348,7 @@ function MentorshipPage() {
                       </Grid>
                     </Grid>
                   </CardContent>
-
+                    </Tooltip>
                 </CardHover>
                 </Grid>
               ))}
@@ -416,8 +435,7 @@ function MentorshipPage() {
             </div>
           )}
         </Grid>
-      </Grid>
-
+               
       <Dialog open={isOpenRequestDialog} onClose={handleCloseRequestDialog}>
         <DialogTitle>Request Mentorship</DialogTitle>
         <DialogContent>
