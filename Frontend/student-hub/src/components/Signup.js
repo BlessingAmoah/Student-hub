@@ -3,12 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button, Modal } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useError } from './ErrorContext'
+import '../styling/signup.css'
 
 function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationCode, setVerificationCode] = useState(new Array(6).fill(''));
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isVerificationLoading, setIsVerificationLoading] = useState(false);
@@ -51,7 +52,7 @@ function Signup() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, code: verificationCode }),
+        body: JSON.stringify({ email, code: verificationCode.join('') }),
       });
 
       if (response.ok) {
@@ -66,6 +67,7 @@ function Signup() {
       setIsVerificationLoading(false);
     }
   };
+
 
  // handle verification code resend
  const handleVerificationCodeResend = async () => {
@@ -89,8 +91,14 @@ function Signup() {
   }
 };
 
-  const handleVerificationCodeChange = (e) => {
-    setVerificationCode(e.target.value);
+  // Handle individual input changes for the verification code
+  const handleVerificationCodeChange = (e, num) => {
+    const { value } = e.target;
+    if (/^[0-9]$/.test(value) || value === '') {
+      let newCode = [...verificationCode];
+      newCode[num] = value;
+      setVerificationCode(newCode);
+    }
   };
 
   const handleClose = () => {
@@ -154,24 +162,24 @@ function Signup() {
             <div style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, maxWidth: 400, margin: 'auto', marginTop: '20vh' }}>
               <h2>Email Verification Code Has Been Sent To Your Email</h2>
               <form onSubmit={handleVerificationSubmit}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      type="text"
-                      label="Verification Code"
-                      variant="outlined"
-                      value={verificationCode}
-                      onChange={handleVerificationCodeChange}
-                      required
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Button type="submit" variant="contained" color="primary">Verify</Button>
-                  </Grid>
-                </Grid>
+              <div className="verification-container">
+                {verificationCode.map((digit, index) => (
+                  <input
+                    key={index}
+                    type="text"
+                    className="verification-input"
+                    maxLength="1"
+                    value={digit}
+                    onChange={(e) => handleVerificationCodeChange(e, index)}
+                    required
+                  />
+                ))}
+              </div>
+              <div style={{ marginTop: 16, textAlign: 'center' }}>
+                <Button type="submit" variant="contained" color="primary">Verify</Button>
+              </div>
               </form>
-              <p>
+              <p style={{ textAlign: 'center' }}>
                 Didn't receive a code?{' '}
                 <Button component="a" href="#" onClick={handleVerificationCodeResend}>
                 Resend Verification Code
