@@ -38,12 +38,12 @@ function MentorshipPage() {
   const [isOpenRequestDialog, setIsOpenRequestDialog] = useState(false);
   const [selectedMentorId, setSelectedMentorId] = useState(null);
   const [note, setNote] = useState('');
-  const [mentorshipRequest, setMentorshipRequest] = useState([]);
-  const [filteredMentorshipRequest, setFilteredMentorshipRequest] = useState([]);
+  const [mentorshipRequests, setMentorshipRequests] = useState([]);
+  const [filteredMentorshipRequests, setFilteredMentorshipRequests] = useState([]);
   const [isPendingRequestDialogOpen, setIsPendingRequestDialogOpen] = useState(false);
   const [userRole, setUserRole] = useState(null)
-  const [filteredMenteeList, setFilteredMenteeList] = useState([]);
-  const [filteredMentorList, setFilteredMentorList] = useState([]);
+  const [filteredMenteeLists, setFilteredMenteeLists] = useState([]);
+  const [filteredMentorLists, setFilteredMentorLists] = useState([]);
 
   // fetch mentorship informations
   useEffect(() => {
@@ -62,8 +62,9 @@ function MentorshipPage() {
         }
 
         const mentorshipData = await response.json();
+
         setIsLoading(false);
-        setMentorships(mentorshipData.users || mentorshipData);
+        setMentorships(mentorshipData.formattedUser || []);
       } catch (error) {
         setError('Failed to fetch mentorships');
       }
@@ -74,7 +75,7 @@ function MentorshipPage() {
 
   // fetch requests received
   useEffect(() => {
-    const fetchMentorshipRequest = async () => {
+    ( async () => {
       try {
         const { token } = getUserIDToken();
         const response = await fetch(`${process.env.REACT_APP_API}/mentorship/mentor-requests`, {
@@ -88,13 +89,13 @@ function MentorshipPage() {
           setError('Failed to fetch mentorship');
         }
         const requestData = await response.json();
-        setMentorshipRequest(requestData);
+
+        setMentorshipRequests(requestData);
       }
       catch (error) {
         setError('Fetch mentorshp requests error:', error)
       }
-    };
-    fetchMentorshipRequest();
+    }) ();
   }, [setError])
 
   //search
@@ -142,9 +143,9 @@ function MentorshipPage() {
         setError('Failed to fetch mentorship');
       }
       const requestData = await response.json();
-      setMentorshipRequest(requestData);
+      setMentorshipRequests(requestData);
       alert(`Mentorship request ${status}`);
-      setMentorshipRequest(mentorshipRequest.filter((request) => request.id !== userId))
+      setMentorshipRequests(mentorshipRequests.filter((request) => request.id !== userId))
     }
     catch (error){
       setError('Respond mentorship error', error)
@@ -163,7 +164,7 @@ function MentorshipPage() {
         }
       });
       const data = await response.json();
-        setFilteredMenteeList(data)
+        setFilteredMenteeLists(data)
     } catch(error) {
       setError('Error fetching mentees')
     }
@@ -180,7 +181,7 @@ function MentorshipPage() {
           },
         });
         const data= await response.json();
-        setFilteredMentorList(data)
+        setFilteredMentorLists(data)
       } catch (error) {
         setError('Failed to fetch mentor')
       }
@@ -198,10 +199,10 @@ function MentorshipPage() {
   }
 
   const handlePendingRequest = () => {
-    const pendingRequest = mentorshipRequest.filter(
+    const pendingRequest = mentorshipRequests.filter(
       (request) => request.mentorship === 'Mentee' && request.status === 'requested'
     );
-    setFilteredMentorshipRequest(pendingRequest);
+    setFilteredMentorshipRequests(pendingRequest);
     setIsPendingRequestDialogOpen(true);
   }
 
@@ -271,20 +272,22 @@ function MentorshipPage() {
         </SearchIconButton>
       </SearchContainer>
 
-{userRole === 'Mentor' ? (
-  <Grid container spacing={2} alignItems="center" justify="center">
-    <Grid item xs={12}>
-      <Button onClick={handleOpenMenteeList}>Mentee List</Button>
-      <Button onClick={handlePendingRequest}>Pending Request</Button>
-    </Grid>
-  </Grid>
-) : (
-  <Grid container spacing={2} alignItems="center" justify="center">
-    <Grid item xs={12}>
-      <Button onClick={handleOpenMentorList}>Mentor</Button>
-    </Grid>
-  </Grid>
-)}
+
+      {userRole === 'Mentor' ? (
+        <Grid container spacing={2} alignItems="center" justify="center">
+          <Grid item xs={12}>
+            <Button onClick={handleOpenMenteeList}>Mentee List</Button>
+            <Button onClick={handlePendingRequest}>Pending Request</Button>
+          </Grid>
+        </Grid>
+      ) : (
+        <Grid container spacing={2} alignItems="center" justify="center">
+          <Grid item xs={12}>
+            <Button onClick={handleOpenMentorList}>Mentor</Button>
+          </Grid>
+        </Grid>
+      )}
+
         </Grid>
        {filteredMentorship.map((mentorship) => {
         if (mentorship.mentorship === 'Mentor') {
@@ -338,7 +341,7 @@ function MentorshipPage() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseRequestDialog} color="primary">
+          <Button onClick={handleCloseRequestDialog} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleRequestMentor} color="primary">
@@ -351,10 +354,10 @@ function MentorshipPage() {
       <Dialog open={isPendingRequestDialogOpen} onClose={handleClosePendingRequest}>
         <DialogTitle>Mentorship Requests</DialogTitle>
         <DialogContent>
-          {filteredMentorshipRequest.length === 0 ? (
+          {filteredMentorshipRequests.length === 0 ? (
             <Typography variant="body1">No mentorship requests found.</Typography>
           ):(
-            filteredMentorshipRequest.map((request)=> (
+            filteredMentorshipRequests.map((request)=> (
               <Card key={request.id} style={{ marginBottom: '10px'}}>
                 <CardContent>
                 <Avatar alt={request.name} src={request.profilePicture} />
@@ -393,14 +396,14 @@ function MentorshipPage() {
       </Dialog>
 
       {/* Mentee informations */}
-{ userRole === 'Mentee' && filteredMenteeList.length > 0 && (
+{ userRole === 'Mentee' && filteredMenteeLists.length > 0 && (
   <Dialog open={true} onClose={handleCloseMenteeList}>
     <DialogTitle>Mentee List</DialogTitle>
     <DialogContent>
-              {filteredMenteeList.length === 0 ? (
+              {filteredMenteeLists.length === 0 ? (
                 <Typography variant="body1">No Mentees Found.</Typography>
               ) : (
-                filteredMenteeList.map((mentee) => (
+                filteredMenteeLists.map((mentee) => (
                   <Card key={mentee.id} style={{ marginBottom: '10px' }}>
                     <CardContent>
                       <Avatar alt={mentee.name} src={mentee.profilePicture} />
@@ -423,14 +426,14 @@ function MentorshipPage() {
   </Dialog>
 )}
  {/* Mentor informations */}
-{ userRole === 'Mentor' && filteredMentorList.length > 0 && (
+{ userRole === 'Mentor' && filteredMentorLists.length > 0 && (
   <Dialog open={true} onClose={handleCloseMentorList}>
     <DialogTitle>Mentor</DialogTitle>
             <DialogContent>
-              {filteredMentorList.length === 0 ? (
+              {filteredMentorLists.length === 0 ? (
                 <Typography variant="body1">No Mentors Found.</Typography>
               ) : (
-                filteredMentorList.map((mentor) => (
+                filteredMentorLists.map((mentor) => (
                   <Card key={mentor.id} style={{ marginBottom: '10px' }}>
                     <CardContent>
                       <Avatar alt={mentor.name} src={mentor.profilePicture} />

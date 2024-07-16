@@ -9,9 +9,35 @@ router.get('/mentorship', verifyToken, async (req, res) => {
   try {
 
     const userId = req.userId
-    // fetch all users
+
+    // fetch all current mentorship relationships involving the given userId
+    const currentMentorships = await User.findAll({
+      where: {
+        [Op.or]: [
+          { mentorId: userId},
+          { id: userId}
+        ]
+      }
+    });
+
+    // extract related user IDs
+    const relatedUserIds = new Set();
+    currentMentorships.forEach(
+      user => {
+        relatedUserIds.add(user.mentorId);
+        relatedUserIds.add(user.id)
+      });
+      // add current user to the set to exclude
+      relatedUserIds.add(userId);
+
+    // fetch all users except current user and ther mentors/mentees
     const users = await User.findAll({
       attributes: ['id', 'name', 'profilePicture', 'interest', 'mentorship', 'school'],
+      where: {
+        id: {
+          [Op.notIn]: Array.from(relatedUserIds)
+        }
+      }
     });
 
     // format the fetch user information
@@ -22,10 +48,10 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       interest: user.interest,
       mentorship: user.mentorship,
       school: user.school,
-    })).filter (user => user.id !== userId);
+    }))
 
     // return the formatted data
-    res.status(200).json({ users: formattedUser || users});
+    res.status(200).json({formattedUser});
   } catch (error) {
     console.error('Mentors fetch error:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -43,7 +69,7 @@ router.post('/request-mentor', verifyToken, async (req, res) => {
     }
 
     // update user's status for mentor request
-    await User.update({ mentorId: userId, status: 'requested', note }, { where: { id: req.userId } });
+    await User.update({ mentorId: userId, status: 'requested', note }, { where: { id: userId } });
 
     res.status(201).json({ message: 'Mentor request sent successfully' });
   }catch (error) {
@@ -141,7 +167,6 @@ router.get('/:userId/mentor', verifyToken, async (req, res) => {
     }
     const mentorData = [mentor];
     res.status(200).json(mentorData);
-    console.log('mentor:', mentor)
   }catch(error) {
     console.error('Error fetching mentor:', error);
     res.status(500).json({ error: 'Internal server error'})
