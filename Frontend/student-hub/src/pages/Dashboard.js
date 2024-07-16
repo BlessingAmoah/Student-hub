@@ -56,13 +56,12 @@ const delayTime = 60000;
                 }
                 const emojistData = await response.json();
                 setEmojis(emojistData);
-                setTimeout(() => {
-                    setIsLoading(false)
-                    }, delayTime);
             } catch (error) {
                 setError(error.message)
             }
-            setIsLoading(false)
+            setTimeout(() => {
+                setIsLoading(false)
+                }, delayTime);
         };
         fetchEmojis();
     }, []);
