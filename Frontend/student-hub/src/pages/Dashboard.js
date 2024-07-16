@@ -44,6 +44,8 @@ function Dashboard() {
     const { setError } = useError();
 
 // emoji
+// delay loading state to 1 minute
+const delayTime = 60000;
     useEffect(() => {
         const fetchEmojis = async () => {
             setIsLoading(true)
@@ -54,7 +56,9 @@ function Dashboard() {
                 }
                 const emojistData = await response.json();
                 setEmojis(emojistData);
-                setIsLoading(false)
+                setTimeout(() => {
+                    setIsLoading(false)
+                    }, delayTime);
             } catch (error) {
                 setError(error.message)
             }

@@ -50,6 +50,8 @@ function MentorshipPage() {
   const [filteredMentorList, setFilteredMentorList] = useState([]);
 
   // fetch mentorship informations
+  // delay loading state to 1 minute
+const delayTime = 60000;
   useEffect(() => {
     const fetchMentorships = async () => {
       setIsLoading(true)
@@ -66,7 +68,9 @@ function MentorshipPage() {
         }
 
         const mentorshipData = await response.json();
-        setIsLoading(false);
+        setTimeout(() => {
+          setIsLoading(false)
+          }, delayTime);
         setMentorships(mentorshipData.users || mentorshipData);
       } catch (error) {
         setError('Failed to fetch mentorships');

@@ -36,6 +36,8 @@ const FriendsList = () => {
         availableFriend: []
     });
 
+    // delay loading state to 1 minute
+    const delayTime = 60000;
     //fetch data
     useEffect(() => {
         const fetchData = async () => {
@@ -51,11 +53,13 @@ const FriendsList = () => {
                     recommendedFriends,
                     availableFriend
                 });
+                setTimeout(() => {
+                    setIsLoading(false)
+                    }, delayTime);
              })
              .catch(error => {
                 setError('Error fetching data:', error);
              });
-             setIsLoading(false)
         };
         fetchData();
     },[]);

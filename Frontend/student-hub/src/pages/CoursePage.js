@@ -43,7 +43,8 @@ function CoursePage() {
     const [emojis, setEmojis] = useState([])
     const { setError } = useError();
 
-
+// delay loading state to 1 minute
+const delayTime = 60000;
 // emoji
     useEffect(() => {
         const fetchEmojis = async () => {
@@ -56,7 +57,9 @@ function CoursePage() {
                 }
                 const emojistData = await response.json();
                 setEmojis(emojistData);
-                setIsLoading(false)
+                setTimeout(() => {
+                    setIsLoading(false)
+                    }, delayTime);
             } catch (error) {
                 setError(error.message)
             }
