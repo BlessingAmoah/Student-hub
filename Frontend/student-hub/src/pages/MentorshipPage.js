@@ -348,8 +348,9 @@ const delayTime = 60000;
                       </Grid>
                     </Grid>
                   </CardContent>
-                    </Tooltip>
+
                 </CardHover>
+                </Tooltip>
                 </Grid>
               ))}
             </>
@@ -435,7 +436,7 @@ const delayTime = 60000;
             </div>
           )}
         </Grid>
-               
+
       <Dialog open={isOpenRequestDialog} onClose={handleCloseRequestDialog}>
         <DialogTitle>Request Mentorship</DialogTitle>
         <DialogContent>
@@ -536,6 +537,7 @@ const delayTime = 60000;
           My Mentor
         </Button>
       )}
+      </Grid>
     </Container>
   );
 }
