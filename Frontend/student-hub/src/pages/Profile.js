@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, Button, Modal, TextField, Input } from '@mui/material';
-import { useError } from '../components/ErrorContext'
-
+import { Container, Grid, Typography, Button, Modal, TextField, Input, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { useError } from '../components/ErrorContext';
+import getUserIDToken from '../components/utils';
 
 function Profile() {
   const [profile, setProfile] = useState({
@@ -20,8 +20,7 @@ function Profile() {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const {error, setError } = useError();
-
-
+  const [universities, setUniversities] = useState([]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -47,10 +46,31 @@ function Profile() {
       } catch (error) {
         setError('Failed to fetch profile.');
       }
-    };
+    }; // fetch unviersity list
+    const fetchUniversity = async () => {
+      try {
+        const { token } = getUserIDToken();
+        const response = await fetch (`${process.env.REACT_APP_API}/profile/university`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok){
+          const data = await response.json();
+          setUniversities(data)
+        }else{
+          setError(`Failed to fetch universities: ${error.message}`);
+        }
+      } catch (error) {
+        setError(`Failed to fetch universities: ${error.message}`);
+      }
+    }
 
     fetchProfile();
+    fetchUniversity();
   },[setError]);
+
+
 //request to submit profile page update
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -126,6 +146,7 @@ function Profile() {
   const handleClose = () => {
     setIsModalOpen(false);
   };
+
 
   if (error) {
     return (
@@ -319,15 +340,24 @@ function Profile() {
             />
           </Grid>
           <Grid item xs={1}>
-            <TextField
-              fullWidth
-              type="text"
-              label="School"
-              variant="outlined"
+          <FormControl fullWidth>
+            <InputLabel>School</InputLabel>
+            <Select
               name="school"
-              value={profile.school || ''}
+              value={profile.school}
               onChange={handleChange}
-            />
+            >
+              {universities.length > 0 ? (
+                universities.map((university, position) => (
+                  <MenuItem key={position} value={university.name}>
+                    {university.name}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem value="">No options available</MenuItem>
+              )}
+            </Select>
+          </FormControl>
           </Grid>
           <Grid item xs={1}>
             <TextField
