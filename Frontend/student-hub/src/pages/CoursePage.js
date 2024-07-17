@@ -43,7 +43,8 @@ function CoursePage() {
     const [emojis, setEmojis] = useState([])
     const { setError } = useError();
 
-
+// delay loading state to 1 minute
+const delayTime = 60000;
 // emoji
     useEffect(() => {
         const fetchEmojis = async () => {
@@ -52,14 +53,15 @@ function CoursePage() {
                 const response = await fetch(`${process.env.REACT_APP_API}/emoji`);
                 if (!response.ok) {
                     setError(error.message)
-
                 }
                 const emojistData = await response.json();
                 setEmojis(emojistData);
             } catch (error) {
                 setError(error.message)
             }
-            setIsLoading(false)
+            setTimeout(() => {
+                setIsLoading(false)
+                }, delayTime);
         };
         fetchEmojis();
     }, []);
