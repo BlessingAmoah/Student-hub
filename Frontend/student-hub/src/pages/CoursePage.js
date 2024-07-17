@@ -56,7 +56,6 @@ function CoursePage() {
                 }
                 const emojistData = await response.json();
                 setEmojis(emojistData);
-                setIsLoading(false)
             } catch (error) {
                 setError(error.message)
             }
