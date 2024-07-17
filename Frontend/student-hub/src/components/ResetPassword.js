@@ -2,17 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Grid, TextField, Button, CircularProgress } from '@mui/material';
 import { useError } from './ErrorContext'
+import VerificationModal from './VerificationModal';
+import '../styling/VerificationCode.css'
 
 
 function ResetPassword() {
     const [passwordResetEmail, setPasswordResetEmail] = useState('');
-    const [code, setCode] = useState('');
+    const [code, setCode] = useState(new Array(6).fill(''));
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { setError } = useError();
     const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
 
     //request new code
@@ -52,7 +55,7 @@ function ResetPassword() {
           const response = await fetch(`${process.env.REACT_APP_API}/auth/reset-password`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: passwordResetEmail, code, newPassword, confirmPassword }),
+            body: JSON.stringify({ email: passwordResetEmail, code: code.join(''), newPassword, confirmPassword }),
           });
 
 
@@ -96,14 +99,31 @@ function ResetPassword() {
         setIsLoading(false);
       };
 
+      // handle verification modal close
+      const handleCloseModal = () => {
+        setIsModalOpen(false);
+      }
+
+
+  // Handle individual input changes for the verification code
+  const handleVerificationCodeChange = (e, num) => {
+    const { value } = e.target;
+    if (/^[0-9]$/.test(value) || value === '') {
+      let newCode = [...code];
+      newCode[num] = value;
+      setCode(newCode);
+    }
+  };
+
       return (
         <Container maxWidth="sm">
           <Grid container spacing={2} alignItems="center" justifyContent="center" style={{ minHeight: '80vh' }}>
-            <Grid item xs={12}>
-              <h2>{message ? "Reset Password" : "Request Password Reset"}</h2>
-            </Grid>
+
             <Grid item xs={12}>
               <form onSubmit={message ? handleResetPassword : handleRequestResetPassword}>
+              <Grid item xs={12}>
+              <h2>{message ? "Reset Password" : "Request Password Reset"}</h2>
+            </Grid>
                 <Grid container spacing={2}>
                   {!message && (
                     <Grid item xs={12}>
@@ -121,15 +141,18 @@ function ResetPassword() {
                   {message && (
                     <>
                       <Grid item xs={12}>
-                        <TextField
-                          fullWidth
-                          type="text"
-                          label="Verification Code"
-                          variant="outlined"
-                          value={code}
-                          onChange={(e) => setCode(e.target.value)}
-                          required
-                        />
+                        <div className='verification-container'>
+                        <VerificationModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onSubmit={handleResetPassword}
+                    onResend={handleRequestNewCode}
+                    isLoading={isLoading}
+                    verificationCode={code}
+                    handleVerificationCodeChange={handleVerificationCodeChange}
+                    modalMode="ResetPassword"
+                />
+                      </div>
                       </Grid>
                       <Grid item xs={12}>
                         <TextField

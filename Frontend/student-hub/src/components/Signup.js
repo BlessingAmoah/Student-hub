@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Grid, TextField, Button, Modal } from '@mui/material';
+import { Container, Grid, TextField, Button} from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useError } from './ErrorContext'
-import '../styling/signup.css'
+import '../styling/VerificationCode.css'
+import VerificationModal from './VerificationModal';
 
 function Signup() {
   const [email, setEmail] = useState('');
@@ -153,41 +154,15 @@ function Signup() {
             </Grid>
           </form>
         </Grid>
-        <Modal
-          open={isModalOpen}
-          onClose={handleClose}
-          style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
-        >
-
-            <div style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, maxWidth: 400, margin: 'auto', marginTop: '20vh' }}>
-              <h2>Email Verification Code Has Been Sent To Your Email</h2>
-              <form onSubmit={handleVerificationSubmit}>
-              <div className="verification-container">
-                {verificationCode.map((digit, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    className="verification-input"
-                    maxLength="1"
-                    value={digit}
-                    onChange={(e) => handleVerificationCodeChange(e, index)}
-                    required
-                  />
-                ))}
-              </div>
-              <div style={{ marginTop: 16, textAlign: 'center' }}>
-                <Button type="submit" variant="contained" color="primary">Verify</Button>
-              </div>
-              </form>
-              <p style={{ textAlign: 'center' }}>
-                Didn't receive a code?{' '}
-                <Button component="a" href="#" onClick={handleVerificationCodeResend}>
-                Resend Verification Code
-              </Button>
-              </p>
-              {isVerificationLoading && <CircularProgress color="inherit" />}
-            </div>
-        </Modal>
+        <VerificationModal
+        isOpen={isModalOpen}
+        onClose={handleClose}
+        onSubmit={handleVerificationSubmit}
+        onResend={handleVerificationCodeResend}
+        isLoading={isVerificationLoading}
+        verificationCode={verificationCode}
+        handleVerificationCodeChange={handleVerificationCodeChange}
+        />
         {isLoading && <CircularProgress color="inherit" />}
       </Grid>
     </Container>
