@@ -5,6 +5,7 @@ import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
 import Skeleton from '@mui/material/Skeleton'
 import getUserIDToken from '../components/utils';
+import UserCard from './UserCard';
 
 //search styling
 const SearchContainer = styled(Paper)({
@@ -22,16 +23,13 @@ const SearchContainer = styled(Paper)({
   const SearchIconButton = styled(IconButton)({
     padding: 10,
   });
+
   const CardHover = styled(Card)({
     transition: 'transform 0.2s',
     '&:hover': {
       transform: 'scale(1.02)',
       boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
     },
-  });
-
-  const TooltipContent = styled('div')({
-    padding: '8px',
   });
 
 function MentorshipPage() {
@@ -308,47 +306,7 @@ const delayTime = 60000;
             <>
               {filteredMentorship.map((mentor) => (
                 <Grid item xs={12} sm={16} md={8} key={mentor.id} sx={{ p:2}}>
-                  <Tooltip
-              title={
-                <TooltipContent>
-                  <Typography variant="subtitle2">School: {mentor.school}</Typography>
-                  <Typography variant="body2"> Bio: {mentor.bio}</Typography>
-                </TooltipContent>
-              }
-              placement="top"
-              arrow
-            >
-                <CardHover>
-                  <CardContent>
-                    <Grid container alignItems="center">
-                      <Grid item xs={3}>
-                        <Avatar alt={mentor.name} src={mentor.profilePicture} />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="h6" component="h3">
-                          {mentor.name}
-                        </Typography>
-                        <Typography color="textSecondary">
-                          {mentor.interest}
-                        </Typography>
-                        <Typography color="textSecondary">
-                          {mentor.mentorship}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => handleOpenRequestDialog(mentor.id)}
-                        >
-                          Request Mentorship
-                        </Button>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-
-                </CardHover>
-                </Tooltip>
+                  <UserCard mentor={mentor} handleOpenRequestDialog={handleOpenRequestDialog} />
                 </Grid>
               ))}
             </>
