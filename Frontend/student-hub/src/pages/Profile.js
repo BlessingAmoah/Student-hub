@@ -46,7 +46,8 @@ function Profile() {
       } catch (error) {
         setError('Failed to fetch profile.');
       }
-    }; // fetch unviersity list
+    };
+    // fetch unviersity list
     const fetchUniversity = async () => {
       try {
         const { token } = getUserIDToken();
@@ -344,9 +345,10 @@ function Profile() {
             <InputLabel>School</InputLabel>
             <Select
               name="school"
-              value={profile.school}
+              value={profile.school || ''}
               onChange={handleChange}
             >
+              <MenuItem value="">None</MenuItem>
               {universities.length > 0 ? (
                 universities.map((university, position) => (
                   <MenuItem key={position} value={university.name}>
