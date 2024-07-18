@@ -6,7 +6,8 @@ import { useError } from '../components/ErrorContext'
 import Skeleton from '@mui/material/Skeleton'
 import getUserIDToken from '../components/utils';
 import UserCard from './UserCard';
-import MenteeList from './MenteeList'
+import MenteeList from './MenteeList';
+import MentorList from './MentorList';
 
 //search styling
 const SearchContainer = styled(Paper)({
@@ -320,7 +321,6 @@ const delayTime = 60000;
               {filteredMenteeLists.map((mentee) => (
                 <MenteeList mentee={mentee} handleCloseMenteeList={handleCloseMenteeList} />
               ))}
-
             </div>
           )}
         </Grid>
@@ -331,32 +331,7 @@ const delayTime = 60000;
                 My Mentor
               </Typography>
               {filteredMentorLists.map((mentor) => (
-                <CardHover key={mentor.id}>
-                  <CardContent>
-                    <Grid container alignItems="center">
-                      <Grid item xs={3}>
-                        <Avatar alt={mentor.name} src={mentor.profilePicture} />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="h6" component="h3">
-                          {mentor.name}
-                        </Typography>
-                        <Typography color="textSecondary">
-                         Bio: {mentor.bio}
-                        </Typography>
-                        <Typography variant="body2">
-                         Interest: {mentor.interest}
-                          </Typography>
-                      <Typography variant="body2">
-                       Email: {mentor.email}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-                    <Button onClick={handleCloseMentorList} color="primary">
-                Close
-              </Button>
-                  </CardContent>
-                </CardHover>
+                <MentorList mentor={mentor} handleCloseMentorList={handleCloseMentorList} />
               ))}
             </div>
           )}
