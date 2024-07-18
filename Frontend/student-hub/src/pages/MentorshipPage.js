@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent,  Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip } from '@mui/material';
+import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent,  Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
 import Skeleton from '@mui/material/Skeleton'
 import getUserIDToken from '../components/utils';
 import UserCard from './UserCard';
+import MenteeList from './MenteeList'
 
 //search styling
 const SearchContainer = styled(Paper)({
@@ -317,39 +318,7 @@ const delayTime = 60000;
                 Mentees List
               </Typography>
               {filteredMenteeLists.map((mentee) => (
-                <CardHover key={mentee.id}>
-                  <CardContent>
-                    <Grid container alignItems="center">
-                      <Grid item xs={3}>
-                        <Avatar alt={mentee.name} src={mentee.profilePicture} />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="h6" component="h3">
-                          {mentee.name}
-                        </Typography>
-                        <Typography variant="body2">
-                          Interest: {mentee.interest}
-                          </Typography>
-                      <Typography variant="body2">
-                        School: {mentee.school}
-                        </Typography>
-                      <Typography variant="body2">
-                       Major:  {mentee.major}
-                        </Typography>
-                      <Typography variant="body2">
-                       Email: {mentee.email}
-                        </Typography>
-                        <Typography color="textSecondary">
-                        Bio:  {mentee.bio}
-                        </Typography>
-                      </Grid>
-                    </Grid>
-              <Button onClick={handleCloseMenteeList} color="primary">
-                Close
-              </Button>
-
-                  </CardContent>
-                </CardHover>
+                <MenteeList mentee={mentee} handleCloseMenteeList={handleCloseMenteeList} />
               ))}
 
             </div>
