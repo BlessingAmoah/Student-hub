@@ -56,7 +56,6 @@ const delayTime = 60000;
                 }
                 const emojistData = await response.json();
                 setEmojis(emojistData);
-
             } catch (error) {
                 setError(error.message)
             }
