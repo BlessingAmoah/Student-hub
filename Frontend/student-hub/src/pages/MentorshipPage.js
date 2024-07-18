@@ -92,7 +92,7 @@ const delayTime = 60000;
         }
 
         const mentorshipData = await response.json();
-        const mentors = mentorshipData.formattedUser.filter((user) => user.mentorship !== 'Mentee');
+        const mentors = mentorshipData.formattedUser.filter((user) => user.mentorship === 'Mentor');
         setTimeout(() => {
           setIsLoading(false)
           }, delayTime);
@@ -238,7 +238,6 @@ const delayTime = 60000;
   }
 
   const handleOpenMenteeList = async () => {
-    setUserRole('Mentor')
     setIsListOpen(true);
    await fetchMentees();
   }
@@ -250,7 +249,6 @@ const delayTime = 60000;
     setIsListOpen(false);
   }
   const handleOpenMentorList = async () => {
-    setUserRole('Mentee');
     await fetchMentor();
     setIsListOpen(true);
    }
