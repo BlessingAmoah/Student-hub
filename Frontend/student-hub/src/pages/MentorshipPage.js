@@ -5,6 +5,8 @@ import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
 import Skeleton from '@mui/material/Skeleton'
 import getUserIDToken from '../components/utils';
+import MenteeList from './MenteeList';
+import MentorList from './MentorList';
 
 //search styling
 const SearchContainer = styled(Paper)({
