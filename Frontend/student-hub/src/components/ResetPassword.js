@@ -59,6 +59,7 @@ function ResetPassword() {
           if (response.ok) {
             const data = await response.json();
             setMessage(data.message);
+            alert('Password reset successful. You hae been logged out on all other device, Please login back again!!!')
             navigate('/login')
           } else {
             const { error } = await response.json();
