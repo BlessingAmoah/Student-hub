@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent,  Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
@@ -8,6 +8,7 @@ import getUserIDToken from '../components/utils';
 import UserCard from './UserCard';
 import MenteeList from './MenteeList';
 import MentorList from './MentorList';
+import PendingRequest from './PendingRequest';
 
 //search styling
 const SearchContainer = styled(Paper)({
@@ -24,14 +25,6 @@ const SearchContainer = styled(Paper)({
 
   const SearchIconButton = styled(IconButton)({
     padding: 10,
-  });
-
-  const CardHover = styled(Card)({
-    transition: 'transform 0.2s',
-    '&:hover': {
-      transform: 'scale(1.02)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-    },
   });
 
 function MentorshipPage() {
@@ -71,7 +64,6 @@ function MentorshipPage() {
     };
     fetchUserRole();
   }, [setError]);
-
 
   // fetch mentorship informations
   // delay loading state to 1 minute
@@ -372,43 +364,7 @@ const delayTime = 60000;
         <DialogContent>
           <Grid container spacing={2}>
             {filteredMentorshipRequests.map((request) => (
-              <Grid item xs={12} key={request.id}>
-                <CardHover>
-                  <CardContent>
-                    <Grid container alignItems="center">
-                      <Grid item xs={3}>
-                        <Avatar alt={request.name} src={request.profilePicture} />
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="h6" component="h3">
-                          {request.name}
-                        </Typography>
-                        <Typography color="textSecondary">{request.bio}</Typography>
-                      </Grid>
-                      <Grid item xs={3}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() =>
-                            handleRespondMentorship(request.userId, request.mentorId, 'accepted')
-                          }
-                        >
-                          Accept
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="secondary"
-                          onClick={() =>
-                            handleRespondMentorship(request.userId, request.mentorId, 'rejected')
-                          }
-                        >
-                          Reject
-                        </Button>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                </CardHover>
-              </Grid>
+              <PendingRequest request={request} handleRespondMentorship={handleRespondMentorship} />
             ))}
           </Grid>
         </DialogContent>
