@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Grid, TextField, Button} from '@mui/material';
+import { Container, Grid, TextField, Button, Modal} from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useError } from './ErrorContext'
 import '../styling/VerificationCode.css'
@@ -154,16 +154,29 @@ function Signup() {
             </Grid>
           </form>
         </Grid>
+        <Modal
+         open={isModalOpen}
+         onClose={handleClose}
+         style={{ backgroundColor: 'white', color: 'black', border: '1px solid black' }}
+        >
+          <div style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, maxWidth: 400, margin: 'auto', marginTop: '20vh' }}>
         <VerificationModal
-        isOpen={isModalOpen}
-        onClose={handleClose}
-        onSubmit={handleVerificationSubmit}
-        onResend={handleVerificationCodeResend}
         isLoading={isVerificationLoading}
         verificationCode={verificationCode}
         handleVerificationCodeChange={handleVerificationCodeChange}
         />
+         <div style={{ marginTop: 16, textAlign: 'center' }}>
+                <Button type="submit" variant="contained" color="primary"  onClick={handleVerificationSubmit}>Verify</Button>
+              </div>
+          <p style={{ textAlign: 'center' }}>
+                    Didn't receive a code?{' '}
+                    <Button component="a" href="#" onClick={handleVerificationCodeResend}>
+                        Resend Verification Code
+                    </Button>
+                </p>
         {isLoading && <CircularProgress color="inherit" />}
+        </div>
+        </Modal>
       </Grid>
     </Container>
   );
