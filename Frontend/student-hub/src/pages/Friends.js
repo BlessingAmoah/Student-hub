@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Typography, Paper, InputBase} from '@mui/material'
+import { Container, Grid, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Typography, Paper, InputBase, Button, Avatar} from '@mui/material'
 import  Remove  from '@mui/icons-material/Remove'
 import  Add  from '@mui/icons-material/Add'
 import SearchIcon from '@mui/icons-material/Search';
@@ -35,6 +35,8 @@ const FriendsList = () => {
         recommendedFriends: [],
         availableFriend: []
     });
+    const [isRecommendedFriends, setIsRecommendedFriends] = useState(false);
+    const [isAvailableFriends, setIsAvailableFriends] = useState(false);
 
     // delay loading state to 1 minute
     const delayTime = 60000;
@@ -48,10 +50,11 @@ const FriendsList = () => {
 
             Promise.all([friendsPromise, avaialableFriendsPromise, recommendedFriendsPromise])
              .then(([friends, availableFriend, recommendedFriends]) => {
+                const filteredAvailableFriend = availableFriend.filter(person => !recommendedFriends.some(friend => friend.id === person.id))
                 setFilteredData({
                     friends,
                     recommendedFriends,
-                    availableFriend
+                    availableFriend: filteredAvailableFriend
                 });
                 setTimeout(() => {
                     setIsLoading(false)
@@ -170,7 +173,7 @@ const handleAddFriend = async (friendId) => {
         setFilteredData({
             friends: updatedFriends,
             recommendedFriends: updatedRecommendedFriends,
-            availableFriend: updatedAvailableFriend
+            availableFriend: updatedAvailableFriend.filter(person => !updatedRecommendedFriends.some(friend => friend.id === person.id))
         });
     } catch (error) {
         setError(error.message);
@@ -203,7 +206,7 @@ const handleRemoveFriend = async (friendId) => {
         setFilteredData({
             friends: updatedFriends,
             recommendedFriends: updatedRecommendedFriends,
-            availableFriend: updatedAvailableFriend
+            availableFriend: updatedAvailableFriend.filter(person => !updatedRecommendedFriends.some(friend => friend.id === person.id))
         });
     } catch (error) {
         setError(error.message);
@@ -287,6 +290,7 @@ return (
                 <List>
                     {filteredData.friends?.map((person) => (
                         <ListItem key={person.id}>
+                             <Avatar alt={person.name} src={person.profilePicture} sx={{ marginRight: 2 }} />
                             <ListItemText primary={person.name} secondary={`${person.interest}, ${person.school}, ${person.major}`} />
                             <ListItemSecondaryAction>
                             <IconButton edge="end" aria-label="remove" onClick={() => handleRemoveFriend(person.id)}>
@@ -297,12 +301,23 @@ return (
                     ))}
                 </List>
             </Grid>
+            {/*Avialable & recommended friends button */}
+            <Grid container sx={{ justifyContent: 'space-between' }} item xs={12}>
+                <Button variant="contained" onClick={() => setIsRecommendedFriends(!isRecommendedFriends)}>
+                    { isRecommendedFriends ? "Hide Recommended Friends" : "Show Recommended Friends"}
+                </Button>
+                <Button variant="contained" onClick={() => setIsAvailableFriends(!isAvailableFriends)}>
+                    {isAvailableFriends ? "Hide Available Friends" : " Show Available Friends"}
+                </Button>
+            </Grid>
             {/* Recommended Friends */}
+            {isRecommendedFriends && (
             <Grid item xs={12}>
                 <Typography variant="h6">Recommended Friends</Typography>
                 <List>
                     {filteredData.recommendedFriends?.map((friend) => (
                         <ListItem key={friend.id}>
+                             <Avatar alt={friend.name} src={friend.profilePicture} sx={{ marginRight: 2 }} />
                             <ListItemText primary={friend.name} secondary={`${friend.interest}, ${friend.school}, ${friend.major}`} />
                             <ListItemSecondaryAction>
                                 <IconButton edge="end" aria-label='add' onClick={() => handleAddFriend(friend.id)}>
@@ -316,12 +331,15 @@ return (
                     ))}
                 </List>
             </Grid>
+            )}
             {/* Available friend */}
+            {isAvailableFriends && (
             <Grid item xs={12}>
                 <Typography variant="h6">Available People</Typography>
                 <List>
                     {filteredData.availableFriend?.map((person) => (
                         <ListItem key={person.id}>
+                             <Avatar alt={person.name} src={person.profilePicture} sx={{ marginRight: 2 }}/>
                             <ListItemText primary={person.name} secondary={`${person.interest}, ${person.school}, ${person.major}`} />
                             <ListItemSecondaryAction>
                                 <IconButton edge="end" aria-label='add' onClick={() => handleAddFriend(person.id)}>
@@ -332,6 +350,7 @@ return (
                     ))}
                 </List>
             </Grid>
+            )}
         </Grid>
     </Container>
 );

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent, CardActions, Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip } from '@mui/material';
+import { Container, Grid, Typography, IconButton, InputBase, Paper, Button, Card, CardContent,  Avatar, TextField, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Tooltip } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
@@ -348,8 +348,9 @@ const delayTime = 60000;
                       </Grid>
                     </Grid>
                   </CardContent>
-                    </Tooltip>
+
                 </CardHover>
+                </Tooltip>
                 </Grid>
               ))}
             </>
@@ -435,7 +436,7 @@ const delayTime = 60000;
             </div>
           )}
         </Grid>
-               
+
       <Dialog open={isOpenRequestDialog} onClose={handleCloseRequestDialog}>
         <DialogTitle>Request Mentorship</DialogTitle>
         <DialogContent>
@@ -536,6 +537,7 @@ const delayTime = 60000;
           My Mentor
         </Button>
       )}
+      </Grid>
     </Container>
   );
 }

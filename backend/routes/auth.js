@@ -58,7 +58,7 @@ router.post('/signup', async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const verificationCode = generateVerificationCode();
 
-//verification code expiration time
+//verification code expiration every 1 minute
 const expirationTimestamp = new Date(Date.now() + 60000)
 
     // Save user with verificationCode
@@ -131,6 +131,7 @@ router.post('/resendverification', async (req, res) => {
       return res.status(400).json({ error: 'Invalid request or email already verified.' });
     }
 
+    // expires every 1 minute
     const verificationCode = generateVerificationCode();
     const expirationTimestamp = new Date(Date.now() + 60000);
 
@@ -152,7 +153,7 @@ router.post('/resendverification', async (req, res) => {
   }
 });
 
-// Delete unverified users every minute
+// Delete unverified users every 10 minutes
 schedule.scheduleJob('*/10 * * * *', async () => {
   await User.destroy({
     where: {
@@ -204,7 +205,7 @@ router.post('/password-resetcode', async (req, res) => {
     //generate code for verification
     const codeReset = generateVerificationCode();
     user.verificationCode = codeReset;
-    // verification code expiration time
+    // verification code expiration time every 1 minute
     const expirationTimestamp = new Date(Date.now() + 60000);
     user.expirationTimestamp = expirationTimestamp;
     await user.save();

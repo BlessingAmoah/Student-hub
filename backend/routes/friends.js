@@ -72,7 +72,7 @@ router.get('/:userId', verifyToken, async (req, res) => {
         }
         const friends = await Friend.findAll({
             where: { userId },
-            include: [{ model: User, as: 'FriendUser', attributes: ['id', 'name', 'major', 'school', 'interest']}]
+            include: [{ model: User, as: 'FriendUser', attributes: ['id', 'name', 'major', 'school', 'interest', 'profilePicture']}]
         });
         // format the friend list
         const formatFriends = friends.map( user =>  ({
@@ -80,7 +80,8 @@ router.get('/:userId', verifyToken, async (req, res) => {
             name: user.friendName || user.FriendUser.name,
             school: user.FriendUser.school,
             major: user.FriendUser.major,
-            interest: user.FriendUser.interest
+            interest: user.FriendUser.interest,
+            profilePicture: user.profilePicture
         }));
         res.status(200).json(formatFriends);
     } catch (error){
@@ -173,7 +174,7 @@ const bfs = async (startUserId, degree) => {
             { school: { [Op.like]: `%${currentUser.school}%` } }
           ]
         },
-        attributes: ['id', 'name', 'interest', 'school', 'major']
+        attributes: ['id', 'name', 'interest', 'school', 'major', 'profilePicture']
       });
 
       // Calculate similarity score
@@ -224,6 +225,7 @@ const bfs = async (startUserId, degree) => {
         interest: user.interest,
         school: user.school,
         major: user.major,
+        profilePicture: user.profilePicture,
         score: user.score
       }));
 
