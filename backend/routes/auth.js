@@ -8,6 +8,7 @@ const verifyToken = require('../middleware/auth');
 const { Op } = require("sequelize")
 const schedule = require('node-schedule');
 require('dotenv').config();
+const { sendToClients } = require('./sse')
 
 // validate email domain
 const validateEmail = (email) => {
@@ -254,6 +255,15 @@ router.post('/reset-password', async (req, res) => {
     user.expirationTimestamp = null;
     user.tokenVersion += 1;
     await user.save();
+
+    // send notification via SSE
+    sendToClients({
+      type: 'RESET_SUCCESS',
+      payload: {
+        userId: user.id,
+        message: 'Hello, Your password reset was successful and you have been logged out of all your logged-in device and browser so please login again!!!'
+      }
+    })
 
     res.status(200).json({ message: 'Password reset successful.'})
   } catch (error) {
