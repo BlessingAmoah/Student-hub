@@ -12,6 +12,7 @@ const verifyToken = require('./middleware/auth');
 const { sequelize } = require('./models');
 const friendRoutes = require('./routes/friends')
 const emojiRoutes = require('./routes/emoji')
+const { setupSSE } = require('./routes/sse');
 
 require('dotenv').config();
 
@@ -44,6 +45,9 @@ app.use('/mentorship', verifyToken, mentorshipRoutes);
 app.use('/post', verifyToken, postRoutes);
 app.use('/friends', friendRoutes)
 app.use('/emoji', emojiRoutes)
+
+// setup SSE
+setupSSE(app)
 
 // Test database connection
 sequelize.authenticate()

@@ -6,6 +6,7 @@ const verifyToken = require('../middleware/auth');
 const { Post, Like, Comment} = require('../models');
 const { Op } = require('sequelize');
 const stringSimilarity = require('string-similarity')
+const { sendToClients } = require('./sse')
 
 // Add a friend
 router.post('/add', verifyToken, async (req, res) => {
@@ -33,6 +34,18 @@ router.post('/add', verifyToken, async (req, res) => {
             friendId,
             friendName: isUser.name
         });
+
+        // Get the name of the user who is making the request
+        const user = await User.findByPk(userId);
+        const userName = user.name;
+        // send  friend request notification via SSE
+        sendToClients({
+          type: 'FRIEND_REQUEST',
+          payload: {
+            userId,
+            message: `Hello, ${userName} just added you as a friend add him back`
+          }
+        })
         res.status(201).json(newFriend);
     }
     catch(error) {

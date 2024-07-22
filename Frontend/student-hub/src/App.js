@@ -17,6 +17,7 @@ import FriendsList from './pages/Friends';
 import { Snackbar, Alert } from '@mui/material';
 import { useError } from './components/ErrorContext';
 import ResetPassword from './components/ResetPassword';
+import { SSEProvider } from './components/SSEContext';
 
 function App() {
 
@@ -32,6 +33,7 @@ function App() {
   return (
     <ThemeProvider>
     <Router>
+      <SSEProvider>
       <Navbar isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <Container maxWidth="sm">
       <Grid container spacing={2} alignItems="center" justify="center" style={{ minHeight: '100vh' }}>
@@ -57,6 +59,7 @@ function App() {
       </Grid>
       </Container>
       <Footer />
+      </SSEProvider>
     </Router>
     </ThemeProvider>
   );
