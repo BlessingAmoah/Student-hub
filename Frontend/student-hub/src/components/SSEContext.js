@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useError } from '../components/ErrorContext'
 
 const SSEContext = createContext();
 
 export const SSEProvider = ({ children }) => {
   const eventSourceRef = useRef(null);
   const navigate = useNavigate();
+  const { setError } = useError();
 
   useEffect(() => {
     const userId = sessionStorage.getItem('userId');
@@ -14,7 +16,6 @@ export const SSEProvider = ({ children }) => {
 
       eventSourceRef.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log('SSE message:', data);
         switch (data.type) {
           case 'RESET_SUCCESS':
             alert(data.payload.message);
@@ -26,7 +27,7 @@ export const SSEProvider = ({ children }) => {
       };
 
       eventSourceRef.current.onerror = (error) => {
-        console.error('SSE error:', error);
+        setError('SSE error:', error);
         eventSourceRef.current.close();
       };
 
