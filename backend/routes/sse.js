@@ -8,7 +8,7 @@ const setupSSE = (app) => {
 
     const userId = req.query.userId
   if (!userId){
-    res,status(400).send('User Id is required');
+    res.status(400).send('User Id is required');
     return;
   }
     clients.set(userId, res);
