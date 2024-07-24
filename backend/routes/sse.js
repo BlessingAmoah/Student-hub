@@ -6,22 +6,27 @@ const setupSSE = (app) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    const id = Date.now();
-    clients.set(id, res);
+    const userId = req.query.userId
+  if (!userId){
+    res,status(400).send('User Id is required');
+    return;
+  }
+    clients.set(userId, res);
 
     req.on('close', () => {
-      clients.delete(id);
+      clients.delete(userId);
     });
   });
 };
 
-const sendToClients = (message) => {
-  clients.forEach((client, id) => {
+const sendToClients = (message, excludeUserId = null) => {
+  clients.forEach((client, userId) => {
+    if ( userId === excludeUserId) return;
     try {
       client.write(`data: ${JSON.stringify(message)}\n\n`);
     } catch (error) {
-      console.error(`Error sending message to client ${id}:`, error);
-      clients.delete(id);
+      console.error(`Error sending message to client ${userId}:`, error);
+      clients.delete(userId);
     }
   });
 };

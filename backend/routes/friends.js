@@ -42,10 +42,10 @@ router.post('/add', verifyToken, async (req, res) => {
         sendToClients({
           type: 'FRIEND_REQUEST',
           payload: {
-            userId,
-            message: `Hello, ${userName} just added you as a friend add him back`
+            friendId,
+            message: `Hello, ${userName} just added you as a friend.`
           }
-        })
+        }, userId)
         res.status(201).json(newFriend);
     }
     catch(error) {

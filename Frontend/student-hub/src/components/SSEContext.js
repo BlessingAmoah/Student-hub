@@ -12,7 +12,7 @@ export const SSEProvider = ({ children }) => {
   useEffect(() => {
     const userId = sessionStorage.getItem('userId');
     if (userId) {
-      eventSourceRef.current = new EventSource(`${process.env.REACT_APP_API}/events`);
+      eventSourceRef.current = new EventSource(`${process.env.REACT_APP_API}/events?userId=${userId}`);
 
       eventSourceRef.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
