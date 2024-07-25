@@ -11,7 +11,7 @@ const NotificationIcon = () => {
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      const response = await fetch(`${process.env.REACT_APP_API}/notifications/unread`, {
+      const response = await fetch(`${process.env.REACT_APP_API}/notification/unread`, {
         headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}` }
       });
       const data = await response.json();
@@ -20,14 +20,16 @@ const NotificationIcon = () => {
 
     fetchNotifications();
 
-    eventSource.addEventListener('notification', (event) => {
+    const handleNotification = (event) => {
       const data = JSON.parse(event.data);
       setNotifications(prevNotifications => [data, ...prevNotifications]);
-    });
+    };
+
+    eventSource.addEventListener('notification', handleNotification);
 
     return () => {
       if (eventSource) {
-        eventSource.removeEventListener('notification');
+        eventSource.removeEventListener('notification', handleNotification);
       }
     };
   }, [eventSource]);
@@ -39,7 +41,7 @@ const NotificationIcon = () => {
 
   const markNotificationsAsRead = async () => {
     const notificationIds = notifications.map(n => n.id);
-    await fetch(`${process.env.REACT_APP_API}/notifications/mark-read`, {
+    await fetch(`${process.env.REACT_APP_API}/notification/mark-read`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ notificationIds })
