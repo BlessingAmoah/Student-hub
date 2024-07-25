@@ -7,7 +7,7 @@ const NotificationDrawer = ({ open, onClose, notifications }) => (
     <IconButton onClick={onClose} style={{ position: 'absolute', top: 10, right: 10 }}>
       <CloseIcon />
     </IconButton>
-    <List>
+    <List style={{ paddingTop: 30}}>
       {notifications.map(notification => (
         <ListItem key={notification.id}>
           <ListItemText primary={notification.message} />
