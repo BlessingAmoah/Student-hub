@@ -5,6 +5,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useTheme } from './ThemeContext'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import NotificationIcon from './NotificationIcon';
 
 function Navbar({ isLoggedIn, setIsLoggedIn}) {
     const navigate = useNavigate();
@@ -60,6 +61,7 @@ function Navbar({ isLoggedIn, setIsLoggedIn}) {
                         <Button color='inherit' component={Link} to="/courses">Course & Interest  </Button>
                         <Button color='inherit' component={Link} to="/mentorship"> Mentorship program  </Button>
                         <Button color="inherit" component={Link} to="/friends">Friends</Button>
+                        <NotificationIcon />
                         <IconButton
                             edge="end"
                             color="inherit"

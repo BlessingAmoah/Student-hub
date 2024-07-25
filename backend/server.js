@@ -13,6 +13,7 @@ const { sequelize } = require('./models');
 const friendRoutes = require('./routes/friends')
 const emojiRoutes = require('./routes/emoji')
 const { setupSSE } = require('./routes/sse');
+const notificationRoutes = require('./routes/notification')
 
 require('dotenv').config();
 
@@ -45,6 +46,7 @@ app.use('/mentorship', verifyToken, mentorshipRoutes);
 app.use('/post', verifyToken, postRoutes);
 app.use('/friends', friendRoutes)
 app.use('/emoji', emojiRoutes)
+app.use('/notification', verifyToken, notificationRoutes)
 
 // setup SSE
 setupSSE(app)

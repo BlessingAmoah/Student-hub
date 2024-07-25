@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { Post, Comment, Like, User } = require('../models');
+const { Post, Comment, Like, User, Notification } = require('../models');
 const verifyToken = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
+const { sendToClients } = require('./sse')
 
 
 // Configure multer for file uploads
@@ -51,8 +52,33 @@ router.post('/', verifyToken, upload.single('media'), async (req, res) => {
 router.post('/:postId/comment', verifyToken, async (req, res) => {
   const { postId } = req.params;
   const { content } = req.body;
+  const userId = req.userId;
+
   try {
     const comment = await Comment.create({ content, userId: req.userId, postId });
+     // Get the name of the user who is making the request
+     const user = await User.findByPk(userId);
+    // notification for the post author
+    const post = await Post.findByPk(postId);
+    if (post.userId !== req.userId) {
+      await Notification.create({
+        userId: post.userId,
+        type: 'COMMENT',
+        message: `Hello  ${user.name} commented on your post titled "${post.title}"`,
+        postId,
+        read: false
+      });
+
+      // Send SSE notification
+      sendToClients({
+        type: 'COMMENT',
+        payload: {
+          type: 'COMMENT',
+          message: `Hello ${user.name} commented on your post titled "${post.title}"`,
+          postId
+        }
+      }, userId);
+    }
     res.status(201).json(comment);
   } catch (error) {
     console.error('Error adding comment:', error);
@@ -67,6 +93,30 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
   try {
 
     const existingLike = await Like.findOne({ where: { userId: req.userId, postId } });
+     // name of the liking user
+     const user = await User.findByPk(req.userId);
+
+     // notification for the post author
+     const post = await Post.findByPk(postId);
+     if (post.userId !== req.userId) {
+       await Notification.create({
+         userId: post.userId,
+         type: 'LIKE',
+         message: `Hello ${user.name} liked your post titled "${post.title}"`,
+         postId,
+         read: false
+       });
+
+       // Send SSE notification
+       sendToClients({
+         payload: {
+           type: 'LIKE',
+           message: `Hello ${user.name} liked your post titled "${post.title}"`,
+           postId
+         }
+       });
+     }
+
     if (existingLike) {
       await existingLike.destroy();
       res.status(200).json({ message: 'Post unliked' });

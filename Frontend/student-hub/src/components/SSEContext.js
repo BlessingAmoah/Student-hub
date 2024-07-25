@@ -12,7 +12,7 @@ export const SSEProvider = ({ children }) => {
   useEffect(() => {
     const userId = sessionStorage.getItem('userId');
     if (userId) {
-      eventSourceRef.current = new EventSource(`${process.env.REACT_APP_API}/events`);
+      eventSourceRef.current = new EventSource(`${process.env.REACT_APP_API}/events?userId=${userId}`);
 
       eventSourceRef.current.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -22,7 +22,10 @@ export const SSEProvider = ({ children }) => {
             navigate('/login');
             break;
             case 'FRIEND_REQUEST':
-            alert(data.payload.message);
+              case 'MENTORSHIP_REQUEST':
+              case 'COMMENT':
+              case 'LIKE':
+                case 'MENTORSHIP_RESPONSE':
             break;
           default:
             console.warn('Unhandled message type:', data.type);
