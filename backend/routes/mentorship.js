@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { User } = require('../models');
+const { User, Notification } = require('../models');
 const verifyToken = require('../middleware/auth');
 const { Op } = require('sequelize');
+const { sendToClients } = require('./sse')
 
 //get route for mentorship information
 router.get('/mentorship', verifyToken, async (req, res) => {
@@ -62,7 +63,7 @@ router.get('/mentorship', verifyToken, async (req, res) => {
 
 // request a mentor
 router.post('/request-mentor', verifyToken, async (req, res) => {
-  const { userId, note } = req.body
+  const { userId, note, mentorId } = req.body
 
   try{
     const mentor = await User.findByPk(userId);
@@ -72,6 +73,23 @@ router.post('/request-mentor', verifyToken, async (req, res) => {
 
     // update user's status for mentor request
     await User.update({ mentorId: userId, status: 'requested', note }, { where: { id: userId } });
+
+     // Create notification for the mentor
+     await Notification.create({
+      userId: mentorId,
+      type: 'MENTORSHIP_REQUEST',
+      message: `You have a new mentorship request from ${req.user.name}.`,
+    });
+
+    // Send notification via SSE
+    sendToClients({
+      type: 'MENTORSHIP_REQUEST',
+      payload: {
+        userId: mentorId,
+        message: `You have a new mentorship request from ${req.user.name}.`,
+      }
+    });
+
 
     res.status(201).json({ message: 'Mentor request sent successfully' });
   }catch (error) {
