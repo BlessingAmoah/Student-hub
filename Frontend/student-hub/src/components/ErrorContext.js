@@ -1,33 +1,22 @@
-const express = require('express');
-const router = express.Router();
-const { Notification } = require('../models');
-const verifyToken = require('../middleware/auth');
+import React, { createContext, useState, useContext } from 'react';
 
-// Fetch unread notifications for a user
-router.get('/unread', verifyToken, async (req, res) => {
-  try {
-    const userId = req.user.id; // Assuming userId is set in req.user by auth middleware
-    const notifications = await Notification.findAll({
-      where: { userId, read: false },
-      order: [['createdAt', 'DESC']]
-    });
-    res.json(notifications);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch notifications' });
-  }
-});
 
-// Mark notifications as read
-router.post('/mark-read', verifyToken, async (req, res) => {
-  try {
-    const { notificationIds } = req.body;
-    await Notification.update({ read: true }, {
-      where: { id: notificationIds }
-    });
-    res.status(200).json({ message: 'Notifications marked as read' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to mark notifications as read' });
-  }
-});
+const ErrorContext = createContext();
 
-module.exports = router;
+// provider conponent to wrap the entire application
+export const ErrorProvider = ({ children }) => {
+    const [ error, setError ] = useState('');
+
+    const clearError =() => {
+        setError('');
+    }
+    return (
+        <ErrorContext.Provider value={{ error, setError, clearError }}>
+            {children}
+        </ErrorContext.Provider>
+    )
+};
+
+
+
+export const useError = () => useContext(ErrorContext);
