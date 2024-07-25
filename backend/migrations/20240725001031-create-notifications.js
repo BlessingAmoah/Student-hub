@@ -20,7 +20,7 @@ module.exports = {
         onDelete: 'CASCADE',
       },
       type: {
-        type: Sequelize.STRING,
+        type: DataTypes.ENUM('COMMENT', 'LIKE', 'FRIEND_REQUEST', 'MENTORSHIP_REQUEST', 'MENTORSHIP_RESPONSE'),
         allowNull: false,
       },
       message: {

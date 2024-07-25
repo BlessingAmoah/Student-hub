@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       type: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM('COMMENT', 'LIKE', 'FRIEND_REQUEST', 'MENTORSHIP_REQUEST', 'MENTORSHIP_RESPONSE'),
         allowNull: false,
       },
       message: {
