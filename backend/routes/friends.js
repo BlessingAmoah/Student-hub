@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router();
 const Sequelize = require('sequelize');
-const { User, Friend } = require('../models');
+const { User, Friend, Notification } = require('../models');
 const verifyToken = require('../middleware/auth');
 const { Post, Like, Comment} = require('../models');
 const { Op } = require('sequelize');
@@ -38,6 +38,13 @@ router.post('/add', verifyToken, async (req, res) => {
         // Get the name of the user who is making the request
         const user = await User.findByPk(userId);
         const userName = user.name;
+
+        //Notification creation
+        await Notification.create({
+          userId: friendId,
+          type: 'FRIEND_REQUEST',
+          message: `Hello, ${userName} just added you as a friend.`
+        })
         // send  friend request notification via SSE
         sendToClients({
           type: 'FRIEND_REQUEST',
