@@ -23,7 +23,7 @@ const sendToClients = (message, excludeUserId = null) => {
   clients.forEach((client, userId) => {
     if ( userId === excludeUserId) return;
     try {
-      client.write(`data: ${JSON.stringify(message)}\n\n`);
+      client.write(`event: notification\ndata: ${JSON.stringify(message)}\n\n`);
     } catch (error) {
       console.error(`Error sending message to client ${userId}:`, error);
       clients.delete(userId);

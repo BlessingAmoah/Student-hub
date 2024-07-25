@@ -6,7 +6,7 @@ import NotificationDrawer from './NotificationDrawer';
 
 const NotificationIcon = () => {
   const [notifications, setNotifications] = useState([]);
-  const [openDrawer, setOpenDrawer] = useState(false);
+  const [isOpenDrawer, setIsOpenDrawer] = useState(false);
   const { eventSource } = useSSE();
 
   useEffect(() => {
@@ -24,8 +24,9 @@ const NotificationIcon = () => {
       const data = JSON.parse(event.data);
       setNotifications(prevNotifications => [data, ...prevNotifications]);
     };
-
-    eventSource.addEventListener('notification', handleNotification);
+    if (eventSource) {
+      eventSource.addEventListener('notification', handleNotification);
+    }
 
     return () => {
       if (eventSource) {
@@ -35,17 +36,22 @@ const NotificationIcon = () => {
   }, [eventSource]);
 
   const handleClick = () => {
-    setOpenDrawer(true);
+    setIsOpenDrawer(true);
     markNotificationsAsRead();
   };
 
   const markNotificationsAsRead = async () => {
     const notificationIds = notifications.map(n => n.id);
+    const unreadNotifications = notifications.filter(n => !n.read);
     await fetch(`${process.env.REACT_APP_API}/notification/mark-read`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ notificationIds })
     });
+    setNotifications(notifications.map(notification => ({
+      ...notification,
+      read: unreadNotifications.some(n => n.id === notification.id) ? true : notification.read
+    })));
   };
 
   return (
@@ -55,7 +61,7 @@ const NotificationIcon = () => {
           <NotificationsIcon />
         </Badge>
       </IconButton>
-      <NotificationDrawer open={openDrawer} onClose={() => setOpenDrawer(false)} notifications={notifications} />
+      <NotificationDrawer open={isOpenDrawer} onClose={() => setIsOpenDrawer(false)} notifications={notifications} />
     </>
   );
 };

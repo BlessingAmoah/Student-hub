@@ -52,10 +52,12 @@ router.post('/', verifyToken, upload.single('media'), async (req, res) => {
 router.post('/:postId/comment', verifyToken, async (req, res) => {
   const { postId } = req.params;
   const { content } = req.body;
+  const userId = req.userId;
+
   try {
     const comment = await Comment.create({ content, userId: req.userId, postId });
      // Get the name of the user who is making the request
-     const user = await User.findByPk(req.userId);
+     const user = await User.findByPk(userId);
     // notification for the post author
     const post = await Post.findByPk(postId);
     if (post.userId !== req.userId) {
@@ -69,12 +71,13 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
 
       // Send SSE notification
       sendToClients({
+        type: 'COMMENT',
         payload: {
           type: 'COMMENT',
           message: `Hello ${user.name} commented on your post titled "${post.title}"`,
           postId
         }
-      });
+      }, userId);
     }
     res.status(201).json(comment);
   } catch (error) {
