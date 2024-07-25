@@ -40,18 +40,19 @@ const NotificationIcon = () => {
     markNotificationsAsRead();
   };
 
+  const handleClose = () => {
+    setIsOpenDrawer(false);
+    setNotifications([]);
+  }
+
   const markNotificationsAsRead = async () => {
     const notificationIds = notifications.map(n => n.id);
-    const unreadNotifications = notifications.filter(n => !n.read);
+    //const unreadNotifications = notifications.filter(n => !n.read);
     await fetch(`${process.env.REACT_APP_API}/notification/mark-read`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ notificationIds })
     });
-    setNotifications(notifications.map(notification => ({
-      ...notification,
-      read: unreadNotifications.some(n => n.id === notification.id) ? true : notification.read
-    })));
   };
 
   return (
@@ -61,7 +62,7 @@ const NotificationIcon = () => {
           <NotificationsIcon />
         </Badge>
       </IconButton>
-      <NotificationDrawer open={isOpenDrawer} onClose={() => setIsOpenDrawer(false)} notifications={notifications} />
+      <NotificationDrawer open={isOpenDrawer} onClose={handleClose} notifications={notifications} />
     </>
   );
 };
