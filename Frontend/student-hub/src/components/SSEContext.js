@@ -25,6 +25,7 @@ export const SSEProvider = ({ children }) => {
               case 'MENTORSHIP_REQUEST':
               case 'COMMENT':
               case 'LIKE':
+                case 'MENTORSHIP_RESPONSE':
             break;
           default:
             console.warn('Unhandled message type:', data.type);
