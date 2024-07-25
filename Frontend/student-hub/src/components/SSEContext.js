@@ -22,7 +22,6 @@ export const SSEProvider = ({ children }) => {
             navigate('/login');
             break;
             case 'FRIEND_REQUEST':
-            alert(data.payload.message);
             break;
           default:
             console.warn('Unhandled message type:', data.type);
