@@ -47,7 +47,6 @@ const NotificationIcon = () => {
 
   const markNotificationsAsRead = async () => {
     const notificationIds = notifications.map(n => n.id);
-    //const unreadNotifications = notifications.filter(n => !n.read);
     await fetch(`${process.env.REACT_APP_API}/notification/mark-read`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${sessionStorage.getItem('token')}`, 'Content-Type': 'application/json' },
