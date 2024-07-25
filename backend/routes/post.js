@@ -62,7 +62,7 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
       await Notification.create({
         userId: post.userId,
         type: 'COMMENT',
-        message: `Hello  ${user.name} commented on your post`,
+        message: `Hello  ${user.name} commented on your post titled "${post.title}"`,
         postId,
         read: false
       });
@@ -71,7 +71,7 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
       sendToClients({
         payload: {
           type: 'COMMENT',
-          message: `Hello ${user.name} commented on your post`,
+          message: `Hello ${user.name} commented on your post titled "${post.title}"`,
           postId
         }
       });
@@ -99,7 +99,7 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
        await Notification.create({
          userId: post.userId,
          type: 'LIKE',
-         message: `Hello ${user.name} liked your post`,
+         message: `Hello ${user.name} liked your post titled "${post.title}"`,
          postId,
          read: false
        });
@@ -108,7 +108,7 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
        sendToClients({
          payload: {
            type: 'LIKE',
-           message: `Hello ${user.name} liked your post`,
+           message: `Hello ${user.name} liked your post titled "${post.title}"`,
            postId
          }
        });
