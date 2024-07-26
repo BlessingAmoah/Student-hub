@@ -39,18 +39,19 @@ router.post('/add', verifyToken, async (req, res) => {
         const user = await User.findByPk(userId);
         const userName = user.name;
 
+        const message = `Hello, ${userName} just added you as a friend.`
         //Notification creation
         await Notification.create({
           userId: friendId,
           type: 'FRIEND_REQUEST',
-          message: `Hello, ${userName} just added you as a friend.`
+          message
         })
         // send  friend request notification via SSE
         sendToClients({
           type: 'FRIEND_REQUEST',
           payload: {
             friendId,
-            message: `Hello, ${userName} just added you as a friend.`
+            message
           }
         }, userId)
         res.status(201).json(newFriend);

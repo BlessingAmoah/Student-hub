@@ -74,12 +74,15 @@ router.post('/request-mentor', verifyToken, async (req, res) => {
     // update user's status for mentor request
     await User.update({ mentorId: userId, status: 'requested', note }, { where: { id: userId } });
 
+    // const variable
+    const message = `You have a new mentorship request from ${mentee.name}.`
+
      // Create notification for the mentor
      const mentee = await User.findByPk(userId);
      await Notification.create({
       userId: mentorId,
       type: 'MENTORSHIP_REQUEST',
-      message: `You have a new mentorship request from ${mentee.name}.`,
+      message,
     });
 
     // Send notification via SSE
@@ -87,7 +90,7 @@ router.post('/request-mentor', verifyToken, async (req, res) => {
       type: 'MENTORSHIP_REQUEST',
       payload: {
         userId: mentorId,
-        message: `You have a new mentorship request from ${mentee.name}.`,
+        message,
       }
     });
 
@@ -131,12 +134,14 @@ router.post('/respond-mentorship', verifyToken, async (req, res) => {
     if(mentee) {
       await User.update({ status: status}, { where: { id: userId}});
 
+      const message = `Your mentorship request to ${mentor.name} has been ${status}.`
+
       // notification for the mentee
       const mentor = await User.findByPk(mentorId);
       await Notification.create({
         userId: userId,
         type: 'MENTORSHIP_RESPONSE',
-        message: `Your mentorship request to ${mentor.name} has been ${status}.`,
+        message,
       });
 
       // Send notification via SSE
@@ -144,7 +149,7 @@ router.post('/respond-mentorship', verifyToken, async (req, res) => {
         type: 'MENTORSHIP_RESPONSE',
         payload: {
           userId: userId,
-          message: `Your mentorship request to ${mentor.name} has been ${status}.`,
+          message,
         }
       });
     }
