@@ -60,11 +60,15 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
      const user = await User.findByPk(userId);
     // notification for the post author
     const post = await Post.findByPk(postId);
+
+    // const variable
+    const message = `Hello  ${user.name} commented on your post titled "${post.title}"`
+
     if (post.userId !== req.userId) {
       await Notification.create({
         userId: post.userId,
         type: 'COMMENT',
-        message: `Hello  ${user.name} commented on your post titled "${post.title}"`,
+        message,
         postId,
         read: false
       });
@@ -74,7 +78,7 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
         type: 'COMMENT',
         payload: {
           type: 'COMMENT',
-          message: `Hello ${user.name} commented on your post titled "${post.title}"`,
+          message,
           postId
         }
       }, userId);
@@ -96,13 +100,15 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
      // name of the liking user
      const user = await User.findByPk(req.userId);
 
+     const message = `Hello ${user.name} liked your post titled "${post.title}"`
+
      // notification for the post author
      const post = await Post.findByPk(postId);
      if (post.userId !== req.userId) {
        await Notification.create({
          userId: post.userId,
          type: 'LIKE',
-         message: `Hello ${user.name} liked your post titled "${post.title}"`,
+         message,
          postId,
          read: false
        });
@@ -111,7 +117,7 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
        sendToClients({
          payload: {
            type: 'LIKE',
-           message: `Hello ${user.name} liked your post titled "${post.title}"`,
+           message,
            postId
          }
        });
