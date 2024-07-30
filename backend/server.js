@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 // Middleware
 
 app.use(cors({
-  origin: ['http://localhost:3000','https://student-hub-9uaw.onrender.com'],
+  origin: 'https://student-hub-9uaw.onrender.com',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
