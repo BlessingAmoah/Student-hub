@@ -208,9 +208,10 @@ const bfs = async (startUserId, degree) => {
         const commonComments = currentUserComments.filter(comment => userComments.includes(comment));
         const commentScore = commonComments.length / (currentUserComments.length - commonComments.length) || 0;
 
-        const interestScore = stringSimilarity.compareTwoStrings(currentUser.interest, user.interest);
-        const majorScore = stringSimilarity.compareTwoStrings(currentUser.major, user.major);
-        const schoolScore = stringSimilarity.compareTwoStrings(currentUser.school, user.school);
+        const interestScore = stringSimilarity.compareTwoStrings(currentUser.interest || '', user.interest || '');
+        const majorScore = stringSimilarity.compareTwoStrings(currentUser.major || '', user.major || '');
+        const schoolScore = stringSimilarity.compareTwoStrings(currentUser.school || '', user.school || '');
+
 
         const score = (
             0.1 * likeScore +

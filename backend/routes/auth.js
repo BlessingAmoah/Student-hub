@@ -8,7 +8,7 @@ const verifyToken = require('../middleware/auth');
 const { Op } = require("sequelize")
 const schedule = require('node-schedule');
 require('dotenv').config();
-const { sendToClients } = require('./sse')
+const { sendToClient } = require('./sse')
 
 // validate email domain
 const validateEmail = (email) => {
@@ -257,7 +257,7 @@ router.post('/reset-password', async (req, res) => {
     await user.save();
 
     // send notification via SSE
-    sendToClients({
+    sendToClient({
       type: 'RESET_SUCCESS',
       payload: {
         userId: user.id,

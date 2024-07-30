@@ -30,5 +30,16 @@ const sendToClients = (message, excludeUserId = null) => {
     }
   });
 };
+const sendToClient = (message, excludeUserId = null) => {
+  clients.forEach((client, userId) => {
+    if ( userId === excludeUserId) return;
+    try {
+      client.write(`data: ${JSON.stringify(message)}\n\n`);
+    } catch (error) {
+      console.error(`Error sending message to client ${userId}:`, error);
+      clients.delete(userId);
+    }
+  });
+};
 
-module.exports = { setupSSE, sendToClients };
+module.exports = { setupSSE, sendToClients, sendToClient };
