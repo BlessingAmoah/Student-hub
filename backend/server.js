@@ -27,6 +27,7 @@ const config = require('./config');
 app.use(cors({
   origin: ['https://student-hub-k180.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(bodyParser.json({ limit: '2000mb' }));
 app.use(bodyParser.urlencoded({ limit: '2000mb', extended: true }));
