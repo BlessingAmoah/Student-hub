@@ -22,6 +22,10 @@ const PORT = process.env.PORT || 10000;
 
 const config = require('./config');
 
+app.get('/', (req, res) => {
+  res.status(200).send('Welcome to the Student Hub API');
+});
+
 // Middleware
 
 app.use(cors({
