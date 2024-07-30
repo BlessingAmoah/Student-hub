@@ -29,7 +29,7 @@ app.get('/', (req, res) => {
 // Middleware
 
 app.use(cors({
-  origin: ['https://student-hub-k180.onrender.com'],
+  origin: ['https://student-hub-9uaw.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
