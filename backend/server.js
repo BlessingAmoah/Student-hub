@@ -29,14 +29,13 @@ app.get('/', (req, res) => {
 // Middleware
 
 app.use(cors({
-  origin: 'https://student-hub-9uaw.onrender.com',
+  origin: ['http://localhost:3000','https://student-hub-9uaw.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(bodyParser.json({ limit: '2000mb' }));
 app.use(bodyParser.urlencoded({ limit: '2000mb', extended: true }));
 
-app.use(cors());
 app.use(bodyParser.json({ limit: '200000mb' }));
 app.use(bodyParser.urlencoded({ limit: '200000mb', extended: true }));
 
