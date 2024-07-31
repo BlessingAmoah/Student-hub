@@ -40,7 +40,7 @@ app.use(bodyParser.json({ limit: '200000mb' }));
 app.use(bodyParser.urlencoded({ limit: '200000mb', extended: true }));
 
 // Serve static files from the "uploads" directory
-app.use('/upload', express.static(path.join(__dirname, 'upload')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 
