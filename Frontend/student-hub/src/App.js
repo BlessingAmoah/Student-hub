@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Footer from './components/Footer';
 import { Grid, Button, Container } from '@mui/material';
-import { BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link} from 'react-router-dom';
 import { ThemeProvider } from './components/ThemeContext';
 import Navbar from './components/Navbar'
 import Login from './components/Login';
@@ -75,10 +75,10 @@ function Home() {
         <p> Connect With Peers, Share Experiences, And Collaborate On Projects!</p>
       </Grid>
       <Grid item>
-        <Button variant="contained" color="primary" href="/signup">Sign Up</Button>
+      <Button variant="contained" color="primary" component={Link} to="/signup">Sign Up</Button>
       </Grid>
       <Grid item>
-        <Button variant="contained" color="secondary" href="/login">Log In</Button>
+      <Button variant="contained" color="secondary" component={Link} to="/login">Log In</Button>
       </Grid>
     </Grid>
   );
