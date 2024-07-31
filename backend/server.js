@@ -18,7 +18,7 @@ const notificationRoutes = require('./routes/notification')
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 8080;
 
 const config = require('./config');
 
