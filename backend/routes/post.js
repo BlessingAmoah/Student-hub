@@ -36,7 +36,7 @@ const upload = multer({
 // Create a new post
 router.post('/', verifyToken, upload.single('media'), async (req, res) => {
   const { title, content, emojiId } = req.body;
-  const mediaPath = req.file ? `${process.env.BASE_URL}/uploads/${req.file.filename}` : null;
+  const mediaPath = req.file ? req.file.path : null;
 
   try {
     const post = await Post.create({ title, content, userId: req.userId, emojiId, mediaPath });
