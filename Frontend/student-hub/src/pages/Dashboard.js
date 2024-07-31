@@ -102,7 +102,7 @@ const delayTime = 60000;
             setIsLoading(false)
         };
         fetchData();
-    }, [navigate, title, content, selectedEmoji, media, currentPostId, setError]);
+    }, [navigate,currentPostId, setError]);
 
 //post fetching
     const handlePostSubmit = async (event ) => {
