@@ -91,7 +91,6 @@ const delayTime = 60000;
                         'Authorization': `Bearer ${token}`,
                     },
                 });
-                setIsLoading(false);
                 const result = await response.json();
                 setData(result);
                 setFilteredData(result);
@@ -101,7 +100,7 @@ const delayTime = 60000;
             setIsLoading(false)
         };
         fetchData();
-    }, [navigate, title, content, selectedEmoji, media, currentPostId, setError]);
+    }, [navigate,selectedEmoji,currentPostId, setError]);
 
 //post fetching
     const handlePostSubmit = async (event ) => {
