@@ -81,7 +81,7 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
           message,
           postId
         }
-      }, userId);
+      }, post.userId);
     }
     res.status(201).json(comment);
   } catch (error) {
@@ -120,7 +120,7 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
            message,
            postId
          }
-       }, req.userId);
+       }, post.userId);
      }
 
     if (existingLike) {
