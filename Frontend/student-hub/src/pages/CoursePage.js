@@ -313,12 +313,12 @@ const handleLike = async (postId) => {
                             <>
                                 {/\.(mp4|mov|avi)$/i.test(post.mediaPath) ? (
                                 <video controls style={{ maxWidth: '100%' }}>
-                                    <source src={`http://localhost:8080/${post.mediaPath}`} type="video/mp4" />
+                                    <source src={`${process.env.REACT_APP_API}/${post.mediaPath}`} type="video/mp4" />
                                     Your browser does not support the video tag.
                                 </video>
                                 ) : (
                                 <img
-                                    src={`http://localhost:8080/${post.mediaPath}`}
+                                    src={`${process.env.REACT_APP_API}/${post.mediaPath}`}
                                     alt="Post media"
                                     style={{ maxWidth: '100%' }}
                                 />
