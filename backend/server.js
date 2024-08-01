@@ -18,8 +18,8 @@ const notificationRoutes = require('./routes/notification')
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 8080;
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const PORT = process.env.BASE_URL || 8080;
+
 
 const config = require('./config');
 
@@ -73,7 +73,7 @@ sequelize.sync()
   .then(() => {
     console.log('Database synced.');
     app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${BASE_URL}`);
+      console.log(`Server is running on http://localhost:${PORT}`);
     });
   })
   .catch(error => {
