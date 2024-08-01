@@ -152,23 +152,20 @@ router.get('/', async (req, res) => {
   }
 });
 
-//Delete a post
+// Delete post
 router.delete('/post/:postId', verifyToken, async (req, res) => {
-  const { postId } = req.params;
-  const userId = req.userId;
-
   try {
-    const post = await Post.findOne({ where: { postId, userId }});
-
+    const { postId } = req.params;
+    const post = await Post.findOne({ where: { postId, userId: req.userId } });
     if (!post) {
-      return res.status(404).json({ error: 'Post not found or not authorized to delete this post'})
+      return res.status(404).json({ error: 'Post not found or not authorized to delete this post' });
     }
     await post.destroy();
-    res.status(200).json({ message: 'Post deleted successfully'});
-  }catch (error){
+    res.status(200).json({ message: 'Post deleted successfully' });
+  } catch (error) {
     console.error('Error deleting post:', error);
     res.status(500).json({ error: 'Failed to delete post' });
   }
-})
+});
 
 module.exports = router;
