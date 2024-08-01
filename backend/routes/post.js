@@ -153,7 +153,7 @@ router.get('/', async (req, res) => {
 });
 
 //Delete a post
-router.delete('/postId', verifyToken, async (req, res) => {
+router.delete('/post/:postId', verifyToken, async (req, res) => {
   const { postId } = req.params;
   const userId = req.userId;
 
