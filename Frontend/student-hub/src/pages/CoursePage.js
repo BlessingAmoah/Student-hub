@@ -227,10 +227,10 @@ const handleDeletePost = async(postId) => {
         return;
         }
 
-        const response = await fetch (`${process.env.REACT_APP_API}/post/${postId}`, {
+        const response = await fetch (`${process.env.REACT_APP_API}/post/post/${postId}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Beaerer ${token}`,
+                'Authorization': `Bearer ${token}`,
             },
         });
 
