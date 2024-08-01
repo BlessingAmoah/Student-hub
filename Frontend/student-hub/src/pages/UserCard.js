@@ -32,7 +32,7 @@ const CardHover = styled(Card)({
                       <Grid item xs={3}>
                         <Avatar alt={mentor.name} src={mentor.profilePicture} />
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid item xs={12}>
                         <Typography variant="h6" component="h3">
                           {mentor.name}
                         </Typography>
