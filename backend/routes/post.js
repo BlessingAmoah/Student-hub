@@ -158,7 +158,7 @@ router.delete('/post/:postId', verifyToken, async (req, res) => {
   const userId = req.userId;
 
   try {
-    const post = await Post.findOne({ where: { id: postId, userId }});
+    const post = await Post.findOne({ where: { postId, userId }});
 
     if (!post) {
       return res.status(404).json({ error: 'Post not found or not authorized to delete this post'})
