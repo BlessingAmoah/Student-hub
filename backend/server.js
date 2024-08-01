@@ -19,6 +19,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 const config = require('./config');
 
@@ -72,7 +73,7 @@ sequelize.sync()
   .then(() => {
     console.log('Database synced.');
     app.listen(PORT, () => {
-      console.log(`Server is running on http://localhost:${PORT}`);
+      console.log(`Server is running on http://localhost:${BASE_URL}`);
     });
   })
   .catch(error => {

@@ -20,5 +20,8 @@
       "sequelize": "^6.37.3",
       "sequelize-cli": "^6.6.2",
       "string-similarity": "^4.0.4"
+    },
+    "scripts": {
+      "postinstall": "mkdir -p uploads"
     }
   }
