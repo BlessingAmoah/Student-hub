@@ -120,7 +120,7 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
            message,
            postId
          }
-       });
+       }, req.userId);
      }
 
     if (existingLike) {
