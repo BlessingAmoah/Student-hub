@@ -95,6 +95,7 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
   const { postId } = req.params;
   const {emojiId } = req.body;
   try {
+    const post = await Post.findByPk(postId);
 
     const existingLike = await Like.findOne({ where: { userId: req.userId, postId } });
      // name of the liking user
@@ -103,7 +104,6 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
      const message = `Hello ${user.name} liked your post titled "${post.title}"`
 
      // notification for the post author
-     const post = await Post.findByPk(postId);
      if (post.userId !== req.userId) {
        await Notification.create({
          userId: post.userId,
