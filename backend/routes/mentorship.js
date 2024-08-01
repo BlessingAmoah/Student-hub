@@ -37,7 +37,7 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       attributes: ['id', 'name', 'profilePicture', 'interest', 'mentorship', 'school'],
       where: {
         id: {
-          [Op.notIn]: Array.from(relatedUserIds)
+          [Op.ne]: userId 
         },
          mentorship: 'Mentor'
       }
