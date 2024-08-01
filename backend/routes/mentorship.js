@@ -51,7 +51,7 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       mentorship: user.mentorship,
       school: user.school,
       bio: user.bio,
-    })).filter (user => user.id !== userId);
+    }));
 
     // return the formatted data
     res.status(200).json({formattedUser});
