@@ -219,6 +219,32 @@ const handleLike = async (postId) => {
         setError(error.message);
     }
 };
+//delete a post
+const handleDeletePost = async(postId) => {
+    try {
+        const { token } = getUserIDToken();
+        if (!token) {
+        navigate('/login');
+        return;
+        }
+
+        const response = await fetch (`${process.env.REACT_APP_API}/post/post/${postId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            setError('Failed to delete post');
+            return;
+        }
+        setData(prevData => prevData.filter(post => post.id !== postId));
+        setFilteredData(prevFilteredData => prevFilteredData.filter(post => post.id !== postId));
+    } catch(error) {
+        setError(error.message);
+    }
+};
 //search
     const handleSearch = (event) => {
         const searchTerm = event.target.value;
@@ -352,6 +378,9 @@ const handleLike = async (postId) => {
                                 </IconButton>
                                 <Button onClick={() => handleOpenCommentsModal(post.id, post.Comments)}>
                                     View Comments
+                                </Button>
+                                <Button color="error" onClick={() => handleDeletePost(post.id)}>
+                                    Delete Post
                                 </Button>
                             </CardActions>
                         </Card>

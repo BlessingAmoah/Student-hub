@@ -221,7 +221,7 @@ const handleLike = async (postId) => {
 //delete a post
 const handleDeletePost = async(postId) => {
     try {
-        const { userId, token } = getUserIDToken();
+        const { token } = getUserIDToken();
         if (!token) {
         navigate('/login');
         return;
