@@ -152,19 +152,25 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Delete post
-router.delete('/post/:postId', verifyToken, async (req, res) => {
+// Delete a post
+router.delete('/post', verifyToken, async (req, res) => {
   try {
-    const { postId } = req.params;
-    const post = await Post.findOne({ where: { postId, userId: req.userId } });
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found or not authorized to delete this post' });
-    }
-    await post.destroy();
-    res.status(200).json({ message: 'Post deleted successfully' });
+      const {
+          userId, postId
+      } = req.body;
+      //check if the post already exist
+      const post = await Post.findOne({
+          where: { userId, postId }
+      });
+      if (!post) {
+          return res.status(404).json({ error: 'Post not found'});
+      }
+      // delete friend from list
+      await post.destroy();
+      res.status(200).json({ message: 'Post removed successfully' });
   } catch (error) {
-    console.error('Error deleting post:', error);
-    res.status(500).json({ error: 'Failed to delete post' });
+      console.error('Error removing post:', error);
+      res.status(500).json({ error: 'Internal server error'})
   }
 });
 
