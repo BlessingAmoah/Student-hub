@@ -9,9 +9,37 @@ const { sendToClients } = require('./sse')
 router.get('/mentorship', verifyToken, async (req, res) => {
   try {
 
-    // fetch all users
+    const userId = req.userId
+
+    // fetch all current mentorship relationships involving the given userId
+    const currentMentorships = await User.findAll({
+      where: {
+        [Op.or]: [
+          { mentorId: userId},
+          { id: userId}
+        ]
+      }
+    });
+
+    // extract related user IDs
+    const relatedUserIds = new Set();
+    currentMentorships.forEach(
+      user => {
+        relatedUserIds.add(user.mentorId);
+        relatedUserIds.add(user.id)
+      });
+      // add current user to the set to exclude
+      relatedUserIds.add(userId);
+
+    // fetch all users except current user and their mentors/mentees
     const users = await User.findAll({
+
       attributes: ['id', 'name', 'profilePicture', 'interest', 'mentorship', 'school'],
+      where: {
+        id: {
+          [Op.notIn]: Array.from(relatedUserIds)
+        }
+      }
     });
 
     // format the fetch user information
@@ -21,10 +49,12 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       profilePicture: user.profilePicture,
       interest: user.interest,
       mentorship: user.mentorship,
+      school: user.school,
+      bio: user.bio,
     }));
 
     // return the formatted data
-    res.status(200).json({ users: formattedUser || users});
+    res.status(200).json({formattedUser});
   } catch (error) {
     console.error('Mentors fetch error:', error);
     res.status(500).json({ error: 'Internal server error' });
