@@ -155,8 +155,7 @@ router.get('/', async (req, res) => {
 // Delete a post
 router.delete('/post', verifyToken, async (req, res) => {
   try {
-    const {postId} = req.body;
-      const userId = req.userId;
+    const {postId, userId} = req.body;
       //check if the post already exist
       const post = await Post.findOne({
           where: { userId, postId }
