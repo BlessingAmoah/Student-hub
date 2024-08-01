@@ -38,7 +38,8 @@ router.get('/mentorship', verifyToken, async (req, res) => {
       where: {
         id: {
           [Op.notIn]: Array.from(relatedUserIds)
-        }
+        },
+         mentorship: 'Mentor'
       }
     });
 
