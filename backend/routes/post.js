@@ -159,7 +159,7 @@ router.delete('/post/:postId', verifyToken, async (req, res) => {
     const userId = req.userId;
       //check if the post already exist
       const post = await Post.findOne({
-          where: { userId, postId }
+          where: { userId, id: postId }
       });
       if (!post) {
           return res.status(404).json({ error: 'Post not found'});
