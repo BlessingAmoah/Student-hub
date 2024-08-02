@@ -53,7 +53,7 @@ router.post('/add', verifyToken, async (req, res) => {
             friendId,
             message
           }
-        }, userId)
+        }, friendId)
         res.status(201).json(newFriend);
     }
     catch(error) {
