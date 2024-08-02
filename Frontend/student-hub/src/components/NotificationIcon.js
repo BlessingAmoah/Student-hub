@@ -33,7 +33,7 @@ const NotificationIcon = () => {
         eventSource.removeEventListener('notification', handleNotification);
       }
     };
-  }, []);
+  }, [eventSource]);
 
   const handleClick = () => {
     setIsOpenDrawer(true);
