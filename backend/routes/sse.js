@@ -19,17 +19,17 @@ const setupSSE = (app) => {
   });
 };
 
-const sendToClients = (message, excludeUserId = null) => {
-  clients.forEach((client, userId) => {
-    if ( userId === excludeUserId) return;
-    try {
-      client.write(`event: notification\ndata: ${JSON.stringify(message)}\n\n`);
-    } catch (error) {
-      console.error(`Error sending message to client ${userId}:`, error);
-      clients.delete(userId);
-    }
-  });
-};
+const sendToClients = (message, userId) => {
+  const client = clients.get(userId);
+  if (client) {try {
+    client.write(`event: notification\ndata: ${JSON.stringify(message)}\n\n`);
+  } catch (error) {
+    console.error(`Error sending message to client ${userId}:`, error);
+    clients.delete(userId);
+  }
+}
+  }
+
 const sendToClient = (message, excludeUserId = null) => {
   clients.forEach((client, userId) => {
     if ( userId === excludeUserId) return;
