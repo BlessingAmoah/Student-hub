@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Post, Comment, Like, User, Notification } = require('../models');
 const verifyToken = require('../middleware/auth');
-const upload = require('./server')
+const upload = require('../server')
 const { sendToClients } = require('./sse')
 
 
