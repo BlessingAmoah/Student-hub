@@ -1,8 +1,7 @@
 const express = require('express');
 const { User } = require('../models');
 const router = express.Router();
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const upload = require('./server')
 const verifyToken = require('../middleware/auth');
 const axios = require('axios')
 
@@ -40,7 +39,7 @@ router.put('/', verifyToken, async (req, res) => {
 
 router.post('/profile', upload.single('profilePicture'), async (req, res) => {
   try {
-    const profilePicturePath = req.file.path;
+    const profilePicturePath = req.file.location;
     await User.update({ profilePicture: profilePicturePath }, { where: { id: req.userId } });
     res.status(200).json({ profilePicture: profilePicturePath });
   } catch (error) {
