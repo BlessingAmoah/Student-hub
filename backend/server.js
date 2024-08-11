@@ -14,6 +14,9 @@ const friendRoutes = require('./routes/friends')
 const emojiRoutes = require('./routes/emoji')
 const { setupSSE } = require('./routes/sse');
 const notificationRoutes = require('./routes/notification')
+const r2 = require('./r2Config');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
 
 require('dotenv').config();
 
@@ -37,8 +40,6 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '2000mb' }));
 app.use(bodyParser.urlencoded({ limit: '2000mb', extended: true }));
 
-app.use(bodyParser.json({ limit: '200000mb' }));
-app.use(bodyParser.urlencoded({ limit: '200000mb', extended: true }));
 
 // Serve static files from the "uploads" directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -58,6 +59,22 @@ app.use('/notification', verifyToken, notificationRoutes)
 
 // setup SSE
 setupSSE(app)
+
+const upload = multer({
+  storage: multerS3({
+    s3: r2,
+    bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+    acl: 'public-read',
+    metadata: (req, file, cb) => {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: (req, file, cb) => {
+      cb(null, `${Date.now().toString()}-${file.originalname}`);
+    },
+  }),
+});
+
+module.exports = upload;
 
 // Test database connection
 sequelize.authenticate()

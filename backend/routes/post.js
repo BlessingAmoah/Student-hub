@@ -2,44 +2,17 @@ const express = require('express');
 const router = express.Router();
 const { Post, Comment, Like, User, Notification } = require('../models');
 const verifyToken = require('../middleware/auth');
-const multer = require('multer');
-const path = require('path');
+const upload = require('./server')
 const { sendToClients } = require('./sse')
-
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif|mp4|html|mov|avi/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-    if (mimetype && extname) {
-      return cb(null, true);
-    }
-    cb('Error: File type not supported');
-  }
-});
-
-
 
 
 // Create a new post
 router.post('/', verifyToken, upload.single('media'), async (req, res) => {
   const { title, content, emojiId } = req.body;
-  const mediaPath = req.file ? req.file.path : null;
+  const fileUrl = req.file ? req.file.location : null
 
   try {
-    const post = await Post.create({ title, content, userId: req.userId, emojiId, mediaPath });
+    const post = await Post.create({ title, content, userId: req.userId, emojiId, mediaPath: fileUrl });
 
     res.status(201).json(post);
   } catch (error) {
