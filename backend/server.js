@@ -44,22 +44,6 @@ app.use(bodyParser.urlencoded({ limit: '2000mb', extended: true }));
 // Serve static files from the "uploads" directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
-
-// Routes
-app.use('/auth', authRoutes);
-app.use('/profile', verifyToken, profileRoutes);
-app.use('/dashboard', verifyToken, dashboardRoutes);
-app.use('/course', verifyToken, courseRoutes);
-app.use('/mentorship', verifyToken, mentorshipRoutes);
-app.use('/post', verifyToken, postRoutes);
-app.use('/friends', friendRoutes)
-app.use('/emoji', emojiRoutes)
-app.use('/notification', verifyToken, notificationRoutes)
-
-// setup SSE
-setupSSE(app)
-
 const upload = multer({
   storage: multerS3({
     s3: r2,
@@ -74,6 +58,19 @@ const upload = multer({
   }),
 });
 
+// Routes
+app.use('/auth', authRoutes);
+app.use('/profile', verifyToken, profileRoutes);
+app.use('/dashboard', verifyToken, dashboardRoutes);
+app.use('/course', verifyToken, courseRoutes);
+app.use('/mentorship', verifyToken, mentorshipRoutes);
+app.use('/post', verifyToken, postRoutes);
+app.use('/friends', friendRoutes)
+app.use('/emoji', emojiRoutes)
+app.use('/notification', verifyToken, notificationRoutes)
+
+// setup SSE
+setupSSE(app)
 
 
 // Test database connection
