@@ -74,7 +74,7 @@ const upload = multer({
   }),
 });
 
-module.exports = upload;
+
 
 // Test database connection
 sequelize.authenticate()
@@ -96,3 +96,5 @@ sequelize.sync()
   .catch(error => {
     console.error('Database sync failed:', error);
   });
+
+  module.exports = { upload };
