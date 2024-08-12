@@ -39,7 +39,7 @@ router.put('/', verifyToken, async (req, res) => {
 });
 
 router.post('/profile', upload.single('profilePicture'), async (req, res) => {
-  console.log(upload)
+  console.log(req.file); 
   try {
     const profilePicturePath = req.file.location;
     await User.update({ profilePicture: profilePicturePath }, { where: { id: req.userId } });
