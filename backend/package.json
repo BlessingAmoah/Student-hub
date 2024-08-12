@@ -28,5 +28,10 @@
         "postinstall": "mkdir -p uploads",
         "start": "node server.js",
         "migrate": "sequelize db:migrate"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.17",
+        "@types/multer": "^1.4.11",
+        "@types/multer-s3": "^3.0.3"
     }
 }

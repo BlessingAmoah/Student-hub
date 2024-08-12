@@ -2,7 +2,7 @@ const express = require('express');
 const { User } = require('../models');
 const router = express.Router();
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const upload = require('../server').upload; 
 const verifyToken = require('../middleware/auth');
 const axios = require('axios')
 
