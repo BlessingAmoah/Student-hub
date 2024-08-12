@@ -1,9 +1,10 @@
 const express = require('express');
 const { User } = require('../models');
 const router = express.Router();
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 const verifyToken = require('../middleware/auth');
 const axios = require('axios')
-const { upload } = require('../server');
 
 require('dotenv').config();
 
