@@ -2,12 +2,11 @@ const express = require('express');
 const { User } = require('../models');
 const router = express.Router();
 const multer = require('multer');
-const { upload } = require('../server'); 
+const upload = multer({ dest: 'uploads/' });
 const verifyToken = require('../middleware/auth');
 const axios = require('axios')
 
 require('dotenv').config();
-
 router.get('/',  async (req, res) => {
   try {
     const profile = await User.findOne({ where: { id: req.userId } });
@@ -20,17 +19,14 @@ router.get('/',  async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch profile.' });
   }
 });
-
 router.put('/', verifyToken, async (req, res) => {
   const {
     name, profilePicture, bio, phone, address, city, state, school, major, interest, mentorship
   } = req.body;
-
   try {
     const updatedProfile = await User.update({
       name, profilePicture, bio, phone, address, city, state, school, interest, major, mentorship
     }, { where: { id: req.userId }, returning: true });
-
     res.status(200).json(updatedProfile[1][0]);
   } catch (error) {
     console.error(error);
@@ -39,9 +35,8 @@ router.put('/', verifyToken, async (req, res) => {
 });
 
 router.post('/profile', upload.single('profilePicture'), async (req, res) => {
-  console.log(req.file); 
   try {
-    const profilePicturePath = req.file.location;
+    const profilePicturePath = req.file.path;
     await User.update({ profilePicture: profilePicturePath }, { where: { id: req.userId } });
     res.status(200).json({ profilePicture: profilePicturePath });
   } catch (error) {
@@ -49,7 +44,6 @@ router.post('/profile', upload.single('profilePicture'), async (req, res) => {
     res.status(500).json({ error: 'Failed to upload profile picture.' });
   }
 });
-
 //universities list
 router.get('/university', async(req, res) => {
   const url = 'http://universities.hipolabs.com/search?country=United States';
@@ -61,6 +55,4 @@ router.get('/university', async(req, res) => {
     res.status(500).json({error: 'Failed to fetch universities'})
   }
 })
-
-
 module.exports = router;

@@ -34,10 +34,10 @@ const upload = multer({
 // Create a new post
 router.post('/', verifyToken, upload.single('media'), async (req, res) => {
   const { title, content, emojiId } = req.body;
-  const fileUrl = req.file ? req.file.location : null
+  const mediaPath = req.file ? req.file.path : null;
 
   try {
-    const post = await Post.create({ title, content, userId: req.userId, emojiId, mediaPath: fileUrl });
+    const post = await Post.create({ title, content, userId: req.userId, emojiId, mediaPath });
 
     res.status(201).json(post);
   } catch (error) {
@@ -45,23 +45,19 @@ router.post('/', verifyToken, upload.single('media'), async (req, res) => {
     res.status(500).json({ error: 'Failed to create post' });
   }
 });
-
 // Comment on a post
 router.post('/:postId/comment', verifyToken, async (req, res) => {
   const { postId } = req.params;
   const { content } = req.body;
   const userId = req.userId;
-
   try {
     const comment = await Comment.create({ content, userId: req.userId, postId });
      // Get the name of the user who is making the request
      const user = await User.findByPk(userId);
     // notification for the post author
     const post = await Post.findByPk(postId);
-
     // const variable
     const message = `Hello  ${user.name} commented on your post titled "${post.title}"`
-
     if (post.userId !== req.userId) {
       await Notification.create({
         userId: post.userId,
@@ -70,7 +66,6 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
         postId,
         read: false
       });
-
       // Send SSE notification
       sendToClients({
         type: 'COMMENT',
@@ -87,20 +82,16 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to add comment' });
   }
 });
-
 // Like a post
 router.post('/:postId/like', verifyToken, async (req, res) => {
   const { postId } = req.params;
   const {emojiId } = req.body;
   try {
     const post = await Post.findByPk(postId);
-
     const existingLike = await Like.findOne({ where: { userId: req.userId, postId } });
      // name of the liking user
      const user = await User.findByPk(req.userId);
-
      const message = `Hello ${user.name} liked your post titled "${post.title}"`
-
      // notification for the post author
      if (post.userId !== req.userId) {
        await Notification.create({
@@ -110,7 +101,6 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
          postId,
          read: false
        });
-
        // Send SSE notification
        sendToClients({
          payload: {
@@ -120,7 +110,6 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
          }
        }, post.userId);
      }
-
     if (existingLike) {
       await existingLike.destroy();
       res.status(200).json({ message: 'Post unliked' });
@@ -132,7 +121,6 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to like post' });
   }
 });
-
 // Get all posts
 router.get('/', async (req, res) => {
   try {
@@ -149,7 +137,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch posts' });
   }
 });
-
 // Delete a post
 router.delete('/post/:postId', verifyToken, async (req, res) => {
   try {
@@ -170,5 +157,4 @@ router.delete('/post/:postId', verifyToken, async (req, res) => {
       res.status(500).json({ error: 'Internal server error'})
   }
 });
-
 module.exports = router;
