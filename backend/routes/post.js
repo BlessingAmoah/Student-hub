@@ -1,9 +1,33 @@
-const express = require('express');
 const router = express.Router();
 const { Post, Comment, Like, User, Notification } = require('../models');
 const verifyToken = require('../middleware/auth');
-const { upload } = require('../server');
+const multer = require('multer');
+const path = require('path');
 const { sendToClients } = require('./sse')
+
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    const filetypes = /jpeg|jpg|png|gif|mp4|html|mov|avi/;
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = filetypes.test(file.mimetype);
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb('Error: File type not supported');
+  }
+});
 
 
 // Create a new post
