@@ -116,7 +116,7 @@ function Profile() {
     formData.append('profilePicture', file);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API}/profile/profile`, {
+      const response = await fetch(`${process.env.REACT_APP_CLOUDFLARE_R2_ENDPOINT}/profile/profile`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
@@ -128,7 +128,7 @@ function Profile() {
         const data = await response.json();
         setProfile((prevProfile) => ({
           ...prevProfile,
-          profilePicture: `${process.env.REACT_APP_API}/${data.profilePicture}`,
+          profilePicture: `${process.env.REACT_APP_CLOUDFLARE_R2_ENDPOINT}/${data.profilePicture}`,
         }));
       } else {
         const error = await response.json();
