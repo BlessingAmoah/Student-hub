@@ -2,11 +2,13 @@ const express = require('express');
 const { User } = require('../models');
 const router = express.Router();
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const r2 = require('../config/r2Config');
 const verifyToken = require('../middleware/auth');
 const axios = require('axios')
 
 require('dotenv').config();
+
+const upload = multer({ Storage: multer.memoryStorage() });
 router.get('/',  async (req, res) => {
   try {
     const profile = await User.findOne({ where: { id: req.userId } });
@@ -34,13 +36,30 @@ router.put('/', verifyToken, async (req, res) => {
   }
 });
 
-router.post('/profile', upload.single('profilePicture'), async (req, res) => {
+// Upload profile picture to Cloudflare R2
+router.post('/profile', verifyToken, upload.single('profilePicture'), async (req, res) => {
   try {
-    const profilePicturePath = req.file.path;
-    await User.update({ profilePicture: profilePicturePath }, { where: { id: req.userId } });
-    res.status(200).json({ profilePicture: profilePicturePath });
+    const file = req.file;
+    const fileName = `${req.userId}-${Date.now()}-${file.originalname}`; 
+
+    // Upload to Cloudflare R2
+    const params = {
+      Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME, 
+      Key: fileName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      
+    };
+
+    const uploadResult = await r2.upload(params).promise();
+
+    // Save the file URL in the user's profile
+    const profilePictureUrl = `https://${process.env.CLOUDFLARE_R2_ENDPOINT}/${process.env.CLOUDFLARE_R2_BUCKET_NAME}/${fileName}`;
+    await User.update({ profilePicture: profilePictureUrl }, { where: { id: req.userId } });
+
+    res.status(200).json({ profilePicture: profilePictureUrl });
   } catch (error) {
-    console.error(error);
+    console.error('Error uploading profile picture:', error);
     res.status(500).json({ error: 'Failed to upload profile picture.' });
   }
 });
