@@ -110,34 +110,34 @@ function Profile() {
   };
 // upload a profile picture
 // connects with the server using multer to upload and save in uploads file which is in the backend
-  const handlePictureUpload = async (e) => {
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('profilePicture', file);
+const handlePictureUpload = async (e) => {
+  const file = e.target.files[0];
+  const formData = new FormData();
+  formData.append('profilePicture', file);
 
-    try {
-      const response = await fetch(`${process.env.REACT_APP_CLOUDFLARE_R2_ENDPOINT}/profile/profile`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
-        },
-        body: formData,
-      });
+  try {
+    const response = await fetch(`${process.env.REACT_APP_CLOUDFLARE_R2_ENDPOINT}/profile/profile`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
+      },
+      body: formData,
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        setProfile((prevProfile) => ({
-          ...prevProfile,
-          profilePicture: `${process.env.REACT_APP_CLOUDFLARE_R2_ENDPOINT}/${data.profilePicture}`,
-        }));
-      } else {
-        const error = await response.json();
-        setError('Failed to upload profile picture.', error);
-      }
-    } catch (error) {
-      setError('Failed to upload profile picture.');
+    if (response.ok) {
+      const data = await response.json();
+      setProfile((prevProfile) => ({
+        ...prevProfile,
+        profilePicture: `${process.env.REACT_APP_CLOUDFLARE_R2_ENDPOINT}/${data.profilePicture}`,
+      }));
+    } else {
+      const error = await response.json();
+      setError('Failed to upload profile picture.', error);
     }
-  };
+  } catch (error) {
+    setError('Failed to upload profile picture.');
+  }
+};
 
 
   const handleOpen = () => {
