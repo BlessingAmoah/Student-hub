@@ -291,7 +291,7 @@ return (
                     {filteredData.friends?.map((person) => (
                         <ListItem key={person.id}>
                              <Avatar alt={person.name} src={person.profilePicture} sx={{ marginRight: 2 }} />
-                            <ListItemText primary={person.name} secondary={`${person.interest}, ${person.school}, ${person.major}`} />
+                            <ListItemText primary={person.name} secondary={`${person.interest || ''}, ${person.school || ''}, ${person.major || ''}`} />
                             <ListItemSecondaryAction>
                             <IconButton edge="end" aria-label="remove" onClick={() => handleRemoveFriend(person.id)}>
                                 <Remove />
@@ -318,7 +318,7 @@ return (
                     {filteredData.recommendedFriends?.map((friend) => (
                         <ListItem key={friend.id}>
                              <Avatar alt={friend.name} src={friend.profilePicture} sx={{ marginRight: 2 }} />
-                            <ListItemText primary={friend.name} secondary={`${friend.interest}, ${friend.school}, ${friend.major}`} />
+                            <ListItemText primary={friend.name} secondary={`${friend.interest || ''}, ${friend.school || ''}, ${friend.major || ''}`} />
                             <ListItemSecondaryAction>
                                 <IconButton edge="end" aria-label='add' onClick={() => handleAddFriend(friend.id)}>
                                     <Add />
@@ -340,7 +340,7 @@ return (
                     {filteredData.availableFriend?.map((person) => (
                         <ListItem key={person.id}>
                              <Avatar alt={person.name} src={person.profilePicture} sx={{ marginRight: 2 }}/>
-                            <ListItemText primary={person.name} secondary={`${person.interest}, ${person.school}, ${person.major}`} />
+                            <ListItemText primary={person.name} secondary={`${person.interest || ''}, ${person.school || ''}, ${person.major || ''}`} />
                             <ListItemSecondaryAction>
                                 <IconButton edge="end" aria-label='add' onClick={() => handleAddFriend(person.id)}>
                                     <Add />
