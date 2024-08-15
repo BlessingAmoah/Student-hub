@@ -5,54 +5,53 @@ const verifyToken = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const AWS = require('aws-sdk');
-const multerS3 = require('multer-s3');
+
 const { sendToClients } = require('./sse')
 
 require('dotenv').config();
 
-// Configure AWS S3
+
+
+const upload = multer({ storage: multer.memoryStorage() });
+
 const s3 = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   region: process.env.AWS_REGION,
 });
 
-// Configure multer to use S3
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: process.env.AWS_S3_BUCKET_NAME,
-    acl: 'public-read',
-    key: function (req, file, cb) {
-      cb(null, `media/${Date.now()}-${path.basename(file.originalname)}`);
-    }
-  }),
-  fileFilter: (req, file, cb) => {
-    const filetypes = /jpeg|jpg|png|gif|mp4|html|mov|avi/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-    if (mimetype && extname) {
-      return cb(null, true);
-    }
-    cb('Error: File type not supported');
-  }
-});
-
 
 // Create a new post
 router.post('/', verifyToken, upload.single('media'), async (req, res) => {
   const { title, content, emojiId } = req.body;
-  const mediaPath = req.file ? req.file.location : null;
+  const file = req.file;
+
+  if (!file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+
+  const fileName = `${req.userId}-${Date.now()}-${file.originalname}`;
+
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: fileName,
+    Body: file.buffer,
+    ContentType: file.mimetype,
+  };
 
   try {
+    const data = await s3.upload(params).promise();
+    const mediaPath = data.Location;
+
     const post = await Post.create({ title, content, userId: req.userId, emojiId, mediaPath });
 
     res.status(201).json(post);
   } catch (error) {
-    console.error('Error creating a post:', error)
-    res.status(500).json({ error: 'Failed to create post' });
+    console.error('Error uploading to S3:', error);
+    res.status(500).json({ error: 'Failed to upload file to S3' });
   }
 });
+
 // Comment on a post
 router.post('/:postId/comment', verifyToken, async (req, res) => {
   const { postId } = req.params;
