@@ -54,7 +54,7 @@ router.post('/profile', verifyToken, upload.single('profilePicture'), async (req
     const uploadResult = await r2.upload(params).promise();
 
     // Save the file URL in the user's profile
-    const profilePictureUrl = `https://${process.env.CLOUDFLARE_R2_ENDPOINT}/${process.env.CLOUDFLARE_R2_BUCKET_NAME}/${fileName}`;
+    const profilePictureUrl = `${process.env.CLOUDFLARE_R2_ENDPOINT}/${process.env.CLOUDFLARE_R2_BUCKET_NAME}/${fileName}`;
     await User.update({ profilePicture: profilePictureUrl }, { where: { id: req.userId } });
 
     res.status(200).json({ profilePicture: profilePictureUrl });
