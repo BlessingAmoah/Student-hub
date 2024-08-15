@@ -290,7 +290,7 @@ function CoursePage() {
                             <Card>
                                 {post.media && (
                                     <img
-                                        src={post.media} // Ensure this is the URL to the S3 bucket
+                                        src={post.media} 
                                         alt="Media"
                                         style={{ width: '100%', height: 'auto' }}
                                     />
