@@ -116,7 +116,7 @@ const handlePictureUpload = async (e) => {
   formData.append('profilePicture', file);
 
   try {
-    const response = await fetch(`${process.env.REACT_APP_API}/profile/profile`, {
+    const response = await fetch(`${process.env.REACT_APP_API}/profile/upload`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
