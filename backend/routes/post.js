@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Post, Comment, Like, User, Notification } = require('../models');
 const verifyToken = require('../middleware/auth');
+const path = require('path');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
