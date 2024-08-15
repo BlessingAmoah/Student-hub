@@ -3,22 +3,30 @@ const router = express.Router();
 const { Post, Comment, Like, User, Notification } = require('../models');
 const verifyToken = require('../middleware/auth');
 const multer = require('multer');
-const path = require('path');
-const { sendToClients } = require('./sse')
+const multerS3 = require('multer-s3');
+const AWS = require('aws-sdk');
+const { sendToClients } = require('./sse');
 
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
+// Configure AWS S3
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
 
+// Configure multer for AWS S3
 const upload = multer({
-  storage,
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_S3_BUCKET_NAME,
+    acl: 'public-read',
+    metadata: (req, file, cb) => {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: (req, file, cb) => {
+      cb(null, `uploads/${Date.now()}_${file.originalname}`);
+    }
+  }),
   fileFilter: (req, file, cb) => {
     const filetypes = /jpeg|jpg|png|gif|mp4|html|mov|avi/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -30,34 +38,32 @@ const upload = multer({
   }
 });
 
-
 // Create a new post
 router.post('/', verifyToken, upload.single('media'), async (req, res) => {
   const { title, content, emojiId } = req.body;
-  const mediaPath = req.file ? req.file.path : null;
+  const mediaPath = req.file ? req.file.location : null; // Use S3 file URL
 
   try {
     const post = await Post.create({ title, content, userId: req.userId, emojiId, mediaPath });
-
     res.status(201).json(post);
   } catch (error) {
-    console.error('Error creating a post:', error)
+    console.error('Error creating a post:', error);
     res.status(500).json({ error: 'Failed to create post' });
   }
 });
+
 // Comment on a post
 router.post('/:postId/comment', verifyToken, async (req, res) => {
   const { postId } = req.params;
   const { content } = req.body;
   const userId = req.userId;
+
   try {
-    const comment = await Comment.create({ content, userId: req.userId, postId });
-     // Get the name of the user who is making the request
-     const user = await User.findByPk(userId);
-    // notification for the post author
+    const comment = await Comment.create({ content, userId, postId });
+    const user = await User.findByPk(userId);
     const post = await Post.findByPk(postId);
-    // const variable
-    const message = `Hello  ${user.name} commented on your post titled "${post.title}"`
+    const message = `Hello ${user.name} commented on your post titled "${post.title}"`;
+
     if (post.userId !== req.userId) {
       await Notification.create({
         userId: post.userId,
@@ -66,7 +72,6 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
         postId,
         read: false
       });
-      // Send SSE notification
       sendToClients({
         type: 'COMMENT',
         payload: {
@@ -76,40 +81,42 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
         }
       }, post.userId);
     }
+
     res.status(201).json(comment);
   } catch (error) {
     console.error('Error adding comment:', error);
     res.status(500).json({ error: 'Failed to add comment' });
   }
 });
+
 // Like a post
 router.post('/:postId/like', verifyToken, async (req, res) => {
   const { postId } = req.params;
-  const {emojiId } = req.body;
+  const { emojiId } = req.body;
+
   try {
     const post = await Post.findByPk(postId);
     const existingLike = await Like.findOne({ where: { userId: req.userId, postId } });
-     // name of the liking user
-     const user = await User.findByPk(req.userId);
-     const message = `Hello ${user.name} liked your post titled "${post.title}"`
-     // notification for the post author
-     if (post.userId !== req.userId) {
-       await Notification.create({
-         userId: post.userId,
-         type: 'LIKE',
-         message,
-         postId,
-         read: false
-       });
-       // Send SSE notification
-       sendToClients({
-         payload: {
-           type: 'LIKE',
-           message,
-           postId
-         }
-       }, post.userId);
-     }
+    const user = await User.findByPk(req.userId);
+    const message = `Hello ${user.name} liked your post titled "${post.title}"`;
+
+    if (post.userId !== req.userId) {
+      await Notification.create({
+        userId: post.userId,
+        type: 'LIKE',
+        message,
+        postId,
+        read: false
+      });
+      sendToClients({
+        payload: {
+          type: 'LIKE',
+          message,
+          postId
+        }
+      }, post.userId);
+    }
+
     if (existingLike) {
       await existingLike.destroy();
       res.status(200).json({ message: 'Post unliked' });
@@ -121,6 +128,7 @@ router.post('/:postId/like', verifyToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to like post' });
   }
 });
+
 // Get all posts
 router.get('/', async (req, res) => {
   try {
@@ -137,24 +145,24 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch posts' });
   }
 });
+
 // Delete a post
 router.delete('/post/:postId', verifyToken, async (req, res) => {
   try {
-    const {postId} = req.params;
+    const { postId } = req.params;
     const userId = req.userId;
-      //check if the post already exist
-      const post = await Post.findOne({
-          where: { userId, id: postId }
-      });
-      if (!post) {
-          return res.status(404).json({ error: 'Post not found'});
-      }
-      // delete friend from list
-      await post.destroy();
-      res.status(200).json({ message: 'Post removed successfully' });
+    const post = await Post.findOne({ where: { userId, id: postId } });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    await post.destroy();
+    res.status(200).json({ message: 'Post removed successfully' });
   } catch (error) {
-      console.error('Error removing post:', error);
-      res.status(500).json({ error: 'Internal server error'})
+    console.error('Error removing post:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 module.exports = router;
