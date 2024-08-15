@@ -4,21 +4,29 @@ const { Post, Comment, Like, User, Notification } = require('../models');
 const verifyToken = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
+const AWS = require('aws-sdk');
+const multerS3 = require('multer-s3');
 const { sendToClients } = require('./sse')
 
+require('dotenv').config();
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  }
+// Configure AWS S3
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
 });
 
+// Configure multer to use S3
 const upload = multer({
-  storage,
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_S3_BUCKET_NAME,
+    acl: 'public-read',
+    key: function (req, file, cb) {
+      cb(null, `media/${Date.now()}-${path.basename(file.originalname)}`);
+    }
+  }),
   fileFilter: (req, file, cb) => {
     const filetypes = /jpeg|jpg|png|gif|mp4|html|mov|avi/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -34,7 +42,7 @@ const upload = multer({
 // Create a new post
 router.post('/', verifyToken, upload.single('media'), async (req, res) => {
   const { title, content, emojiId } = req.body;
-  const mediaPath = req.file ? req.file.path : null;
+  const mediaPath = req.file ? req.file.location : null;
 
   try {
     const post = await Post.create({ title, content, userId: req.userId, emojiId, mediaPath });
