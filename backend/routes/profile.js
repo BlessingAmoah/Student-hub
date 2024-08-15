@@ -2,13 +2,20 @@ const express = require('express');
 const { User } = require('../models');
 const router = express.Router();
 const multer = require('multer');
-const r2 = require('../config/r2Config');
+const AWS = require('aws-sdk');
 const verifyToken = require('../middleware/auth');
 const axios = require('axios')
 
 require('dotenv').config();
 
-const upload = multer({ Storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage() });
+
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
 router.get('/',  async (req, res) => {
   try {
     const profile = await User.findOne({ where: { id: req.userId } });
@@ -36,30 +43,31 @@ router.put('/', verifyToken, async (req, res) => {
   }
 });
 
-// Upload profile picture to Cloudflare R2
-router.post('/profile', verifyToken, upload.single('profilePicture'), async (req, res) => {
+    // Upload profile picture to AWS S3
+router.post('/upload', verifyToken, upload.single('profilePicture'), async (req, res) => {
   try {
     const file = req.file;
-    const fileName = `${req.userId}-${Date.now()}-${file.originalname}`; 
+    const fileName = `${req.userId}-${Date.now()}-${file.originalname}`;
 
-    // Upload to Cloudflare R2
     const params = {
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME, 
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: fileName,
       Body: file.buffer,
       ContentType: file.mimetype,
-      
     };
 
-    const uploadResult = await r2.upload(params).promise();
+    const data = await s3.upload(params).promise();
 
-    // Save the file URL in the user's profile
-    const profilePictureUrl = `${process.env.CLOUDFLARE_R2_ENDPOINT}/${process.env.CLOUDFLARE_R2_BUCKET_NAME}/${fileName}`;
-    await User.update({ profilePicture: profilePictureUrl }, { where: { id: req.userId } });
+    const profilePictureUrl = data.Location;
 
-    res.status(200).json({ profilePicture: profilePictureUrl });
+    await User.update(
+      { profilePicture: profilePictureUrl },
+      { where: { id: req.userId } }
+    );
+
+    res.status(200).json({ profilePictureUrl });
   } catch (error) {
-    console.error('Error uploading profile picture:', error);
+    console.error('Error uploading to S3:', error);
     res.status(500).json({ error: 'Failed to upload profile picture.' });
   }
 });
