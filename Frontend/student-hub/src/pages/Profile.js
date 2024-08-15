@@ -116,7 +116,7 @@ const handlePictureUpload = async (e) => {
   formData.append('profilePicture', file);
 
   try {
-    const response = await fetch(`${process.env.REACT_APP_CLOUDFLARE_R2_ENDPOINT}/profile/profile`, {
+    const response = await fetch(`${process.env.REACT_APP_CLOUDFLARE_R2_ENDPOINT}/profile/upload`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${sessionStorage.getItem('token')}`,
@@ -128,7 +128,7 @@ const handlePictureUpload = async (e) => {
       const data = await response.json();
       setProfile((prevProfile) => ({
         ...prevProfile,
-        profilePicture: `${process.env.REACT_APP_CLOUDFLARE_R2_ENDPOINT}/${data.profilePicture}`,
+        profilePicture: data.profilePicture, 
       }));
     } else {
       const error = await response.json();
