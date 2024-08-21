@@ -246,6 +246,30 @@ const handleDeletePost = async(postId) => {
         setError(error.message);
     }
 };
+
+// delete a comment
+const handleDeleteComment = async(commentId) => {
+    try {
+        const { token } = getUserIDToken();
+        if (!token) {
+        navigate('/login');
+        return;
+        }
+        const response = await fetch (`${process.env.REACT_APP_API}/post/comment/${commentId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+            },
+        });
+        if (!response.ok) {
+            setError('Failed to delete comment');
+            return;
+        }
+        setCurrentComments(currentComments.filter(comment => comment.id !== commentId));
+    } catch(error) {
+        setError(error.message);
+    }
+};
 //search
     const handleSearch = (event) => {
         const searchTerm = event.target.value;
@@ -433,6 +457,9 @@ const handleDeletePost = async(postId) => {
                             <Typography>{comment.content}</Typography>
                             <Typography>By: {comment.User?.name}</Typography>
                             <Typography>Date: {new Date(comment.createdAt).toLocaleString()}</Typography>
+                            <Button color="error" onClick={() => handleDeleteComment(comment.id)}>
+                                Delete Comment
+                            </Button>
                             <br />
                         </div>
                     ))}
