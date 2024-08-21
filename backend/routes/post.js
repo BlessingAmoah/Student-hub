@@ -166,23 +166,27 @@ router.delete('/post/:postId', verifyToken, async (req, res) => {
 });
 
 // delete a comment
-router.delete('/comment/:postId', verifyToken, async (req, res) => {
+router.delete('/comment/:commentId', verifyToken, async (req, res) => {
   try {
-    const {postId} = req.params;
+    const { commentId } = req.params;
     const userId = req.userId;
-      //check if the comment already exist
-      const comment = await Comment.findOne({
-          where: { userId, id: postId }
-      });
-      if (!comment) {
-          return res.status(404).json({ error: 'Comment not found'});
-      }
-      // delete comment from list
-      await comment.destroy();
-      res.status(200).json({ message: 'Comment removed successfully' });
+
+    // Check if the comment exists and belongs to the user
+    const comment = await Comment.findOne({
+      where: { id: commentId, userId }
+    });
+
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+
+    // Delete comment
+    await comment.destroy();
+    res.status(200).json({ message: 'Comment removed successfully' });
   } catch (error) {
-      console.error('Error removing comment:', error);
-      res.status(500).json({ error: 'Internal server error'})
+    console.error('Error removing comment:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 module.exports = router;
