@@ -92,42 +92,53 @@ router.post('/:postId/comment', verifyToken, async (req, res) => {
 // Like a post
 router.post('/:postId/like', verifyToken, async (req, res) => {
   const { postId } = req.params;
-  const {emojiId } = req.body;
+  const { emojiId } = req.body;
+
   try {
     const post = await Post.findByPk(postId);
     const existingLike = await Like.findOne({ where: { userId: req.userId, postId } });
-     // name of the liking user
-     const user = await User.findByPk(req.userId);
-     const message = `Hello ${user.name} liked your post titled "${post.title}"`
-     // notification for the post author
-     if (post.userId !== req.userId) {
-       await Notification.create({
-         userId: post.userId,
-         type: 'LIKE',
-         message,
-         postId,
-         read: false
-       });
-       // Send SSE notification
-       sendToClients({
-         payload: {
-           type: 'LIKE',
-           message,
-           postId
-         }
-       }, post.userId);
-     }
-    if (existingLike) {
-      await existingLike.destroy();
-      res.status(200).json({ message: 'Post unliked' });
-    } else {
+
+    // Get the name of the liking user
+    const user = await User.findByPk(req.userId);
+
+    // If the user is liking the post (not unliking)
+    if (!existingLike) {
+      const message = `Hello, ${user.name} liked your post titled "${post.title}"`;
+
+      // Send notification only if the post author is not the liker
+      if (post.userId !== req.userId) {
+        await Notification.create({
+          userId: post.userId,
+          type: 'LIKE',
+          message,
+          postId,
+          read: false
+        });
+
+        // Send SSE notification
+        sendToClients({
+          payload: {
+            type: 'LIKE',
+            message,
+            postId
+          }
+        }, post.userId);
+      }
+
+      // Create a new like
       const like = await Like.create({ userId: req.userId, postId, emojiId });
       res.status(201).json(like);
+    } else {
+      // If the post is already liked, unlike it (no notification for unliking)
+      await existingLike.destroy();
+      res.status(200).json({ message: 'Post unliked' });
     }
+
   } catch (error) {
-    res.status(500).json({ error: 'Failed to like post' });
+    res.status(500).json({ error: 'Failed to like/unlike post' });
   }
 });
+
 // Get all posts
 router.get('/', async (req, res) => {
   try {
