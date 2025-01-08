@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-
 module.exports = {
   development: {
     username: process.env.DB_USERNAME,
@@ -8,6 +7,7 @@ module.exports = {
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT,
+    port: process.env.DB_PORT || 5437, 
   },
   test: {
     username: process.env.DB_USERNAME,
@@ -15,6 +15,7 @@ module.exports = {
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT,
+    port: process.env.DB_PORT || 5437, 
   },
   production: {
     username: process.env.DB_USERNAME,
@@ -22,7 +23,7 @@ module.exports = {
     database: process.env.DB_DATABASE,
     host: process.env.DB_HOST,
     dialect: process.env.DB_DIALECT,
-    use_env_variable: 'DATABASE_HOSTED_URL',
-
+    port: process.env.DB_PORT || 5437, 
+    url: process.env.DATABASE_HOSTED_URL || '', 
   },
 };
