@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Typography, Container, Button, TextField, Card, CardContent, CardActions, IconButton, Paper, InputBase, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem, Select } from '@mui/material';
+import { Grid, Typography, Container, Button, TextField, Card, CardContent, CardActions, IconButton, Paper, InputBase, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import { styled } from '@mui/system';
 import { useError } from '../components/ErrorContext'
 import Skeleton from '@mui/material/Skeleton'
 import getUserIDToken from '../components/utils';
-
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 
 // search styling
 const SearchContainer = styled(Paper)({
@@ -23,6 +23,14 @@ const SearchInput = styled(InputBase)({
 
 const SearchIconButton = styled(IconButton)({
     padding: 10,
+});
+
+const EmojiButton = styled(IconButton)({
+    fontSize: '1.5rem',
+    padding: '8px',
+    '&:hover': {
+        backgroundColor: 'transparent',
+    },
 });
 
 function Dashboard() {
@@ -43,29 +51,27 @@ function Dashboard() {
     const [selectedEmoji, setSelectedEmoji] = useState({});
     const [emojis, setEmojis] = useState([])
     const { setError } = useError();
+    const [isOpenEmojiModal, setIsOpenEmojiModal] = useState(false);
 
-// emoji
-// delay loading state to 1 minute
-const delayTime = 60000;
+// emoji fetching
     useEffect(() => {
         const fetchEmojis = async () => {
-            setIsLoading(true)
-            try{
+            setIsLoading(true);
+            try {
                 const response = await fetch(`${process.env.REACT_APP_API}/emoji`);
                 if (!response.ok) {
-                    setError(error.message)
+                    throw new Error('Failed to fetch emojis');
                 }
-                const emojistData = await response.json();
-                setEmojis(emojistData);
+                const emojiData = await response.json();
+                setEmojis(emojiData);
             } catch (error) {
-                setError(error.message)
+                setError(error.message);
+            } finally {
+                setIsLoading(false);
             }
-            setTimeout(() => {
-                setIsLoading(false)
-                }, delayTime);
         };
         fetchEmojis();
-    }, []);
+    }, [setError]);
 //fetch data
     useEffect(() => {
         const fetchData = async () => {
@@ -103,7 +109,7 @@ const delayTime = 60000;
             setIsLoading(false)
         };
         fetchData();
-    }, [navigate,currentPostId, setError]);
+    }, [navigate, currentPostId, setError, content, media, selectedEmoji, title]);
 
 //post fetching
     const handlePostSubmit = async (event ) => {
@@ -186,40 +192,7 @@ const delayTime = 60000;
             setError(error.message);
         }
     };
-//like button
-const handleLike = async (postId) => {
-    try {
-        const token = sessionStorage.getItem('token');
-        if (!token) {
-            navigate('/login');
-            return;
-        }
-
-        const response = await fetch(`${process.env.REACT_APP_API}/post/${postId}/like`, {
-
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ emojiId: selectedEmoji[postId] || '' }),
-        });
-        if (!response.ok) {
-            setError('Failed to like:', error);
-        }
-        const updatePostLikes = (post, newLike, postId) => {
-            if (post.id === postId) {
-                return {...post, Likes: [...post.Likes, newLike]}
-            }
-            return post;
-        }
-        const newLike = await response.json();
-        setData(data.map(post => updatePostLikes(post, newLike)));
-        setFilteredData(filteredData.map(post => updatePostLikes(post, newLike)));
-    } catch (error) {
-        setError(error.message);
-    }
-};
+    
 //delete a post
 const handleDeletePost = async(postId) => {
     try {
@@ -288,6 +261,52 @@ const handleDeleteComment = async(commentId) => {
     const handleCloseCreateModal = () => {
         setIsOpenCreateModal(false);
     };
+    const handleOpenEmojiModal = (postId) => {
+        setCurrentPostId(postId);
+        setIsOpenEmojiModal(true);
+    };
+
+    const handleCloseEmojiModal = () => {
+        setIsOpenEmojiModal(false);
+    };
+
+// Update handleLike to use handleEmojiSelect
+const handleEmojiSelect = async (emoji) => {
+    try {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+        const response = await fetch(`${process.env.REACT_APP_API}/post/${currentPostId}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ emoji: emoji }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to like post');
+        }
+        const newLike = await response.json();
+        setSelectedEmoji(prev => ({ ...prev, [currentPostId]: emoji }));
+        setIsOpenEmojiModal(false);
+
+        // Update the likes in the UI
+        const updatePostLikes = (post, newLike) => {
+            if (post.id === currentPostId) {
+                return { ...post, Likes: [...post.Likes, newLike] };
+            }
+            return post;
+        };
+
+        setData(data.map(post => updatePostLikes(post, newLike)));
+        setFilteredData(filteredData.map(post => updatePostLikes(post, newLike)));
+    } catch (error) {
+        setError(error.message);
+    }
+};
 
     const handleOpenCommentsModal = (postId, comments) => {
         setCurrentPostId(postId);
@@ -386,21 +405,13 @@ const handleDeleteComment = async(commentId) => {
                             <Typography>{post.Likes?.length} Likes</Typography>
                             </CardContent>
                             <CardActions>
-                            <IconButton onClick={() => handleLike(post.id)}>
-                                    <Select
-                                        value={selectedEmoji[post.id] || ''}
-                                        onChange={(e) => setSelectedEmoji({ ...selectedEmoji, [post.id]: e.target.value })}
-                                        displayEmpty
-                                        inputProps={{ 'aria-label': 'Select Emoji' }}
-                                    >
-                                         <MenuItem value=""><span role="img" aria-label="default emoji">👍🏻</span></MenuItem>
-                                        {emojis.map((emoji, id) => (
-                                            <MenuItem key={id} value={emoji.character}>
-                                                {emoji.character}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </IconButton>
+                            <EmojiButton onClick={() => handleOpenEmojiModal(post.id)}>
+                                    {selectedEmoji[post.id] ? (
+                                        <span>{selectedEmoji[post.id]}</span>
+                                    ) : (
+                                        <EmojiEmotionsIcon />
+                                    )}
+                                </EmojiButton>
                                 <Button onClick={() => handleOpenCommentsModal(post.id, post.Comments)}>
                                     View Comments
                                 </Button>
@@ -412,6 +423,30 @@ const handleDeleteComment = async(commentId) => {
                     </Grid>
                 ))}
             </Grid>
+             {/* Add Emoji Selection Modal */}
+             <Dialog open={isOpenEmojiModal} onClose={handleCloseEmojiModal}>
+                <DialogTitle>Select an Emoji</DialogTitle>
+                <DialogContent>
+                    <Grid container spacing={2}>
+                        {emojis.map((emoji, index) => (
+                            <Grid item key={index}>
+                                <Button 
+                                    onClick={() => handleEmojiSelect(emoji)}
+                                    variant="outlined"
+                                    style={{ minWidth: '50px', margin: '4px' }}
+                                >
+                                    {emoji} 
+                                </Button>
+                            </Grid>
+                        ))} 
+                    </Grid>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseEmojiModal} color="secondary">
+                        Cancel
+                    </Button>
+                </DialogActions>
+            </Dialog>
             <Dialog open={isOpenCreateModal} onClose={handleCloseCreateModal}>
                 <form onSubmit={handlePostSubmit}>
                 <DialogTitle>Create a New Post</DialogTitle>
