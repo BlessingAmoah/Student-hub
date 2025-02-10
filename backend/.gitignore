@@ -1,0 +1,9 @@
+.env
+
+#development
+
+/uploads
+
+ Student-hub
+# dependencies
+/node_modules
