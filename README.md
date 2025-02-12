@@ -75,12 +75,19 @@ If you set a password for PostgreSQL, update the .env file accordingly.
 Create a .env file in the backend directory with the following content:
 
 NODE_ENV=development
+
 PORT=5000
+
 DATABASE_URL=postgres://username:password@localhost:5432/student_hub
+
 JWT_SECRET=your_jwt_secret
+
 CLOUD_STORAGE_BUCKET=your_bucket_name
+
 EMAIL_SERVICE=your_email_service
+
 EMAIL_USER=your_email@example.com
+
 EMAIL_PASS=your_email_password
 
 Note: Replace username, password, and other placeholders with your actual credentials.
