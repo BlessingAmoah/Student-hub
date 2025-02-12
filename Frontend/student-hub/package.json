@@ -2,6 +2,7 @@
   "name": "student-hub",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8080",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -19,15 +20,13 @@
     "react-scripts": "5.0.1",
     "react-toastify": "^10.0.5",
     "styled-components": "^6.1.11",
-    "web-vitals": "^2.1.4",
-    "proxy": "http://localhost:8080"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "heroku-postbuild": "npm install --legacy-peer-deps"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -48,7 +47,7 @@
     ]
   },
   "engines": {
-    "node": "20.14.0"
+    "node": "22.9.0"
   },
   "devDependencies": {
     "eslint-config-react-app": "^7.0.1"
