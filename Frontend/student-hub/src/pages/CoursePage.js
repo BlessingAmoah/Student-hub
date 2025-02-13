@@ -109,7 +109,7 @@ function CoursePage() {
             setIsLoading(false)
         };
         fetchData();
-    }, [navigate,currentPostId, setError]);
+    }, [navigate, currentPostId, setError, content, media, selectedEmoji, title]);
 
     //post fetching
     const handlePostSubmit = async (event ) => {

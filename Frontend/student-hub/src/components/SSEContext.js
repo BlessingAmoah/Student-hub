@@ -55,7 +55,7 @@ export const SSEProvider = ({ children }) => {
         }
       };
     }
-  }, [navigate]);
+  }, [navigate, setError]);
 
   return (
     <SSEContext.Provider value={{ eventSource: eventSourceRef.current }}>
