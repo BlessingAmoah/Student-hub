@@ -21,6 +21,7 @@ Before proceeding, ensure you have the following installed on your system:
 
 # 1. Clone the repository
 git clone https://github.com/BlessingAmoah/student-hub.git
+
 cd student-hub
 
 # 2. Install Dependencies
