@@ -142,6 +142,8 @@ cd frontend
 
 cd student-hub
 
+npm install --save-dev @testing-library/react @testing-library/jest-dom jest
+
 npm test
 
 # License
