@@ -111,6 +111,8 @@ Frontend Application
 
 cd frontend
 
+cd student-hub
+
 npm start
 
 # 7. Access the Application
@@ -137,6 +139,8 @@ npm test
 Frontend:
 
 cd frontend
+
+cd student-hub
 
 npm test
 
