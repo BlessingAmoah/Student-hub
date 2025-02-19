@@ -96,16 +96,21 @@ Note: Replace username, password, and other placeholders with your actual creden
 # 5. Run Database Migrations
 
 cd backend
+
 npx sequelize-cli db:migrate
 
 # 6. Start Application
 
 Backend Application
+
 cd backend
+
 node server.js
 
 Frontend Application
+
 cd frontend
+
 npm start
 
 # 7. Access the Application
@@ -124,11 +129,15 @@ Feel free to fork the repository and submit pull requests.
 To run tests, use the following commands:
 
 Backend:
+
 cd backend
+
 npm test
 
 Frontend:
+
 cd frontend
+
 npm test
 
 # License
