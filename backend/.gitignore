@@ -7,3 +7,6 @@
  Student-hub
 # dependencies
 /node_modules
+
+/database_backup.sql
+/dump.sql
