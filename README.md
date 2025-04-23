@@ -38,6 +38,7 @@ Ensure the following are installed:
 2. Clone the Repository
 
 git clone https://github.com/BlessingAmoah/student-hub.git
+
 cd student-hub
 
 
@@ -90,13 +91,16 @@ For demo mode, set DEMO_MODE=true and use the provided seed data.
 
 macOS
 
-brew install postgresql
+brew install PostgreSQL
+
 brew services start postgresql
 
 Ubuntu/Debian
 
 sudo apt update
+
 sudo apt install postgresql postgresql-contrib
+
 sudo systemctl start postgresql
 
 Windows
