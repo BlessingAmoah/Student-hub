@@ -1,169 +1,158 @@
-# Student Hub - Setup and Installation Guide
+Student Hub – Setup & Installation Guide
 
-This guide explains how to install, configure, and run the student hub web application. Follow the steps to get the project running on your local machine.
+Student Hub is a web-based platform designed to foster collaborative learning and knowledge-sharing among students. Users can share posts about internships, courses, summer plans, and student organizations. Others can interact by commenting, providing feedback, or collaborating on shared interests. Account registration is restricted to .edu email addresses, with optional email verification enabled.
 
-# Aim for this project
-Student hub serves as a tool for collaborative learning and as a platform for sharing experiences related to internships, summer plans, and student organizations. Users will be able to post information about their classes, projects they are interested in or working on, and other users with the same interests can comment on such posts to collaborate or give feedback. Users will be able to create an account using their .edu emails only.
 
-# Prerequisites
+🚀 Features
+	•	Post updates about classes, projects, and experiences.
+	•	Collaborate through comments and feedback.
+	•	Friend and mentorship system.
+	•	Optional email verification.
+	•	Demo mode available for testing without full setup.
 
-Before proceeding, ensure you have the following installed on your system:
+📦 Getting Started
 
-# Required Software
+⚠️ You’ll need two separate terminals to run the frontend and backend servers concurrently.
 
-- Node.js (v18 or later)
-- npm (included with node.js) or yarn
-- PostgreSQL (latest version)
-- Git
-- React.js
-- Homebrew ( for macOS users, optional but recommended)
-- AWS S3 bucket (object storage)
+1. Prerequisites
 
-# 1. Clone the repository
+Ensure the following are installed:
+	•	Node.js (v18 or later)
+	•	npm or yarn
+	•	Git
+	•	PostgreSQL (optional if using Docker)
+	•	Docker & Docker Compose (optional but recommended)
+	•	AWS S3 bucket (optional, used for file uploads)
+
+2. Clone the Repository
+
 git clone https://github.com/BlessingAmoah/student-hub.git
-
 cd student-hub
 
-# 2. Install Dependencies
 
-Navigate to the backend and frontend folders and install dependencies:
+3. Install Dependencies
 
-Backend:
+Backend
 
 cd backend
-- npm install
-- Express.js - Backend framework
-- Sequelize & PostgreSQL - Database ORM
-- bcrypt - Password hashing
-- jsonwebtoken - Authentication
-- nodemailer - Email services
-- multer & AWS SDK - File uploads
-- express-validator - Input validation
-- react-router-dom - Routing
+npm install
 
-Frontend:
+Frontend
+
+Open a new terminal:
+
 cd frontend
-- npm install
-- React.js - Frontend framework
-- Material UI - UI components
-- react-router-dom - Routing
-- axios - API requests
+npm install
 
-# 3. Set Up the Database
+4. Configure Environment Variables
 
-Ensure PostgreSQL is installed and running:
+In the backend directory:
+	1.	Copy the example template:
 
-macOS:
+cp .env.template .env
+
+	2.	Fill in the values inside .env:
+
+NODE_ENV=development
+PORT=5000
+DATABASE_URL=postgres://username:password@localhost:5432/student_hub
+JWT_SECRET=your_jwt_secret
+EMAIL_USER=your_email@example.com
+EMAIL_PASS=your_email_password
+CLOUD_STORAGE_BUCKET=optional_bucket_name
+DEMO_MODE=true
+
+.env is already included in .gitignore for security.
+
+For demo mode, set DEMO_MODE=true and use the provided seed data.
+
+
+5. Set Up the Database (Optional if using Docker)
+
+macOS
+
 brew install postgresql
 brew services start postgresql
 
-Ubuntu/ Debian:
+Ubuntu/Debian
+
 sudo apt update
 sudo apt install postgresql postgresql-contrib
 sudo systemctl start postgresql
 
-Windows:
-Download and install https://www.postgresql.org/download/, then start the database server using the PostgreSQL service.
+Windows
 
-Create the Database
+Download and install from: https://www.postgresql.org/download/
+
+Create the database:
+
 psql -U postgres
 CREATE DATABASE student_hub;
 
-If you set a password for PostgreSQL, update the .env file accordingly.
 
-# 4. Configure Environment Variables
-
-Create a .env file in the backend directory with the following content:
-
-NODE_ENV=development
-
-PORT=5000
-
-DATABASE_URL=postgres://username:password@localhost:5432/student_hub
-
-JWT_SECRET=your_jwt_secret
-
-CLOUD_STORAGE_BUCKET=your_bucket_name
-
-EMAIL_SERVICE=your_email_service
-
-EMAIL_USER=your_email@example.com
-
-EMAIL_PASS=your_email_password
-
-Note: Replace username, password, and other placeholders with your actual credentials.
-
-# 5. Run Database Migrations
+6. Run Database Migrations
 
 cd backend
-
 npx sequelize-cli db:migrate
 
-# 6. Start Application
 
-Backend Application
+7. Start the Application
+
+Backend (Terminal 1)
 
 cd backend
-
 node server.js
 
-Frontend Application
+Frontend (Terminal 2)
 
 cd frontend
-
-cd student-hub
-
 npm start
 
-# 7. Access the Application
 
-Once the frontend and backend are running, open your browser and go to:
-http://localhost:3000
+8. Access the Application
 
-# Deployment
-To deploy the project, configure environment variables and deploy using Render, Heroku, or Vercel.
+Once running, open your browser and go to:
+🔗 http://localhost:3000
 
-# Contribution
-Feel free to fork the repository and submit pull requests.
+🐳 Using Docker (Recommended for Quick Start)
 
-# Running Tests
+docker-compose up --build
 
-To run tests, use the following commands:
+This will spin up both the backend and frontend along with a PostgreSQL container pre-configured.
 
-Backend:
+📮 Optional Email Setup
+
+If you’d like to enable email verification or password resets:
+	1.	Use any SMTP provider (e.g., Gmail, SendGrid).
+	2.	Update the following environment variables:
+
+EMAIL_SERVICE=gmail
+EMAIL_USER=youremail@gmail.com
+EMAIL_PASS=your_app_password
+
+Gmail users: Enable 2FA and create an App Password for authentication.
+
+🧪 Running Tests
+
+Backend
 
 cd backend
-
 npm test
 
-Frontend:
+Frontend
 
 cd frontend
-
-cd student-hub
-
+npm install --save-dev @testing-library/react @testing-library/jest-dom jest
 npm test
 
-# License
 
-MIT License
+🌍 Deployment
 
-Copyright (c) 2025 Blessing Amoah
+To deploy:
+	•	Ensure all environment variables are configured for production.
+	•	Deploy backend to Render, Railway, or Heroku.
+	•	Deploy frontend to Vercel or Netlify.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+🤝 Contributing
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Pull requests are welcome. For major changes, please open an issue first to discuss your ideas.
