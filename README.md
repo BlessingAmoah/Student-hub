@@ -56,6 +56,7 @@ cp .env.template .env
 NODE_ENV=development
 PORT=5000
 DATABASE_URL=postgres://username:password@localhost:5432/student_hub
+
 JWT_SECRET=your_jwt_secret
 EMAIL_USER=your_email@example.com
 EMAIL_PASS=your_email_password
@@ -127,6 +128,7 @@ If you’d like to enable email verification or password resets:
 	2.	Update the following environment variables:
 
 EMAIL_SERVICE=gmail
+
 EMAIL_USER=youremail@gmail.com
 EMAIL_PASS=your_app_password
 
